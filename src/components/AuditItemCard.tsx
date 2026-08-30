@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { CheckCircle2, AlertTriangle, AlertCircle, Info, ChevronDown, ChevronUp, Copy, Check, Terminal, Code2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, AlertCircle, Info, ChevronDown, ChevronUp, Copy, Check, Terminal, Code2, Sparkles } from 'lucide-react';
 import { AuditItem, SeverityLevel } from '../types';
 
 interface AuditItemCardProps {
   item: AuditItem;
+  onGetAiFix?: (item: AuditItem) => void;
+  isCompleted?: boolean;
+  onToggleCompleted?: (id: string) => void;
 }
 
 const SEVERITY_CONFIG: Record<SeverityLevel, { label: string; icon: React.ElementType; badgeClass: string; borderClass: string; iconColor: string }> = {
@@ -37,7 +40,12 @@ const SEVERITY_CONFIG: Record<SeverityLevel, { label: string; icon: React.Elemen
   },
 };
 
-export const AuditItemCard: React.FC<AuditItemCardProps> = ({ item }) => {
+export const AuditItemCard: React.FC<AuditItemCardProps> = ({
+  item,
+  onGetAiFix,
+  isCompleted = false,
+  onToggleCompleted,
+}) => {
   const [isExpanded, setIsExpanded] = useState(item.severity === 'critical' || item.severity === 'warning');
   const [copied, setCopied] = useState(false);
 
@@ -50,24 +58,50 @@ export const AuditItemCard: React.FC<AuditItemCardProps> = ({ item }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleAiFixClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onGetAiFix) {
+      onGetAiFix(item);
+    }
+  };
+
   return (
-    <div className={`border-2 bg-white p-3.5 sm:p-4 transition-all shadow-[2px_2px_0px_#141414] ${config.borderClass}`}>
+    <div
+      className={`border-2 bg-white p-3.5 sm:p-4 transition-all shadow-[2px_2px_0px_#141414] ${
+        isCompleted ? 'border-emerald-700 bg-emerald-50/20' : config.borderClass
+      }`}
+    >
       {/* Header row */}
       <div
         className="flex items-start justify-between gap-3 cursor-pointer select-none"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-start gap-2.5">
+        <div className="flex items-start gap-2.5 min-w-0">
           <div className="mt-0.5 shrink-0">
-            <Icon className={`h-4 w-4 ${config.iconColor}`} />
+            {isCompleted ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+            ) : (
+              <Icon className={`h-4 w-4 ${config.iconColor}`} />
+            )}
           </div>
 
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className={`inline-flex items-center gap-1 border px-2 py-0.2 text-[10px] font-mono font-bold ${config.badgeClass}`}>
                 {config.label}
               </span>
-              <h4 className="text-xs sm:text-sm font-mono font-bold text-[#141414] uppercase">
+
+              {isCompleted && (
+                <span className="inline-flex items-center gap-1 border border-emerald-800 bg-emerald-100 text-emerald-900 px-1.5 py-0.2 text-[9px] font-mono font-bold">
+                  ✓ CORRIGIDO
+                </span>
+              )}
+
+              <h4
+                className={`text-xs sm:text-sm font-mono font-bold uppercase ${
+                  isCompleted ? 'text-emerald-950 line-through' : 'text-[#141414]'
+                }`}
+              >
                 {item.title}
               </h4>
             </div>
@@ -78,13 +112,30 @@ export const AuditItemCard: React.FC<AuditItemCardProps> = ({ item }) => {
           </div>
         </div>
 
-        <button
-          type="button"
-          aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
-          className="text-[#141414] p-1 border border-[#141414] bg-[#E4E3E0] hover:bg-[#141414] hover:text-white transition-colors shrink-0 mt-0.5"
-        >
-          {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+          {/* Quick AI Fix Button on Header */}
+          {onGetAiFix && (
+            <button
+              type="button"
+              id={`btn-ai-fix-${item.id}`}
+              onClick={handleAiFixClick}
+              title="Obter instruções de código passo a passo geradas pela IA"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] sm:text-xs font-mono font-bold uppercase bg-[#141414] text-white hover:bg-emerald-600 border border-[#141414] shadow-[1px_1px_0px_#141414] transition-all cursor-pointer"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-300 fill-amber-300 shrink-0" />
+              <span className="hidden xs:inline sm:inline">GET AI FIX</span>
+              <span className="inline xs:hidden sm:hidden">AI FIX</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
+            className="text-[#141414] p-1 border border-[#141414] bg-[#E4E3E0] hover:bg-[#141414] hover:text-white transition-colors shrink-0"
+          >
+            {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </div>
       </div>
 
       {/* Expanded details */}
@@ -160,6 +211,35 @@ export const AuditItemCard: React.FC<AuditItemCardProps> = ({ item }) => {
               </div>
             </div>
           )}
+
+          {/* Action Row: Expanded AI Fix Banner */}
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#141414]/20">
+            {onGetAiFix && (
+              <button
+                type="button"
+                onClick={handleAiFixClick}
+                className="flex items-center gap-2 px-3 py-1.5 bg-[#141414] text-white hover:bg-emerald-600 border border-[#141414] shadow-[2px_2px_0px_#888] text-xs font-bold uppercase transition-all cursor-pointer"
+              >
+                <Sparkles className="h-4 w-4 text-amber-300 fill-amber-300 animate-pulse" />
+                <span>GERAR GUIA DE CORREÇÃO COM IA (PASSO A PASSO)</span>
+              </button>
+            )}
+
+            {onToggleCompleted && (
+              <button
+                type="button"
+                onClick={() => onToggleCompleted(item.id)}
+                className={`flex items-center gap-1 px-2.5 py-1 text-xs font-bold uppercase border transition-colors cursor-pointer ${
+                  isCompleted
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-700 hover:bg-emerald-200'
+                    : 'bg-white text-[#141414] border-[#141414] hover:bg-[#E4E3E0]'
+                }`}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>{isCompleted ? 'RESOLVIDO' : 'MARCAR CORRIGIDO'}</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

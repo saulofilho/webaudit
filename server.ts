@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { analyzeWebsite } from './server/analyzer';
+import { generateAIFix } from './server/geminiFix';
 
 async function startServer() {
   const app = express();
@@ -28,6 +29,23 @@ async function startServer() {
       console.error('Audit error:', err);
       return res.status(500).json({
         error: err.message || 'Falha interna ao analisar o website fornecido.',
+      });
+    }
+  });
+
+  app.post('/api/gemini/fix', async (req, res) => {
+    try {
+      const { item, targetUrl, techStack, customFramework, userQuestion } = req.body;
+      if (!item || !item.id || !item.title) {
+        return res.status(400).json({ error: 'Os dados do item auditado são obrigatórios.' });
+      }
+
+      const fix = await generateAIFix(item, targetUrl, techStack, customFramework, userQuestion);
+      return res.json(fix);
+    } catch (err: any) {
+      console.error('AI Fix error:', err);
+      return res.status(500).json({
+        error: err.message || 'Falha ao gerar o guia de correção inteligente.',
       });
     }
   });

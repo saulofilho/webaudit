@@ -15,9 +15,11 @@ import {
   Globe,
   SlidersHorizontal,
   FileCheck2,
+  Activity,
+  TrendingUp,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AuditReport, AuditCategory, SeverityLevel, SavedAuditSummary } from './types';
+import { AuditReport, AuditCategory, SeverityLevel, SavedAuditSummary, AuditItem } from './types';
 import { Navbar } from './components/Navbar';
 import { UrlInputSection } from './components/UrlInputSection';
 import { AuditSummaryHero } from './components/AuditSummaryHero';
@@ -27,9 +29,11 @@ import { SocialPreview } from './components/SocialPreview';
 import { HeadersInspector } from './components/HeadersInspector';
 import { TechStackView } from './components/TechStackView';
 import { SiteComparator } from './components/SiteComparator';
+import { HistoricalTrendsChart } from './components/HistoricalTrendsChart';
 import { ExportModal } from './components/ExportModal';
 import { GitHubPagesModal } from './components/GitHubPagesModal';
 import { AuditHistoryModal } from './components/AuditHistoryModal';
+import { AIFixModal } from './components/AIFixModal';
 import { analyzeWebsiteClient } from './services/clientAnalyzer';
 
 const STORAGE_KEY = 'webaudit_history_v1';
@@ -38,7 +42,7 @@ export default function App() {
   const [currentReport, setCurrentReport] = useState<AuditReport | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<AuditCategory | 'all' | 'headers' | 'social' | 'tech' | 'comparator'>('all');
+  const [activeTab, setActiveTab] = useState<AuditCategory | 'all' | 'headers' | 'social' | 'tech' | 'comparator' | 'trends'>('all');
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [completedFixIds, setCompletedFixIds] = useState<Record<string, boolean>>({});
@@ -47,6 +51,7 @@ export default function App() {
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isGitHubPagesOpen, setIsGitHubPagesOpen] = useState<boolean>(false);
+  const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
 
   // Saved Audits History
   const [savedAudits, setSavedAudits] = useState<SavedAuditSummary[]>([]);
@@ -78,8 +83,9 @@ export default function App() {
     };
 
     setSavedAudits((prev) => {
-      const filtered = prev.filter((item) => item.targetUrl !== report.targetUrl);
-      const updated = [summary, ...filtered].slice(0, 20);
+      // Keep multiple historical runs per URL so time-series trends can be visualized
+      const filtered = prev.filter((item) => item.id !== report.id);
+      const updated = [summary, ...filtered].slice(0, 50);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       } catch {
@@ -151,7 +157,14 @@ export default function App() {
   // Filter items
   const filteredItems = currentReport?.items.filter((item) => {
     // Category filter
-    if (activeTab !== 'all' && activeTab !== 'headers' && activeTab !== 'social' && activeTab !== 'tech' && activeTab !== 'comparator') {
+    if (
+      activeTab !== 'all' &&
+      activeTab !== 'headers' &&
+      activeTab !== 'social' &&
+      activeTab !== 'tech' &&
+      activeTab !== 'comparator' &&
+      activeTab !== 'trends'
+    ) {
       if (item.category !== activeTab) return false;
     }
     // Severity filter
@@ -371,10 +384,36 @@ export default function App() {
                   <ArrowLeftRight className="h-3.5 w-3.5" />
                   <span>COMPARADOR</span>
                 </button>
+
+                <button
+                  type="button"
+                  id="tab-trends"
+                  onClick={() => setActiveTab('trends')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'trends'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Activity className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>TENDÊNCIAS & HISTÓRICO</span>
+                </button>
               </div>
             </div>
 
             {/* Tab Specific Views */}
+            {activeTab === 'trends' && (
+              <HistoricalTrendsChart
+                savedAudits={savedAudits}
+                currentUrl={currentReport.targetUrl}
+                onSelectAudit={(id) => {
+                  const item = savedAudits.find((a) => a.id === id);
+                  if (item) handleAnalyze(item.targetUrl);
+                }}
+                onReaudit={(url) => handleAnalyze(url)}
+              />
+            )}
+
             {activeTab === 'social' && (
               <SocialPreview meta={currentReport.rawData.metaTags} url={currentReport.targetUrl} />
             )}
@@ -500,7 +539,13 @@ export default function App() {
                     </div>
                   ) : (
                     filteredItems.map((item) => (
-                      <AuditItemCard key={item.id} item={item} />
+                      <AuditItemCard
+                        key={item.id}
+                        item={item}
+                        isCompleted={!!completedFixIds[item.id]}
+                        onToggleCompleted={toggleFixCompleted}
+                        onGetAiFix={(fixItem) => setSelectedAiFixItem(fixItem)}
+                      />
                     ))
                   )}
                 </div>
@@ -550,12 +595,26 @@ export default function App() {
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         savedAudits={savedAudits}
+        currentUrl={currentReport?.targetUrl}
         onSelectAudit={(id) => {
           const found = savedAudits.find((a) => a.id === id);
           if (found) handleAnalyze(found.targetUrl);
         }}
         onClearHistory={handleClearHistory}
+        onReaudit={(url) => handleAnalyze(url)}
       />
+
+      {selectedAiFixItem && (
+        <AIFixModal
+          item={selectedAiFixItem}
+          isOpen={!!selectedAiFixItem}
+          onClose={() => setSelectedAiFixItem(null)}
+          targetUrl={currentReport?.targetUrl}
+          techStack={currentReport?.rawData?.techStack}
+          isCompleted={!!completedFixIds[selectedAiFixItem.id]}
+          onToggleCompleted={toggleFixCompleted}
+        />
+      )}
     </div>
   );
 }
