@@ -1,0 +1,58 @@
+import 'dotenv/config';
+import express from 'express';
+import path from 'path';
+import { createServer as createViteServer } from 'vite';
+import { analyzeWebsite } from './server/analyzer';
+
+async function startServer() {
+  const app = express();
+  const PORT = 3000;
+
+  app.use(express.json());
+
+  // API Routes FIRST
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  app.post('/api/analyze', async (req, res) => {
+    try {
+      const { url } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'Uma URL válida é obrigatória para realizar a análise.' });
+      }
+
+      const report = await analyzeWebsite(url);
+      return res.json(report);
+    } catch (err: any) {
+      console.error('Audit error:', err);
+      return res.status(500).json({
+        error: err.message || 'Falha interna ao analisar o website fornecido.',
+      });
+    }
+  });
+
+  // Vite Middleware or Static Production Serving
+  if (process.env.NODE_ENV !== 'production') {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Website Analyzer server running on http://localhost:${PORT}`);
+  });
+}
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
