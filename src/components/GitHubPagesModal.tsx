@@ -22,26 +22,33 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js (v22 LTS)
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: npm
+          node-version: "22"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
 
-      - name: Build static site
+      - name: Build Application (Static Web Bundle)
         run: npm run build
 
-      - name: Upload artifact
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
@@ -185,6 +192,22 @@ git push -u origin main`;
             <p className="text-[11px] text-[#141414]/80 leading-relaxed">
               No repositório, acesse <strong>Settings &gt; Pages &gt; Build and deployment</strong> e defina <strong>Source: GitHub Actions</strong>. O deploy é disparado a cada push em <code className="bg-[#E4E3E0] px-1 border border-[#141414]">main</code>.
             </p>
+          </div>
+
+          {/* Note on Node 20/22 & Lockfile */}
+          <div className="border-2 border-[#141414] bg-amber-50 p-4 space-y-2 shadow-[2px_2px_0px_#141414]">
+            <div className="flex items-center gap-2 text-amber-900 font-black text-xs uppercase">
+              <span className="bg-amber-400 px-1 py-0.5 text-[9px] border border-[#141414] text-[#141414]">
+                CORREÇÃO PRONTA
+              </span>
+              <span>RESOLUÇÃO DE ERRO: NODE 20 &amp; LOCK FILE</span>
+            </div>
+            <p className="text-[11px] text-[#141414]/90 leading-relaxed">
+              Caso seu GitHub Actions tenha apresentado o erro <em>&quot;Dependencies lock file is not found&quot;</em> ou aviso <em>&quot;Node 20 is being deprecated&quot;</em>, atualizamos o workflow para <strong>Node 22 LTS</strong> e instalador resiliente. Para sincronizar o repositório, execute:
+            </p>
+            <div className="border border-[#141414] bg-[#141414] p-2 font-mono text-[10px] text-amber-300 select-all">
+              git add .github/workflows/deploy.yml package-lock.json &amp;&amp; git commit -m &quot;fix(ci): update to node 22 and resilient lockfile&quot; &amp;&amp; git push
+            </div>
           </div>
         </div>
       </div>

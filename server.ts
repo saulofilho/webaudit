@@ -9,7 +9,8 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  // Middleware for API routes
+  app.use('/api', express.json({ limit: '10mb' }));
 
   // API Routes FIRST
   app.get('/api/health', (req, res) => {

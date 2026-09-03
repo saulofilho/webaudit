@@ -1,24 +1,28 @@
 import React from 'react';
-import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal } from 'lucide-react';
+import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal, ListTodo } from 'lucide-react';
 
 interface NavbarProps {
   onOpenHistory: () => void;
   onOpenExport: () => void;
   onOpenGitHubPages: () => void;
+  onOpenActionPlan?: () => void;
   onNewAudit: () => void;
   hasReport: boolean;
   isBackendActive: boolean;
   historyCount: number;
+  pendingActionCount?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenHistory,
   onOpenExport,
   onOpenGitHubPages,
+  onOpenActionPlan,
   onNewAudit,
   hasReport,
   isBackendActive,
   historyCount,
+  pendingActionCount = 0,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full border-b-2 border-[#141414] bg-[#E4E3E0] text-[#141414]">
@@ -71,6 +75,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             )}
           </button>
+
+          {/* Action Plan Drawer Trigger */}
+          {hasReport && onOpenActionPlan && (
+            <button
+              id="btn-nav-action-plan"
+              onClick={onOpenActionPlan}
+              title="Abrir Plano de Ação e Checklist de Remediação"
+              className="relative flex items-center gap-1.5 border border-[#141414] bg-amber-400 px-2.5 py-1 text-xs font-mono font-black text-[#141414] hover:bg-amber-300 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            >
+              <ListTodo className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span className="hidden sm:inline">PLANO DE AÇÃO</span>
+              {pendingActionCount > 0 && (
+                <span className="flex h-4 min-w-4 px-1 items-center justify-center bg-[#141414] text-[9px] font-mono font-black text-amber-300">
+                  {pendingActionCount}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Export Report */}
           {hasReport && (

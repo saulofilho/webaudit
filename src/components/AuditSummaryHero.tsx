@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ShieldCheck, ShieldAlert, Sparkles, Clock, FileCode, CheckCircle, AlertTriangle, ExternalLink, RefreshCw, Printer, Download, Terminal, Cpu } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Sparkles, Clock, FileCode, CheckCircle, AlertTriangle, ExternalLink, RefreshCw, Printer, Download, Terminal, Cpu, ListTodo } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AuditReport } from '../types';
 import { formatDate, formatBytes } from '../utils/formatters';
@@ -8,12 +8,16 @@ interface AuditSummaryHeroProps {
   report: AuditReport;
   onReAnalyze: () => void;
   onExport: () => void;
+  onOpenActionPlan?: () => void;
+  pendingActionCount?: number;
 }
 
 export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
   report,
   onReAnalyze,
   onExport,
+  onOpenActionPlan,
+  pendingActionCount = 0,
 }) => {
   const isHighscore = report.overallScore >= 90;
 
@@ -106,6 +110,22 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <RefreshCw className="h-3.5 w-3.5" />
             <span>RE-ANALISAR</span>
           </button>
+
+          {onOpenActionPlan && (
+            <button
+              id="btn-hero-action-plan"
+              onClick={onOpenActionPlan}
+              className="flex items-center gap-1.5 border-2 border-[#141414] bg-amber-400 px-3 py-1 font-bold text-[#141414] hover:bg-amber-300 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            >
+              <ListTodo className="h-3.5 w-3.5 stroke-[2.5]" />
+              <span>PLANO DE AÇÃO</span>
+              {pendingActionCount > 0 && (
+                <span className="bg-[#141414] text-amber-300 text-[10px] px-1 py-0.2 font-black">
+                  {pendingActionCount}
+                </span>
+              )}
+            </button>
+          )}
 
           <button
             id="btn-export-quick"

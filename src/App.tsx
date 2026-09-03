@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Shield,
   Search,
@@ -34,9 +34,13 @@ import { ExportModal } from './components/ExportModal';
 import { GitHubPagesModal } from './components/GitHubPagesModal';
 import { AuditHistoryModal } from './components/AuditHistoryModal';
 import { AIFixModal } from './components/AIFixModal';
+import { ActionPlanDrawer } from './components/ActionPlanDrawer';
+import { ActionPlanFloatingButton } from './components/ActionPlanFloatingButton';
+import { SeverityDistributionBar } from './components/SeverityDistributionBar';
 import { analyzeWebsiteClient } from './services/clientAnalyzer';
 
 const STORAGE_KEY = 'webaudit_history_v1';
+const ACTION_PLAN_STORAGE_PREFIX = 'webaudit_actionplan_v1_';
 
 export default function App() {
   const [currentReport, setCurrentReport] = useState<AuditReport | null>(null);
@@ -47,10 +51,11 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [completedFixIds, setCompletedFixIds] = useState<Record<string, boolean>>({});
 
-  // Modals
+  // Modals & Panels
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isGitHubPagesOpen, setIsGitHubPagesOpen] = useState<boolean>(false);
+  const [isActionPlanOpen, setIsActionPlanOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
 
   // Saved Audits History
@@ -68,6 +73,25 @@ export default function App() {
       // ignore
     }
   }, []);
+
+  // Sync Action Plan progress for current report from localStorage
+  useEffect(() => {
+    if (!currentReport?.targetUrl) {
+      setCompletedFixIds({});
+      return;
+    }
+    try {
+      const key = `${ACTION_PLAN_STORAGE_PREFIX}${currentReport.targetUrl}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        setCompletedFixIds(JSON.parse(saved));
+      } else {
+        setCompletedFixIds({});
+      }
+    } catch {
+      setCompletedFixIds({});
+    }
+  }, [currentReport?.targetUrl]);
 
   const saveReportToHistory = (report: AuditReport) => {
     const summary: SavedAuditSummary = {
@@ -138,7 +162,6 @@ export default function App() {
       setActiveTab('all');
       setSeverityFilter('all');
       setSearchTerm('');
-      setCompletedFixIds({});
     } catch (err: any) {
       console.error('Analysis failed:', err);
       setError(err.message || 'Ocorreu um erro ao auditar o website. Verifique a URL informada.');
@@ -147,12 +170,58 @@ export default function App() {
     }
   };
 
-  const toggleFixCompleted = (id: string) => {
-    setCompletedFixIds((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const saveCompletedFixes = (updated: Record<string, boolean>) => {
+    setCompletedFixIds(updated);
+    if (currentReport?.targetUrl) {
+      try {
+        localStorage.setItem(
+          `${ACTION_PLAN_STORAGE_PREFIX}${currentReport.targetUrl}`,
+          JSON.stringify(updated)
+        );
+      } catch {
+        // ignore
+      }
+    }
   };
+
+  const toggleFixCompleted = (id: string) => {
+    const updated = {
+      ...completedFixIds,
+      [id]: !completedFixIds[id],
+    };
+    saveCompletedFixes(updated);
+  };
+
+  const batchSetCompleted = (ids: string[], completed: boolean) => {
+    const updated = { ...completedFixIds };
+    ids.forEach((id) => {
+      updated[id] = completed;
+    });
+    saveCompletedFixes(updated);
+  };
+
+  // Locate an item from the Action Plan directly into the main view
+  const handleLocateItem = (item: AuditItem) => {
+    setActiveTab(item.category);
+    setSeverityFilter('all');
+    setSearchTerm(item.title);
+    setTimeout(() => {
+      const containerEl = document.getElementById('audit-items-container');
+      if (containerEl) {
+        containerEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
+  // Calculate pending action items count for badges
+  const pendingActionCount = useMemo(() => {
+    if (!currentReport) return 0;
+    return currentReport.items.filter(
+      (item) =>
+        (item.severity === 'critical' || item.severity === 'warning') &&
+        !completedFixIds[item.id]
+    ).length;
+  }, [currentReport, completedFixIds]);
 
   // Filter items
   const filteredItems = currentReport?.items.filter((item) => {
@@ -186,6 +255,27 @@ export default function App() {
   const warningCount = currentReport?.items.filter((i) => i.severity === 'warning').length || 0;
   const goodCount = currentReport?.items.filter((i) => i.severity === 'good').length || 0;
 
+  // Active category scope for distribution bar and pills
+  const scopeItems = useMemo(() => {
+    if (!currentReport) return [];
+    if (activeTab === 'all') return currentReport.items;
+    return currentReport.items.filter((i) => i.category === activeTab);
+  }, [currentReport, activeTab]);
+
+  const scopeCriticalCount = useMemo(() => scopeItems.filter((i) => i.severity === 'critical').length, [scopeItems]);
+  const scopeWarningCount = useMemo(() => scopeItems.filter((i) => i.severity === 'warning').length, [scopeItems]);
+  const scopeGoodCount = useMemo(() => scopeItems.filter((i) => i.severity === 'good').length, [scopeItems]);
+
+  const categoryLabel = useMemo(() => {
+    switch (activeTab) {
+      case 'security': return 'SEGURANÇA';
+      case 'seo': return 'SEO';
+      case 'best_practices': return 'BOAS PRÁTICAS';
+      case 'performance_accessibility': return 'PERFORMANCE & ACESSIBILIDADE';
+      default: return undefined;
+    }
+  }, [activeTab]);
+
   return (
     <div className="min-h-screen bg-[#E4E3E0] text-[#141414] flex flex-col selection:bg-[#141414] selection:text-[#E4E3E0] font-mono">
       {/* Navigation Header */}
@@ -193,6 +283,8 @@ export default function App() {
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenGitHubPages={() => setIsGitHubPagesOpen(true)}
+        onOpenActionPlan={() => setIsActionPlanOpen(true)}
+        pendingActionCount={pendingActionCount}
         onNewAudit={() => {
           setCurrentReport(null);
           setError(null);
@@ -226,6 +318,8 @@ export default function App() {
               report={currentReport}
               onReAnalyze={() => handleAnalyze(currentReport.targetUrl)}
               onExport={() => setIsExportOpen(true)}
+              onOpenActionPlan={() => setIsActionPlanOpen(true)}
+              pendingActionCount={pendingActionCount}
             />
 
             {/* 4 Core Pillars Grid */}
@@ -451,6 +545,17 @@ export default function App() {
             {/* Main Items View (All or filtered categories) */}
             {(activeTab === 'all' || activeTab === 'security' || activeTab === 'seo' || activeTab === 'best_practices' || activeTab === 'performance_accessibility') && (
               <div className="space-y-4">
+                {/* Horizontal Severity Distribution Bar Chart */}
+                <SeverityDistributionBar
+                  criticalCount={scopeCriticalCount}
+                  warningCount={scopeWarningCount}
+                  goodCount={scopeGoodCount}
+                  totalCount={scopeItems.length}
+                  activeFilter={severityFilter}
+                  onSelectFilter={(filter) => setSeverityFilter(filter)}
+                  categoryName={categoryLabel}
+                />
+
                 {/* Filters Row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 border-2 border-[#141414] bg-white shadow-[2px_2px_0px_#141414]">
                   {/* Severity Pills */}
@@ -464,7 +569,7 @@ export default function App() {
                           : 'bg-[#E4E3E0] text-[#141414] hover:bg-white'
                       }`}
                     >
-                      TODOS ({currentReport.items.length})
+                      TODOS ({scopeItems.length})
                     </button>
 
                     <button
@@ -477,7 +582,7 @@ export default function App() {
                       }`}
                     >
                       <span>CRÍTICOS</span>
-                      <span className="bg-white/80 px-1 text-[10px] text-rose-900 border border-rose-900">{criticalCount}</span>
+                      <span className="bg-white/80 px-1 text-[10px] text-rose-900 border border-rose-900">{scopeCriticalCount}</span>
                     </button>
 
                     <button
@@ -490,7 +595,7 @@ export default function App() {
                       }`}
                     >
                       <span>ALERTAS</span>
-                      <span className="bg-white/80 px-1 text-[10px] text-amber-900 border border-amber-900">{warningCount}</span>
+                      <span className="bg-white/80 px-1 text-[10px] text-amber-900 border border-amber-900">{scopeWarningCount}</span>
                     </button>
 
                     <button
@@ -503,7 +608,7 @@ export default function App() {
                       }`}
                     >
                       <span>APROVADOS</span>
-                      <span className="bg-white/80 px-1 text-[10px] text-emerald-900 border border-emerald-900">{goodCount}</span>
+                      <span className="bg-white/80 px-1 text-[10px] text-emerald-900 border border-emerald-900">{scopeGoodCount}</span>
                     </button>
                   </div>
 
@@ -521,7 +626,7 @@ export default function App() {
                 </div>
 
                 {/* Items List */}
-                <div className="space-y-3">
+                <div id="audit-items-container" className="space-y-3">
                   {filteredItems.length === 0 ? (
                     <div className="text-center py-12 border-2 border-[#141414] bg-white text-[#141414]/70 text-xs shadow-[2px_2px_0px_#141414]">
                       <p>NENHUM ITEM ENCONTRADO COM OS FILTROS SELECIONADOS.</p>
@@ -576,6 +681,32 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Persistent Floating Action Plan Button */}
+      {currentReport && (
+        <ActionPlanFloatingButton
+          items={currentReport.items}
+          completedFixIds={completedFixIds}
+          onClick={() => setIsActionPlanOpen(true)}
+          isOpen={isActionPlanOpen}
+        />
+      )}
+
+      {/* Action Plan Remediation Drawer */}
+      {currentReport && (
+        <ActionPlanDrawer
+          isOpen={isActionPlanOpen}
+          onClose={() => setIsActionPlanOpen(false)}
+          items={currentReport.items}
+          completedFixIds={completedFixIds}
+          onToggleCompleted={toggleFixCompleted}
+          onBatchSetCompleted={batchSetCompleted}
+          onGetAiFix={(fixItem) => setSelectedAiFixItem(fixItem)}
+          targetUrl={currentReport.targetUrl}
+          onReAudit={(url) => handleAnalyze(url)}
+          onLocateItem={handleLocateItem}
+        />
+      )}
 
       {/* Modals */}
       {currentReport && (
