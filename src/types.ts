@@ -146,3 +146,35 @@ export interface SavedAuditSummary {
   bestPracticesScore: number;
   perfScore: number;
 }
+
+export type NavigationTab =
+  | AuditCategory
+  | 'all'
+  | 'vitals'
+  | 'config-gen'
+  | 'ssl-dns'
+  | 'accessibility'
+  | 'privacy'
+  | 'mobile'
+  | 'headers'
+  | 'social'
+  | 'tech'
+  | 'comparator'
+  | 'trends';
+
+export interface WhiteLabelSettings {
+  agencyName: string;
+  consultantName: string;
+  clientName: string;
+  logoUrl?: string;
+  customNotes?: string;
+  includeExecutiveRoi: boolean;
+}
+
+export interface WebhookConfig {
+  webhookUrl: string;
+  platform: 'slack' | 'discord' | 'generic';
+  triggerMinScore: number;
+  triggerOnCritical: boolean;
+  triggerOnRegression: boolean;
+}

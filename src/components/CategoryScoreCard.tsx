@@ -7,6 +7,7 @@ interface CategoryScoreCardProps {
   scoreData: CategoryScore;
   isSelected: boolean;
   onSelect: () => void;
+  previousScore?: number;
 }
 
 const CATEGORY_ICONS: Record<AuditCategory, React.ElementType> = {
@@ -21,8 +22,10 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
   scoreData,
   isSelected,
   onSelect,
+  previousScore,
 }) => {
   const Icon = CATEGORY_ICONS[categoryKey] || Shield;
+  const diff = previousScore !== undefined ? scoreData.score - previousScore : 0;
 
   const getScoreBadgeColor = (score: number) => {
     if (score >= 90) return 'text-emerald-800 bg-emerald-100 border-emerald-700';
@@ -66,9 +69,23 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
             </div>
           </div>
 
-          <div className={`flex items-baseline gap-0.5 border px-2 py-0.5 font-mono font-bold text-xs ${getScoreBadgeColor(scoreData.score)}`}>
-            <span>{scoreData.score}</span>
-            <span className="text-[9px] opacity-70">/100</span>
+          <div className="flex items-center gap-1.5">
+            <div className={`flex items-baseline gap-0.5 border px-2 py-0.5 font-mono font-bold text-xs ${getScoreBadgeColor(scoreData.score)}`}>
+              <span>{scoreData.score}</span>
+              <span className="text-[9px] opacity-70">/100</span>
+            </div>
+            {previousScore !== undefined && diff !== 0 && (
+              <span
+                className={`border px-1 py-0.5 font-mono font-black text-[10px] ${
+                  diff > 0
+                    ? 'bg-emerald-100 text-emerald-950 border-emerald-700'
+                    : 'bg-rose-100 text-rose-950 border-rose-700'
+                }`}
+                title={`Variação vs. auditoria anterior: ${diff > 0 ? `+${diff}` : diff} pts`}
+              >
+                {diff > 0 ? `+${diff}` : diff}
+              </span>
+            )}
           </div>
         </div>
 

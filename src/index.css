@@ -30,3 +30,28 @@
   background: #2a2a2a;
 }
 
+/* Print Styles for White-Label Export */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  header, nav, button, .backdrop-blur-xs, #btn-export-quick, #btn-reanalyze, #btn-hero-action-plan {
+    display: none !important;
+  }
+
+  #white-label-print-area {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .fixed {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+}
+

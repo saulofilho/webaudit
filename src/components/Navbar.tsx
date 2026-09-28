@@ -1,11 +1,13 @@
 import React from 'react';
-import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal, ListTodo } from 'lucide-react';
+import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal, ListTodo, Printer, Bell } from 'lucide-react';
 
 interface NavbarProps {
   onOpenHistory: () => void;
   onOpenExport: () => void;
   onOpenGitHubPages: () => void;
   onOpenActionPlan?: () => void;
+  onOpenWhiteLabelPdf?: () => void;
+  onOpenWebhooks?: () => void;
   onNewAudit: () => void;
   hasReport: boolean;
   isBackendActive: boolean;
@@ -18,6 +20,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenExport,
   onOpenGitHubPages,
   onOpenActionPlan,
+  onOpenWhiteLabelPdf,
+  onOpenWebhooks,
   onNewAudit,
   hasReport,
   isBackendActive,
@@ -91,6 +95,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {pendingActionCount}
                 </span>
               )}
+            </button>
+          )}
+
+          {/* Webhooks Alert Trigger */}
+          {hasReport && onOpenWebhooks && (
+            <button
+              id="btn-nav-webhooks"
+              onClick={onOpenWebhooks}
+              title="Configurar Alertas Webhook (Slack / Discord)"
+              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            >
+              <Bell className="h-3.5 w-3.5" />
+              <span className="hidden lg:inline">WEBHOOKS</span>
+            </button>
+          )}
+
+          {/* White-Label PDF Report */}
+          {hasReport && onOpenWhiteLabelPdf && (
+            <button
+              id="btn-nav-whitelabel-pdf"
+              onClick={onOpenWhiteLabelPdf}
+              title="Gerar Relatório White-Label Personalizado em PDF"
+              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span className="hidden lg:inline">PDF WHITE-LABEL</span>
             </button>
           )}
 

@@ -1,8 +1,28 @@
-import React, { useEffect } from 'react';
-import { ShieldCheck, ShieldAlert, Sparkles, Clock, FileCode, CheckCircle, AlertTriangle, ExternalLink, RefreshCw, Printer, Download, Terminal, Cpu, ListTodo } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
+import {
+  ShieldCheck,
+  ShieldAlert,
+  Sparkles,
+  Clock,
+  FileCode,
+  CheckCircle,
+  AlertTriangle,
+  ExternalLink,
+  RefreshCw,
+  Printer,
+  Download,
+  Terminal,
+  Cpu,
+  ListTodo,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Activity,
+  ArrowRight,
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { AuditReport } from '../types';
-import { formatDate, formatBytes } from '../utils/formatters';
+import { AuditReport, SavedAuditSummary } from '../types';
+import { formatDate, formatShortDate, formatBytes } from '../utils/formatters';
 
 interface AuditSummaryHeroProps {
   report: AuditReport;
@@ -10,6 +30,8 @@ interface AuditSummaryHeroProps {
   onExport: () => void;
   onOpenActionPlan?: () => void;
   pendingActionCount?: number;
+  previousAudit?: SavedAuditSummary | null;
+  onViewTrends?: () => void;
 }
 
 export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
@@ -18,6 +40,8 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
   onExport,
   onOpenActionPlan,
   pendingActionCount = 0,
+  previousAudit,
+  onViewTrends,
 }) => {
   const isHighscore = report.overallScore >= 90;
 
@@ -31,6 +55,46 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
       });
     }
   }, [report.id, isHighscore]);
+
+  const evolution = useMemo(() => {
+    if (!previousAudit) return null;
+
+    const diff = report.overallScore - previousAudit.overallScore;
+    const absDiff = Math.abs(diff);
+    const sign = diff > 0 ? '+' : diff < 0 ? '-' : '';
+    // Percentage points diff on 0-100 score scale (ex: '+5% desde 24/05')
+    const formattedPercent = `${sign}${absDiff}%`;
+    const formattedDate = formatShortDate(previousAudit.analyzedAt);
+
+    // Pillar deltas
+    const secDiff = report.categories.security.score - previousAudit.securityScore;
+    const seoDiff = report.categories.seo.score - previousAudit.seoScore;
+    const bpDiff = report.categories.best_practices.score - previousAudit.bestPracticesScore;
+    const perfDiff = report.categories.performance_accessibility.score - previousAudit.perfScore;
+
+    return {
+      diff,
+      absDiff,
+      sign,
+      formattedPercent,
+      formattedDate,
+      fullPreviousDate: formatDate(previousAudit.analyzedAt),
+      previousScore: previousAudit.overallScore,
+      previousGrade: previousAudit.overallGrade,
+      currentScore: report.overallScore,
+      currentGrade: report.overallGrade,
+      secDiff,
+      seoDiff,
+      bpDiff,
+      perfDiff,
+    };
+  }, [report, previousAudit]);
+
+  const getPillarDiffColor = (diff: number) => {
+    if (diff > 0) return 'text-emerald-700 font-black';
+    if (diff < 0) return 'text-rose-700 font-black';
+    return 'text-zinc-600 font-bold';
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'stroke-emerald-600';
@@ -69,6 +133,33 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <span className="text-[#141414]/70 bg-[#E4E3E0] px-2 py-0.5 border border-[#141414]">
               TIMESTAMP: <strong>{formatDate(report.analyzedAt)}</strong>
             </span>
+
+            {/* Quick evolution badge in header bar */}
+            {evolution && (
+              <button
+                type="button"
+                onClick={onViewTrends}
+                title={`Comparado com auditoria anterior de ${evolution.fullPreviousDate} (${evolution.previousScore} pts). Clique para ver histórico.`}
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 font-bold border transition-transform hover:scale-102 cursor-pointer shadow-[1px_1px_0px_#141414] ${
+                  evolution.diff > 0
+                    ? 'bg-emerald-100 text-emerald-950 border-emerald-700'
+                    : evolution.diff < 0
+                    ? 'bg-rose-100 text-rose-950 border-rose-700'
+                    : 'bg-[#E4E3E0] text-[#141414] border-[#141414]'
+                }`}
+              >
+                {evolution.diff > 0 ? (
+                  <TrendingUp className="h-3.5 w-3.5 text-emerald-700 stroke-[2.5]" />
+                ) : evolution.diff < 0 ? (
+                  <TrendingDown className="h-3.5 w-3.5 text-rose-700 stroke-[2.5]" />
+                ) : (
+                  <Minus className="h-3.5 w-3.5 text-zinc-600 stroke-[2.5]" />
+                )}
+                <span>
+                  EVOLUÇÃO: <strong>{evolution.formattedPercent} desde {evolution.formattedDate}</strong>
+                </span>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -138,8 +229,8 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
         </div>
       </div>
 
-      {/* Main Score Grid: Overall Gauge + AI Diagnosis */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-5 items-center">
+      {/* Main Score Grid: Overall Gauge + Score Evolution + AI Diagnosis */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-5 items-start">
         {/* Score Radial Column */}
         <div className="lg:col-span-4 flex flex-col items-center justify-center p-5 bg-[#E4E3E0] border-2 border-[#141414] shadow-[2px_2px_0px_#141414]">
           <div className="relative flex items-center justify-center">
@@ -184,6 +275,116 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <p className="text-[11px] font-mono text-[#141414]/70 mt-1.5 uppercase">
               ÍNDICE PONDERADO DE SAÚDE WEB
             </p>
+          </div>
+
+          {/* Score de Evolução Card */}
+          <div className="mt-3.5 w-full border-2 border-[#141414] bg-white p-3 shadow-[2px_2px_0px_#141414] text-left">
+            <div className="flex items-center justify-between border-b border-[#141414]/20 pb-1.5 mb-2">
+              <div className="flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5 text-[#141414]" />
+                <span className="text-[11px] font-mono font-black uppercase text-[#141414] tracking-wider">
+                  Score de Evolução
+                </span>
+              </div>
+              <span className="text-[9px] font-mono text-[#141414]/60 uppercase font-bold">
+                {evolution ? 'vs. anterior' : 'Ponto de Partida'}
+              </span>
+            </div>
+
+            {evolution ? (
+              <div className="space-y-2.5">
+                {/* Main Highlight Row */}
+                <div className="flex items-center justify-between gap-2">
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-black border-2 shadow-[1px_1px_0px_#141414] ${
+                      evolution.diff > 0
+                        ? 'bg-emerald-100 text-emerald-950 border-emerald-700'
+                        : evolution.diff < 0
+                        ? 'bg-rose-100 text-rose-950 border-rose-700'
+                        : 'bg-zinc-100 text-zinc-900 border-zinc-600'
+                    }`}
+                  >
+                    {evolution.diff > 0 ? (
+                      <TrendingUp className="h-4 w-4 text-emerald-700 stroke-[2.5]" />
+                    ) : evolution.diff < 0 ? (
+                      <TrendingDown className="h-4 w-4 text-rose-700 stroke-[2.5]" />
+                    ) : (
+                      <Minus className="h-4 w-4 text-zinc-600 stroke-[2.5]" />
+                    )}
+                    <span>{evolution.formattedPercent} desde {evolution.formattedDate}</span>
+                  </div>
+
+                  {/* Previous vs Current Score */}
+                  <div className="text-right font-mono">
+                    <div className="text-[11px] flex items-center justify-end gap-1">
+                      <span className="text-[#141414]/60">{evolution.previousScore}</span>
+                      <span className="text-[#141414]/40">➔</span>
+                      <strong className="text-[#141414] text-xs">{evolution.currentScore}</strong>
+                      <span className="text-[9px] text-[#141414]/60">pts</span>
+                    </div>
+                    <span className="text-[9px] text-[#141414]/60">
+                      ({evolution.diff > 0 ? `+${evolution.diff}` : evolution.diff} pts)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pillar Breakdown */}
+                <div className="pt-2 border-t border-[#141414]/15">
+                  <div className="text-[9px] font-mono text-[#141414]/70 uppercase font-bold mb-1 flex items-center justify-between">
+                    <span>Variação por Pilar:</span>
+                    <span className="text-[8px] text-[#141414]/50">PTS</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1 text-[10px] font-mono text-center">
+                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Segurança: ${evolution.secDiff > 0 ? '+' : ''}${evolution.secDiff} pts`}>
+                      <div className="text-[8px] text-[#141414]/70 font-bold">SEG</div>
+                      <div className={`font-black ${getPillarDiffColor(evolution.secDiff)}`}>
+                        {evolution.secDiff > 0 ? `+${evolution.secDiff}` : evolution.secDiff}
+                      </div>
+                    </div>
+                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`SEO: ${evolution.seoDiff > 0 ? '+' : ''}${evolution.seoDiff} pts`}>
+                      <div className="text-[8px] text-[#141414]/70 font-bold">SEO</div>
+                      <div className={`font-black ${getPillarDiffColor(evolution.seoDiff)}`}>
+                        {evolution.seoDiff > 0 ? `+${evolution.seoDiff}` : evolution.seoDiff}
+                      </div>
+                    </div>
+                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Boas Práticas: ${evolution.bpDiff > 0 ? '+' : ''}${evolution.bpDiff} pts`}>
+                      <div className="text-[8px] text-[#141414]/70 font-bold">PRÁT</div>
+                      <div className={`font-black ${getPillarDiffColor(evolution.bpDiff)}`}>
+                        {evolution.bpDiff > 0 ? `+${evolution.bpDiff}` : evolution.bpDiff}
+                      </div>
+                    </div>
+                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Performance: ${evolution.perfDiff > 0 ? '+' : ''}${evolution.perfDiff} pts`}>
+                      <div className="text-[8px] text-[#141414]/70 font-bold">PERF</div>
+                      <div className={`font-black ${getPillarDiffColor(evolution.perfDiff)}`}>
+                        {evolution.perfDiff > 0 ? `+${evolution.perfDiff}` : evolution.perfDiff}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer link to trends */}
+                {onViewTrends && (
+                  <button
+                    type="button"
+                    onClick={onViewTrends}
+                    className="w-full flex items-center justify-center gap-1.5 pt-1.5 text-[10px] font-mono font-bold text-[#141414] hover:text-emerald-800 transition-colors border-t border-[#141414]/10 cursor-pointer"
+                  >
+                    <TrendingUp className="h-3 w-3" />
+                    <span>HISTÓRICO & TENDÊNCIAS COMPLETAS</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="py-1 text-left font-mono">
+                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-neutral-100 border border-neutral-400 text-neutral-800 text-[10px] font-bold mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
+                  <span>LINHA DE BASE REGISTRADA</span>
+                </div>
+                <p className="text-[10px] text-[#141414]/70 leading-normal">
+                  Esta é a 1ª auditoria para este domínio ({report.overallScore} pts). Re-audite após correções para comparar a evolução.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

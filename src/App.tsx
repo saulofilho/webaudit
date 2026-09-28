@@ -17,9 +17,24 @@ import {
   FileCheck2,
   Activity,
   TrendingUp,
+  Gauge,
+  Code2,
+  Lock,
+  Eye,
+  Cookie,
+  Smartphone,
+  Printer,
+  Bell,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AuditReport, AuditCategory, SeverityLevel, SavedAuditSummary, AuditItem } from './types';
+import {
+  AuditReport,
+  AuditCategory,
+  SeverityLevel,
+  SavedAuditSummary,
+  AuditItem,
+  NavigationTab,
+} from './types';
 import { Navbar } from './components/Navbar';
 import { UrlInputSection } from './components/UrlInputSection';
 import { AuditSummaryHero } from './components/AuditSummaryHero';
@@ -37,6 +52,14 @@ import { AIFixModal } from './components/AIFixModal';
 import { ActionPlanDrawer } from './components/ActionPlanDrawer';
 import { ActionPlanFloatingButton } from './components/ActionPlanFloatingButton';
 import { SeverityDistributionBar } from './components/SeverityDistributionBar';
+import { CoreWebVitalsView } from './components/CoreWebVitalsView';
+import { ConfigGeneratorView } from './components/ConfigGeneratorView';
+import { SslDnsSecurityView } from './components/SslDnsSecurityView';
+import { AccessibilityWcagView } from './components/AccessibilityWcagView';
+import { PrivacyComplianceView } from './components/PrivacyComplianceView';
+import { MobileSimulatorView } from './components/MobileSimulatorView';
+import { WhiteLabelPdfModal } from './components/WhiteLabelPdfModal';
+import { WebhookAlertModal } from './components/WebhookAlertModal';
 import { analyzeWebsiteClient } from './services/clientAnalyzer';
 
 const STORAGE_KEY = 'webaudit_history_v1';
@@ -46,7 +69,7 @@ export default function App() {
   const [currentReport, setCurrentReport] = useState<AuditReport | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<AuditCategory | 'all' | 'headers' | 'social' | 'tech' | 'comparator' | 'trends'>('all');
+  const [activeTab, setActiveTab] = useState<NavigationTab>('all');
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [completedFixIds, setCompletedFixIds] = useState<Record<string, boolean>>({});
@@ -56,6 +79,8 @@ export default function App() {
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isGitHubPagesOpen, setIsGitHubPagesOpen] = useState<boolean>(false);
   const [isActionPlanOpen, setIsActionPlanOpen] = useState<boolean>(false);
+  const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState<boolean>(false);
+  const [isWebhooksOpen, setIsWebhooksOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
 
   // Saved Audits History
@@ -232,7 +257,13 @@ export default function App() {
       activeTab !== 'social' &&
       activeTab !== 'tech' &&
       activeTab !== 'comparator' &&
-      activeTab !== 'trends'
+      activeTab !== 'trends' &&
+      activeTab !== 'vitals' &&
+      activeTab !== 'config-gen' &&
+      activeTab !== 'ssl-dns' &&
+      activeTab !== 'accessibility' &&
+      activeTab !== 'privacy' &&
+      activeTab !== 'mobile'
     ) {
       if (item.category !== activeTab) return false;
     }
@@ -276,6 +307,36 @@ export default function App() {
     }
   }, [activeTab]);
 
+  // Find the immediately preceding audit for current URL to compute Score Evolution
+  const previousAudit = useMemo(() => {
+    if (!currentReport) return null;
+    const currentUrlNorm = currentReport.targetUrl.trim().toLowerCase();
+
+    const matching = savedAudits.filter((audit) => {
+      // Exclude the current report instance
+      if (audit.id === currentReport.id) return false;
+      const urlNorm = audit.targetUrl.trim().toLowerCase();
+      const isSameUrl =
+        urlNorm === currentUrlNorm ||
+        urlNorm.replace(/\/$/, '') === currentUrlNorm.replace(/\/$/, '');
+      if (!isSameUrl) return false;
+
+      // Must be an older or equal timestamp
+      const auditTime = new Date(audit.analyzedAt).getTime();
+      const currentTime = new Date(currentReport.analyzedAt).getTime();
+      return isNaN(auditTime) || isNaN(currentTime) ? true : auditTime <= currentTime;
+    });
+
+    if (matching.length === 0) return null;
+
+    // Sort descending by analyzedAt to get the latest prior audit
+    matching.sort(
+      (a, b) => new Date(b.analyzedAt).getTime() - new Date(a.analyzedAt).getTime()
+    );
+
+    return matching[0] || null;
+  }, [currentReport, savedAudits]);
+
   return (
     <div className="min-h-screen bg-[#E4E3E0] text-[#141414] flex flex-col selection:bg-[#141414] selection:text-[#E4E3E0] font-mono">
       {/* Navigation Header */}
@@ -284,6 +345,8 @@ export default function App() {
         onOpenExport={() => setIsExportOpen(true)}
         onOpenGitHubPages={() => setIsGitHubPagesOpen(true)}
         onOpenActionPlan={() => setIsActionPlanOpen(true)}
+        onOpenWhiteLabelPdf={() => setIsWhiteLabelOpen(true)}
+        onOpenWebhooks={() => setIsWebhooksOpen(true)}
         pendingActionCount={pendingActionCount}
         onNewAudit={() => {
           setCurrentReport(null);
@@ -320,6 +383,8 @@ export default function App() {
               onExport={() => setIsExportOpen(true)}
               onOpenActionPlan={() => setIsActionPlanOpen(true)}
               pendingActionCount={pendingActionCount}
+              previousAudit={previousAudit}
+              onViewTrends={() => setActiveTab('trends')}
             />
 
             {/* 4 Core Pillars Grid */}
@@ -329,24 +394,28 @@ export default function App() {
                 scoreData={currentReport.categories.security}
                 isSelected={activeTab === 'security'}
                 onSelect={() => setActiveTab('security')}
+                previousScore={previousAudit?.securityScore}
               />
               <CategoryScoreCard
                 categoryKey="seo"
                 scoreData={currentReport.categories.seo}
                 isSelected={activeTab === 'seo'}
                 onSelect={() => setActiveTab('seo')}
+                previousScore={previousAudit?.seoScore}
               />
               <CategoryScoreCard
                 categoryKey="best_practices"
                 scoreData={currentReport.categories.best_practices}
                 isSelected={activeTab === 'best_practices'}
                 onSelect={() => setActiveTab('best_practices')}
+                previousScore={previousAudit?.bestPracticesScore}
               />
               <CategoryScoreCard
                 categoryKey="performance_accessibility"
                 scoreData={currentReport.categories.performance_accessibility}
                 isSelected={activeTab === 'performance_accessibility'}
                 onSelect={() => setActiveTab('performance_accessibility')}
+                previousScore={previousAudit?.perfScore}
               />
             </div>
 
@@ -421,6 +490,96 @@ export default function App() {
                 >
                   <Zap className="h-3.5 w-3.5 text-amber-600" />
                   <span>PERFORMANCE</span>
+                </button>
+
+                {/* Feature 1: Core Web Vitals */}
+                <button
+                  type="button"
+                  id="tab-vitals"
+                  onClick={() => setActiveTab('vitals')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'vitals'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Gauge className="h-3.5 w-3.5 text-amber-500" />
+                  <span>CORE WEB VITALS</span>
+                </button>
+
+                {/* Feature 2: 1-Click Config Generator */}
+                <button
+                  type="button"
+                  id="tab-config-gen"
+                  onClick={() => setActiveTab('config-gen')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'config-gen'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Code2 className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>GERADOR CONFIG</span>
+                </button>
+
+                {/* Feature 3: SSL, DNS & Email Security */}
+                <button
+                  type="button"
+                  id="tab-ssl-dns"
+                  onClick={() => setActiveTab('ssl-dns')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'ssl-dns'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Lock className="h-3.5 w-3.5 text-blue-600" />
+                  <span>SSL & DNS / EMAIL</span>
+                </button>
+
+                {/* Feature 4: WCAG 2.1 Accessibility */}
+                <button
+                  type="button"
+                  id="tab-accessibility"
+                  onClick={() => setActiveTab('accessibility')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'accessibility'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Eye className="h-3.5 w-3.5 text-purple-600" />
+                  <span>ACESSIBILIDADE WCAG</span>
+                </button>
+
+                {/* Feature 5: Privacy & LGPD */}
+                <button
+                  type="button"
+                  id="tab-privacy"
+                  onClick={() => setActiveTab('privacy')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'privacy'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Cookie className="h-3.5 w-3.5 text-cyan-600" />
+                  <span>PRIVACIDADE & LGPD</span>
+                </button>
+
+                {/* Feature 6: Mobile Simulator */}
+                <button
+                  type="button"
+                  id="tab-mobile"
+                  onClick={() => setActiveTab('mobile')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'mobile'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Smartphone className="h-3.5 w-3.5 text-indigo-600" />
+                  <span>SIMULADOR MOBILE</span>
                 </button>
 
                 <button
@@ -540,6 +699,30 @@ export default function App() {
                 }}
                 onCompareWithUrl={(url) => handleAnalyze(url)}
               />
+            )}
+
+            {activeTab === 'vitals' && (
+              <CoreWebVitalsView report={currentReport} onOpenActionPlan={() => setIsActionPlanOpen(true)} />
+            )}
+
+            {activeTab === 'config-gen' && (
+              <ConfigGeneratorView report={currentReport} />
+            )}
+
+            {activeTab === 'ssl-dns' && (
+              <SslDnsSecurityView report={currentReport} />
+            )}
+
+            {activeTab === 'accessibility' && (
+              <AccessibilityWcagView report={currentReport} />
+            )}
+
+            {activeTab === 'privacy' && (
+              <PrivacyComplianceView report={currentReport} />
+            )}
+
+            {activeTab === 'mobile' && (
+              <MobileSimulatorView report={currentReport} />
             )}
 
             {/* Main Items View (All or filtered categories) */}
@@ -714,6 +897,22 @@ export default function App() {
           report={currentReport}
           isOpen={isExportOpen}
           onClose={() => setIsExportOpen(false)}
+        />
+      )}
+
+      {currentReport && (
+        <WhiteLabelPdfModal
+          report={currentReport}
+          isOpen={isWhiteLabelOpen}
+          onClose={() => setIsWhiteLabelOpen(false)}
+        />
+      )}
+
+      {currentReport && (
+        <WebhookAlertModal
+          report={currentReport}
+          isOpen={isWebhooksOpen}
+          onClose={() => setIsWebhooksOpen(false)}
         />
       )}
 

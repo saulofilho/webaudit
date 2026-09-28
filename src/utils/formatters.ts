@@ -13,6 +13,19 @@ export function formatDate(isoString: string): string {
   }
 }
 
+export function formatShortDate(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+    }).format(date);
+  } catch {
+    return isoString;
+  }
+}
+
 export function formatBytes(bytes: number, decimals = 1): string {
   if (!bytes || bytes === 0) return '0 B';
   const k = 1024;
