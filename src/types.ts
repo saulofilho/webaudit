@@ -178,3 +178,43 @@ export interface WebhookConfig {
   triggerOnCritical: boolean;
   triggerOnRegression: boolean;
 }
+
+export interface CriticalIssueSummary {
+  rank: number;
+  id: string;
+  title: string;
+  category: string;
+  severity: string;
+  score: number;
+  businessImpact: string;
+  technicalRootCause: string;
+  urgency: 'Imediata' | 'Alta' | 'Média';
+  suggestedQuickAction: string;
+}
+
+export interface RoadmapPhase {
+  phase: string;
+  title: string;
+  timeframe: string;
+  actions: string[];
+  expectedScoreBoost: string;
+  estimatedEffort: string;
+}
+
+export interface ReportExecutiveSummaryResponse {
+  targetUrl: string;
+  analyzedAt: string;
+  overallScore: number;
+  overallGrade: string;
+  strategicVerdict: string;
+  executiveOverview: string;
+  cLevelHighlights: string[];
+  top3CriticalIssues: CriticalIssueSummary[];
+  priorityRoadmap: RoadmapPhase[];
+  roiAndBusinessRiskAnalysis: {
+    conversionOpportunity: string;
+    securityExposureRisk: string;
+    seoVisibilityImpact: string;
+  };
+}
+

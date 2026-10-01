@@ -4,6 +4,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { analyzeWebsite } from './server/analyzer';
 import { generateAIFix } from './server/geminiFix';
+import { generateExecutiveSummary } from './server/geminiSummary';
 
 async function startServer() {
   const app = express();
@@ -52,6 +53,23 @@ async function startServer() {
       console.error('AI Fix error:', err);
       return res.status(500).json({
         error: err.message || 'Falha ao gerar o guia de correção inteligente.',
+      });
+    }
+  });
+
+  app.post('/api/gemini/summary', async (req, res) => {
+    try {
+      const { report, tone } = req.body;
+      if (!report || !report.targetUrl) {
+        return res.status(400).json({ error: 'O relatório completo de auditoria é obrigatório.' });
+      }
+
+      const summary = await generateExecutiveSummary(report, tone);
+      return res.json(summary);
+    } catch (err: any) {
+      console.error('AI Summary error:', err);
+      return res.status(500).json({
+        error: err.message || 'Falha ao gerar o sumário executivo com IA.',
       });
     }
   });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeftRight, Check, X, TrendingUp, TrendingDown, Minus, Shield, Search, Zap, CheckCircle2 } from 'lucide-react';
+import { ArrowLeftRight, Check, X, TrendingUp, TrendingDown, Minus, Shield, Search, Zap, CheckCircle2, SplitSquareVertical, Sparkles } from 'lucide-react';
 import { AuditReport, SavedAuditSummary } from '../types';
+import { VisualRegressionView } from './VisualRegressionView';
 
 interface SiteComparatorProps {
   currentReport: AuditReport;
@@ -17,6 +18,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
 }) => {
   const [competitorUrl, setCompetitorUrl] = useState('');
   const [selectedAuditId, setSelectedAuditId] = useState<string>('');
+  const [showVisualRegression, setShowVisualRegression] = useState<boolean>(true);
 
   const otherAudits = savedAudits.filter((a) => a.id !== currentReport.id);
 
@@ -65,6 +67,31 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
           <p className="text-[11px] text-[#141414]/70">
             Compare o relatório ativo com registros do histórico ou audite um domínio concorrente.
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowVisualRegression(!showVisualRegression)}
+            id="btn-toggle-visual-regression"
+            className={`flex items-center gap-2 border-2 border-[#141414] px-3 py-1.5 text-xs font-black uppercase transition-all shadow-[2px_2px_0px_#141414] cursor-pointer ${
+              showVisualRegression
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+            }`}
+          >
+            <SplitSquareVertical className="h-4 w-4" />
+            <span>REGRESSÃO VISUAL (DIFF)</span>
+            <span
+              className={`text-[9px] px-1.5 py-0.2 font-black border ${
+                showVisualRegression
+                  ? 'bg-white text-blue-900 border-white'
+                  : 'bg-blue-600 text-white border-blue-800'
+              }`}
+            >
+              {showVisualRegression ? 'ATIVO' : 'ATIVAR'}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -159,6 +186,17 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
           </form>
         </div>
       </div>
+
+      {/* Visual Regression Diff Studio */}
+      {showVisualRegression && (
+        <div className="pt-2">
+          <VisualRegressionView
+            currentReport={currentReport}
+            comparedAudit={selectedAudit}
+            competitorUrl={competitorUrl}
+          />
+        </div>
+      )}
     </div>
   );
 };

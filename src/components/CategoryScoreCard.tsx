@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shield, Search, CheckCircle2, Zap, ArrowUpRight, AlertCircle, Check, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Search, CheckCircle2, Zap, ArrowUpRight, AlertCircle, Check, XCircle, HelpCircle } from 'lucide-react';
 import { CategoryScore, AuditCategory } from '../types';
 
 interface CategoryScoreCardProps {
@@ -24,6 +24,7 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
   onSelect,
   previousScore,
 }) => {
+  const [showTooltip, setShowTooltip] = useState<boolean>(false);
   const Icon = CATEGORY_ICONS[categoryKey] || Shield;
   const diff = previousScore !== undefined ? scoreData.score - previousScore : 0;
 
@@ -60,9 +61,82 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
               <Icon className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-xs font-mono font-black text-[#141414] uppercase group-hover:underline">
-                {scoreData.name}
-              </h3>
+              <div className="flex items-center gap-1.5 relative">
+                <h3 className="text-xs font-mono font-black text-[#141414] uppercase group-hover:underline">
+                  {scoreData.name}
+                </h3>
+
+                {categoryKey === 'security' && (
+                  <div
+                    className="relative inline-flex items-center"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowTooltip((prev) => !prev);
+                    }}
+                  >
+                    <button
+                      type="button"
+                      aria-label="Ver detalhes das métricas avaliadas em Segurança"
+                      className="p-0.5 text-[#141414]/60 hover:text-[#141414] hover:bg-neutral-200 transition-colors cursor-pointer"
+                    >
+                      <HelpCircle className="h-3.5 w-3.5" />
+                    </button>
+
+                    {/* Explanatory Tooltip Popover */}
+                    {showTooltip && (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute left-0 bottom-full mb-2 z-50 w-72 sm:w-80 border-2 border-[#141414] bg-[#141414] text-[#E4E3E0] p-3 shadow-[4px_4px_0px_#888888] font-mono text-[11px] select-text cursor-default pointer-events-auto"
+                      >
+                        <div className="flex items-center justify-between border-b border-neutral-700 pb-1.5 mb-2">
+                          <span className="font-black text-amber-300 text-xs uppercase flex items-center gap-1.5">
+                            <Shield className="h-3.5 w-3.5 text-amber-300" />
+                            MÉTRICAS AVALIADAS EM SEGURANÇA
+                          </span>
+                        </div>
+
+                        <p className="text-[10px] text-neutral-300 mb-2 leading-relaxed">
+                          Verificações automáticas baseadas nas diretrizes defensivas <strong>OWASP Top 10</strong> e padrões <strong>IETF/NIST</strong>:
+                        </p>
+
+                        <ul className="space-y-1.5 text-[10px] text-neutral-200">
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 font-bold shrink-0">•</span>
+                            <span><strong>HTTPS & TLS:</strong> Validação de certificado e criptografia de tráfego ativa</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 font-bold shrink-0">•</span>
+                            <span><strong>HSTS:</strong> Strict-Transport-Security (bloqueio contra ataques MitM & downgrade)</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 font-bold shrink-0">•</span>
+                            <span><strong>CSP:</strong> Content-Security-Policy (mitigação de injeção de script XSS)</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 font-bold shrink-0">•</span>
+                            <span><strong>X-Frame-Options:</strong> Bloqueio de sequestro de cliques (Clickjacking via iframe)</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 font-bold shrink-0">•</span>
+                            <span><strong>X-Content-Type-Options:</strong> Prevenção contra ataques de MIME-sniffing</span>
+                          </li>
+                          <li className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 font-bold shrink-0">•</span>
+                            <span><strong>Permissions & Referrer:</strong> Controle de vazamento de URLs e APIs de hardware</span>
+                          </li>
+                        </ul>
+
+                        <div className="mt-2.5 pt-1.5 border-t border-neutral-800 text-[9px] text-neutral-400 flex items-center justify-between">
+                          <span>PADRÕES: OWASP / NIST</span>
+                          <span className="text-amber-400 font-bold">TOTAL: 6+ REQUISITOS</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               <span className="text-[10px] font-mono text-[#141414]/70">
                 GRADE [{scoreData.grade}]
               </span>

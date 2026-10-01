@@ -61,6 +61,7 @@ import { MobileSimulatorView } from './components/MobileSimulatorView';
 import { WhiteLabelPdfModal } from './components/WhiteLabelPdfModal';
 import { WebhookAlertModal } from './components/WebhookAlertModal';
 import { SeoQuickStartModal } from './components/SeoQuickStartModal';
+import { ReportSummaryPanel } from './components/ReportSummaryPanel';
 import { analyzeWebsiteClient } from './services/clientAnalyzer';
 
 const STORAGE_KEY = 'webaudit_history_v1';
@@ -422,6 +423,13 @@ export default function App() {
                 previousScore={previousAudit?.perfScore}
               />
             </div>
+
+            {/* AI Executive Summary Panel */}
+            <ReportSummaryPanel
+              report={currentReport}
+              onOpenAiFix={(item) => setSelectedAiFixItem(item)}
+              onOpenActionPlan={() => setIsActionPlanOpen(true)}
+            />
 
             {/* Navigation Tabs Bar */}
             <div className="border-b-2 border-[#141414] pb-2">
