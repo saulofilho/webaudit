@@ -60,6 +60,7 @@ import { PrivacyComplianceView } from './components/PrivacyComplianceView';
 import { MobileSimulatorView } from './components/MobileSimulatorView';
 import { WhiteLabelPdfModal } from './components/WhiteLabelPdfModal';
 import { WebhookAlertModal } from './components/WebhookAlertModal';
+import { SeoQuickStartModal } from './components/SeoQuickStartModal';
 import { analyzeWebsiteClient } from './services/clientAnalyzer';
 
 const STORAGE_KEY = 'webaudit_history_v1';
@@ -81,6 +82,7 @@ export default function App() {
   const [isActionPlanOpen, setIsActionPlanOpen] = useState<boolean>(false);
   const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState<boolean>(false);
   const [isWebhooksOpen, setIsWebhooksOpen] = useState<boolean>(false);
+  const [isSeoChecklistOpen, setIsSeoChecklistOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
 
   // Saved Audits History
@@ -347,6 +349,7 @@ export default function App() {
         onOpenActionPlan={() => setIsActionPlanOpen(true)}
         onOpenWhiteLabelPdf={() => setIsWhiteLabelOpen(true)}
         onOpenWebhooks={() => setIsWebhooksOpen(true)}
+        onOpenSeoChecklist={() => setIsSeoChecklistOpen(true)}
         pendingActionCount={pendingActionCount}
         onNewAudit={() => {
           setCurrentReport(null);
@@ -382,6 +385,7 @@ export default function App() {
               onReAnalyze={() => handleAnalyze(currentReport.targetUrl)}
               onExport={() => setIsExportOpen(true)}
               onOpenActionPlan={() => setIsActionPlanOpen(true)}
+              onOpenSeoChecklist={() => setIsSeoChecklistOpen(true)}
               pendingActionCount={pendingActionCount}
               previousAudit={previousAudit}
               onViewTrends={() => setActiveTab('trends')}
@@ -913,6 +917,14 @@ export default function App() {
           report={currentReport}
           isOpen={isWebhooksOpen}
           onClose={() => setIsWebhooksOpen(false)}
+        />
+      )}
+
+      {currentReport && (
+        <SeoQuickStartModal
+          report={currentReport}
+          isOpen={isSeoChecklistOpen}
+          onClose={() => setIsSeoChecklistOpen(false)}
         />
       )}
 

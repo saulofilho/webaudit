@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal, ListTodo, Printer, Bell } from 'lucide-react';
+import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal, ListTodo, Printer, Bell, SearchCheck } from 'lucide-react';
 
 interface NavbarProps {
   onOpenHistory: () => void;
@@ -8,6 +8,7 @@ interface NavbarProps {
   onOpenActionPlan?: () => void;
   onOpenWhiteLabelPdf?: () => void;
   onOpenWebhooks?: () => void;
+  onOpenSeoChecklist?: () => void;
   onNewAudit: () => void;
   hasReport: boolean;
   isBackendActive: boolean;
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenActionPlan,
   onOpenWhiteLabelPdf,
   onOpenWebhooks,
+  onOpenSeoChecklist,
   onNewAudit,
   hasReport,
   isBackendActive,
@@ -95,6 +97,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {pendingActionCount}
                 </span>
               )}
+            </button>
+          )}
+
+          {/* SEO Quick-Start Checklist */}
+          {hasReport && onOpenSeoChecklist && (
+            <button
+              id="btn-nav-seo-checklist"
+              onClick={onOpenSeoChecklist}
+              title="Abrir SEO Quick-Start Checklist"
+              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-blue-600 hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            >
+              <SearchCheck className="h-3.5 w-3.5 text-blue-600 group-hover:text-white" />
+              <span className="hidden md:inline">CHECKLIST SEO</span>
             </button>
           )}
 

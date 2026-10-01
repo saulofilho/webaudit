@@ -19,6 +19,7 @@ import {
   Minus,
   Activity,
   ArrowRight,
+  Search,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AuditReport, SavedAuditSummary } from '../types';
@@ -29,6 +30,7 @@ interface AuditSummaryHeroProps {
   onReAnalyze: () => void;
   onExport: () => void;
   onOpenActionPlan?: () => void;
+  onOpenSeoChecklist?: () => void;
   pendingActionCount?: number;
   previousAudit?: SavedAuditSummary | null;
   onViewTrends?: () => void;
@@ -39,6 +41,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
   onReAnalyze,
   onExport,
   onOpenActionPlan,
+  onOpenSeoChecklist,
   pendingActionCount = 0,
   previousAudit,
   onViewTrends,
@@ -215,6 +218,18 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                   {pendingActionCount}
                 </span>
               )}
+            </button>
+          )}
+
+          {onOpenSeoChecklist && (
+            <button
+              id="btn-hero-seo-checklist"
+              onClick={onOpenSeoChecklist}
+              title="Abrir SEO Quick-Start Checklist com diagnóstico de meta tags e dados estruturados"
+              className="flex items-center gap-1.5 border border-[#141414] bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-1 font-bold text-blue-900 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            >
+              <Search className="h-3.5 w-3.5 text-blue-600 group-hover:text-white" />
+              <span>CHECKLIST SEO</span>
             </button>
           )}
 
