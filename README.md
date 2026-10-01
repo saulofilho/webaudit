@@ -1,73 +1,132 @@
-# 🚀 Website Analyzer & Audit Tool (WebAudit Pro)
+# 🚀 WebAudit Pro — Ferramenta Profissional de Análise e Auditoria de Websites
 
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8.svg)](https://tailwindcss.com/)
-[![Gemini AI](https://img.shields.io/badge/Gemini_AI-3.7_Flash-8e24aa.svg)](https://deepmind.google/technologies/gemini/)
-[![GitHub Pages](https://img.shields.io/badge/Deploy-GitHub_Pages-success.svg)](https://pages.github.com/)
+[![Gemini AI](https://img.shields.io/badge/Gemini_AI-3.8_Flash-8e24aa.svg)](https://deepmind.google/technologies/gemini/)
+[![Vite](https://img.shields.io/badge/Vite-6.2-646cff.svg)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](LICENSE)
 
-> **Ferramenta profissional para análise e auditoria profunda de websites.** Insira qualquer URL e obtenha um diagnóstico detalhado cobrindo **Segurança, SEO, Boas Práticas, Performance e Acessibilidade**, com pontuações em tempo real, detecção de stack tecnológico, simulador de redes sociais e soluções de código prontas para copiar.
+> **WebAudit Pro** é uma plataforma completa e de alta densidade para auditoria técnica profunda de websites. Avalie qualquer domínio em tempo real cobrindo **Segurança, SEO, Boas Práticas, Performance, Acessibilidade e Privacidade**, com relatórios executivos gerados por inteligência artificial, diff visual de regressão e guias de remediação com códigos prontos para copiar.
 
 ---
 
 ## ✨ Principais Funcionalidades
 
-### 1. 🛡️ Auditoria de Segurança (Security Audit)
-- **HTTPS & TLS Handshake**: Verificação de criptografia e integridade da conexão.
-- **Cabeçalhos de Proteção HTTP**:
-  - `Strict-Transport-Security` (HSTS)
-  - `Content-Security-Policy` (CSP)
-  - `X-Frame-Options` (Prevenção contra Clickjacking)
-  - `X-Content-Type-Options` (Proteção contra MIME-sniffing)
-  - `Referrer-Policy` e `Permissions-Policy`
-  - `Cross-Origin-Opener-Policy` (COOP)
-- **Vazamento de Assinatura do Servidor**: Detecção de cabeçalhos expostos como `Server` e `X-Powered-By`.
+### 1. 🤖 Sumário Executivo Estratégico com IA (Gemini 3.8 Flash)
+- **Narrativa em Linguagem Natural**: Análise holística da saúde do website gerada pela API do Gemini.
+- **Top 3 Problemas Mais Críticos**: Mapeamento dos principais ofensores com:
+  - Impacto direto no negócio (risco de vazamento de dados, abandono de conversão, perda de ranking na busca).
+  - Causa técnica raiz precisa.
+  - Acesso direto com 1 clique ao **Guia de Correção com IA**.
+- **Ordem de Prioridade Recomendada (Remediation Roadmap)**:
+  - *Fase 1: Correções Imediatas (0–24h)* — Blindagem de borda e headers defensivos.
+  - *Fase 2: Otimização Estrutural (1–3 dias)* — Dados estruturados Schema.org e metatags.
+  - *Fase 3: Refinamento Contínuo (1–2 semanas)* — Core Web Vitals e monitoramento.
+- **Alternador de Tom**: Visão **Executivo / C-Level** (foco em risco e ROI) vs. **Técnico / Engenharia** (foco em infraestrutura e código).
+- **Exportação & Cópia Rápida**: Transferência do briefing executivo formatado para área de transferência.
 
-### 2. 🔍 SEO & Visibilidade nos Motores de Busca
-- Calibração de caracteres da tag `<title>` (45 a 60 caracteres ideais).
-- Análise de tamanho e atratividade da `<meta name="description">` (120 a 160 caracteres).
-- Verificação de URL Canônica (`<link rel="canonical">`) para evitar conteúdo duplicado.
-- Hierarquia e unicidade de cabeçalhos semânticos (`<h1>`, `<h2>`, `<h3>`).
-- Detecção de dados estruturados **Schema.org** (`application/ld+json`).
-- **Simulador de SERP do Google**: Pré-visualização exata em modo Desktop e Mobile.
+### 2. 👁️ Estúdio de Regressão Visual & Diff de Screenshots (Site Comparator)
+- **Comparação Visual Avançada**: Identifique deslocamentos de interface entre o site atual e versões anteriores do histórico ou concorrentes.
+- **3 Modos Interativos de Diff**:
+  - **Lado a Lado (Side-by-Side)**: Telas com marcações delimitadoras (*bounding boxes*) de elementos deslocados.
+  - **Slider Cortina (Curtain Before/After)**: Controle deslizante interativo (0% a 100%) para inspeção pixel a pixel de reflows.
+  - **Diferença Térmica (Heatmap Overlay)**: Sobreposição de mapa de calor destacando zonas com divergência visual.
+- **Detecção Analítica de Layout Shifts (CLS)**:
+  - Variações na altura da barra de navegação/header.
+  - Troca de fontes com atraso de renderização (FOUT/FOIT).
+  - Reposicionamento de botões de conversão e elementos de mídia.
+  - Cálculo de impacto cumulativo no score de **CLS**.
+- **Controles de Viewport**: Alternância rápida entre **Desktop (1280px)** e **Mobile (375px)** com ajuste de sensibilidade de pixel.
 
-### 3. 📱 Simulador de Redes Sociais (Open Graph & Twitter Cards)
-- Validação de tags `og:title`, `og:description`, `og:image` e `og:url`.
-- Visualização ao vivo do card de compartilhamento para **WhatsApp, LinkedIn, Facebook e Twitter/X**.
+### 3. 🛡️ Auditoria Completa de Segurança Web (OWASP & NIST)
+- **Tooltip Explicativa no Card de Segurança**: Ícone de interrogação com detalhamento das métricas avaliadas:
+  - Validação de certificado HTTPS e criptografia TLS.
+  - `Strict-Transport-Security` (HSTS) contra SSL-stripping e MitM.
+  - `Content-Security-Policy` (CSP) contra injeções de script XSS.
+  - `X-Frame-Options` para prevenção de Clickjacking.
+  - `X-Content-Type-Options: nosniff` contra MIME-sniffing.
+  - `Referrer-Policy` e `Permissions-Policy` (câmera, microfone, geolocalização).
+- Detecção de vazamento de assinaturas do servidor (`Server`, `X-Powered-By`).
 
-### 4. ✨ Boas Práticas & Acessibilidade
-- Meta tag `viewport` para responsividade mobile-first.
-- Atributo `lang` na tag `<html>` para leitores de tela e acessibilidade internacional.
-- Cobertura de atributos `alt` em 100% das imagens.
-- Proteção de links externos com `rel="noopener noreferrer"`.
-- Tamanho e peso do payload HTML inicial.
+### 4. ⚡ SEO Quick-Start Checklist & Gerador Schema.org
+- **Checklist Interativo**: Itens categorizados por prioridade e tempo estimado de execução (2 a 5 min).
+- **Gerador JSON-LD**: Geração de dados estruturados para Google Rich Results nos formatos:
+  - `WebApplication`, `Organization`, `LocalBusiness`, `Article` e `FAQPage`.
+- **Exportação Produtiva**: Copie o pacote completo de meta tags para o `<head>` ou exporte o checklist em Markdown para Jira/GitHub Issues.
 
-### 5. 🤖 Diagnóstico Inteligente com Gemini 3.7 AI
-- Resumo executivo da saúde geral da arquitetura web.
-- Identificação automática dos pontos fortes e vulnerabilidades críticas.
-- **Soluções de Código Prontas**: Trechos de configuração para **Nginx, Apache (.htaccess), Cloudflare e HTML5**.
+### 5. 🛠️ Guia de Correção Inteligente com IA (AIFixModal)
+- Passo a passo detalhado para resolução de qualquer item reprovado ou com alerta.
+- Snippets de configuração prontos para **Nginx, Apache (.htaccess), Node.js (Helmet), Next.js, Cloudflare Rules e HTML5**.
+- Comandos cURL executáveis para validar a resolução diretamente pelo terminal.
 
-### 6. 🌐 Inspetor de Cabeçalhos HTTP & Stack Tecnológico
-- Lista completa e filtrável de todos os cabeçalhos HTTP recebidos.
-- Medição de latência (TTFB - Time to First Byte) em milissegundos.
-- Identificação de servidores (Nginx, Cloudflare, Apache, Caddy, Vercel), CMS (WordPress, Shopify) e frameworks (Next.js, React, Vue, Tailwind).
+### 6. 📱 Simulador de Redes Sociais & Prévia Google SERP
+- Validação completa de tags **Open Graph** (`og:title`, `og:description`, `og:image`, `og:url`) e **Twitter Cards**.
+- Pré-visualização exata de como os links aparecem no **WhatsApp, LinkedIn, Facebook e Twitter/X**.
+- Simulador do resultado de busca no Google para Desktop e Mobile.
 
-### 7. 🔄 Comparador de Websites & Histórico
-- Salva relatórios automaticamente no `localStorage`.
-- Comparação lado a lado entre análises anteriores (evolução antes/depois de correções) ou contra concorrentes.
+### 7. ♿ Acessibilidade WCAG 2.1 & Conformidade de Privacidade
+- Auditoria de atributos `alt` em imagens e cobertura de metatag `viewport`.
+- Atributos semânticos `lang`, charset UTF-8 e Doctype HTML5.
+- Diagnóstico de conformidade de cookies e políticas de privacidade (LGPD/GDPR).
 
-### 8. 📥 Exportação de Relatórios
-- **PDF / Impressão**: Layout estilizado pronto para apresentação a clientes.
-- **Markdown (.md)**: Pronto para colar em Issues do GitHub ou Pull Requests.
-- **JSON (.json)**: Dados estruturados para pipelines de CI/CD.
+### 8. 🌐 Inspetor de Headers HTTP & Detecção de Stack Tecnológico
+- Inspeção de todos os cabeçalhos HTTP retornados pelo servidor.
+- Medição precisa de latência TTFB (Time to First Byte).
+- Detecção automática de CMS (WordPress, Shopify), servidores (Nginx, Cloudflare, Vercel) e frameworks (React, Next.js, Vue, Tailwind).
+
+### 9. 📋 Plano de Ação Interativo (Action Plan Drawer)
+- Gaveta lateral acessível via botão flutuante para acompanhamento de tarefas pendentes e concluídas com persistência local.
+
+### 10. 📄 White-Label PDF & Alertas via Webhooks
+- Exportação de relatório em PDF com branding customizado (nome da agência, consultor, cliente e logotipo).
+- Integração com Webhooks para envio automático de alertas para **Slack, Discord ou sistemas internos**.
+
+---
+
+## 🏗️ Arquitetura do Projeto
+
+```
+├── server/
+│   ├── analyzer.ts              # Motor de auditoria com regras completas e scoring
+│   ├── geminiFix.ts             # Integração com Gemini SDK para guias de correção
+│   ├── geminiSummary.ts         # Geração de Sumário Executivo Estratégico com Gemini 3.8 Flash
+│   └── techDetector.ts          # Detecção de servidores, CMS e frameworks
+├── src/
+│   ├── components/
+│   │   ├── ReportSummaryPanel.tsx   # Painel executivo com Top 3 problemas e roadmap
+│   │   ├── VisualRegressionView.tsx # Estúdio de regressão visual e diff de screenshots
+│   │   ├── SiteComparator.tsx       # Comparador de sites, histórico e toggle de regressão
+│   │   ├── SeoQuickStartModal.tsx   # Checklist interativo e gerador Schema.org JSON-LD
+│   │   ├── CategoryScoreCard.tsx    # Cards dos pilares com tooltip de métricas
+│   │   ├── AIFixModal.tsx           # Modal de guia de correção inteligente com IA
+│   │   ├── ActionPlanDrawer.tsx     # Gaveta de plano de ação e acompanhamento
+│   │   ├── AuditSummaryHero.tsx     # Gauge central de score e diagnóstico rápido
+│   │   ├── SocialPreview.tsx        # Simulador de SERP e cards de redes sociais
+│   │   ├── HeadersInspector.tsx     # Inspetor de headers HTTP brutos
+│   │   ├── TechStackView.tsx        # Detecção de stack tecnológica
+│   │   ├── MobileSimulatorView.tsx  # Simulador multi-dispositivo e viewport
+│   │   ├── WhiteLabelPdfModal.tsx   # Exportador de PDF institucional
+│   │   └── WebhookAlertModal.tsx    # Configurador de notificações via webhook
+│   ├── services/
+│   │   └── clientAnalyzer.ts        # Motor de auditoria client-side
+│   ├── types.ts                     # Definições completas TypeScript
+│   ├── App.tsx                      # Orquestrador principal da aplicação
+│   ├── main.tsx                     # Ponto de entrada React
+│   └── index.css                    # Estilização global com Tailwind CSS v4
+├── server.ts                        # Servidor Express com rotas de API e Vite middleware
+├── vite.config.ts                   # Configuração de build do Vite
+├── metadata.json                    # Metadados e permissões da aplicação
+└── package.json                     # Dependências e scripts npm
+```
 
 ---
 
 ## 🚀 Como Executar Localmente
 
 ### Pré-requisitos
-- Node.js 20+ instalado
-- npm ou pnpm
+- **Node.js 20+**
+- **npm** ou **pnpm**
 
 ### Passo a Passo
 
@@ -83,90 +142,32 @@
    ```
 
 3. **Configure as variáveis de ambiente (Opcional):**
-   Crie um arquivo `.env` na raiz (baseado em `.env.example`):
+   Crie um arquivo `.env` na raiz do projeto:
    ```env
+   PORT=3000
    GEMINI_API_KEY="SUA_CHAVE_GEMINI_AQUI"
    ```
+   *(Nota: Caso a chave do Gemini não seja configurada, a ferramenta utilizará motores determinísticos de fallback inteligentes sem interromper o funcionamento).*
 
 4. **Inicie o servidor de desenvolvimento:**
    ```bash
    npm run dev
    ```
-   Acesse a aplicação em [http://localhost:3000](http://localhost:3000).
+   Acesse a aplicação no navegador em [http://localhost:3000](http://localhost:3000).
 
----
-
-## 🌐 Deploy no GitHub Pages (Versão Estática)
-
-Esta aplicação foi desenvolvida com suporte híbrido: ela roda com o backend Express localmente/em containers e também suporta **GitHub Pages** através do motor client-side com CORS proxy.
-
-### Configurando o Deploy Automático via GitHub Actions:
-
-1. Suba o código para seu repositório no GitHub:
+5. **Verificação de Tipos e Build de Produção:**
    ```bash
-   git init
-   git add .
-   git commit -m "feat: Website Analyzer & Audit Tool"
-   git branch -M main
-   git remote add origin https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
-   git push -u origin main
+   npm run lint
+   npm run build
    ```
-
-2. O workflow `.github/workflows/deploy.yml` já está incluso no projeto!
-
-3. No GitHub, abra o seu repositório:
-   - Vá em **Settings** > **Pages**
-   - Em **Build and deployment** > **Source**, selecione: **GitHub Actions**
-   
-4. Pronto! O GitHub Pages fará o build estático e publicará o site na URL `https://SEU_USUARIO.github.io/SEU_REPOSITORIO/`.
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # Workflow de deploy para GitHub Pages
-├── server/
-│   ├── analyzer.ts             # Motor de auditoria com regras e Gemini AI
-│   └── techDetector.ts         # Identificador de stack tecnológico
-├── src/
-│   ├── components/
-│   │   ├── Navbar.tsx          # Cabeçalho com ações e status
-│   │   ├── UrlInputSection.tsx # Barra de entrada de URL com etapas animadas
-│   │   ├── AuditSummaryHero.tsx# Score gauge, nota e diagnóstico de IA
-│   │   ├── CategoryScoreCard.tsx# Cards das 4 categorias principais
-│   │   ├── AuditItemCard.tsx   # Item de auditoria com trechos de código
-│   │   ├── SocialPreview.tsx   # Simulador Google SERP, Facebook, Twitter
-│   │   ├── HeadersInspector.tsx# Inspetor de headers HTTP brutos
-│   │   ├── TechStackView.tsx   # Visualizador de tecnologias detectadas
-│   │   ├── SiteComparator.tsx  # Comparador de sites e histórico
-│   │   ├── ExportModal.tsx     # Modal de exportação (PDF/MD/JSON)
-│   │   ├── GitHubPagesModal.tsx# Modal de instruções do GitHub Pages
-│   │   └── AuditHistoryModal.tsx# Modal do histórico local
-│   ├── services/
-│   │   └── clientAnalyzer.ts   # Motor de auditoria fallback para GitHub Pages
-│   ├── utils/
-│   │   ├── exportReport.ts     # Formatador de Markdown e relatórios
-│   │   └── formatters.ts       # Formatadores de data e bytes
-│   ├── types.ts                # Modelos TypeScript da auditoria
-│   ├── App.tsx                 # Componente principal e orquestrador
-│   ├── main.tsx                # Entrada React
-│   └── index.css               # Estilização com Tailwind CSS
-├── server.ts                   # Servidor Express com Vite middleware
-├── vite.config.ts              # Configuração do Vite com base relativa
-└── package.json                # Dependências e scripts
-```
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-- **Frontend**: React 19, TypeScript, Tailwind CSS v4, Motion (Framer Motion), Lucide Icons, Canvas Confetti.
-- **Backend / API**: Node.js, Express.js, `@google/genai` (Gemini 3.7 Flash).
-- **Build & Bundler**: Vite 6, esbuild, tsx.
-- **CI/CD**: GitHub Actions & GitHub Pages.
+- **Frontend**: [React 19](https://react.dev/), [TypeScript 5.8](https://www.typescriptlang.org/), [Tailwind CSS v4](https://tailwindcss.com/), [Lucide React](https://lucide.dev/), [Canvas Confetti](https://www.npmjs.com/package/canvas-confetti).
+- **Backend & IA**: [Node.js](https://nodejs.org/), [Express.js](https://expressjs.com/), [`@google/genai`](https://www.npmjs.com/package/@google/genai) com modelo **Gemini 3.8 Flash**.
+- **Ferramentas de Build**: [Vite 6](https://vitejs.dev/), [tsx](https://github.com/privatenumber/tsx).
 
 ---
 
