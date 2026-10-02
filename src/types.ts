@@ -150,6 +150,7 @@ export interface SavedAuditSummary {
 export type NavigationTab =
   | AuditCategory
   | 'all'
+  | 'heatmap'
   | 'vitals'
   | 'config-gen'
   | 'ssl-dns'

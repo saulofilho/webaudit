@@ -18,6 +18,17 @@ async function startServer() {
   // Middleware for API routes
   app.use('/api', express.json({ limit: '10mb' }));
 
+  // Static favicon & public assets handler
+  app.get('/favicon.svg', (_req, res) => {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.sendFile(path.join(process.cwd(), 'public', 'favicon.svg'));
+  });
+  app.get('/favicon.ico', (_req, res) => {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.sendFile(path.join(process.cwd(), 'public', 'favicon.svg'));
+  });
+  app.use(express.static(path.join(process.cwd(), 'public')));
+
   // API Routes FIRST
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

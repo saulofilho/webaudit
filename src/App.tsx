@@ -25,6 +25,7 @@ import {
   Smartphone,
   Printer,
   Bell,
+  Flame,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -58,6 +59,7 @@ import { SslDnsSecurityView } from './components/SslDnsSecurityView';
 import { AccessibilityWcagView } from './components/AccessibilityWcagView';
 import { PrivacyComplianceView } from './components/PrivacyComplianceView';
 import { MobileSimulatorView } from './components/MobileSimulatorView';
+import { SeoHeatmapView } from './components/SeoHeatmapView';
 import { WhiteLabelPdfModal } from './components/WhiteLabelPdfModal';
 import { WebhookAlertModal } from './components/WebhookAlertModal';
 import { SeoQuickStartModal } from './components/SeoQuickStartModal';
@@ -256,6 +258,7 @@ export default function App() {
     // Category filter
     if (
       activeTab !== 'all' &&
+      activeTab !== 'heatmap' &&
       activeTab !== 'headers' &&
       activeTab !== 'social' &&
       activeTab !== 'tech' &&
@@ -474,6 +477,21 @@ export default function App() {
                 >
                   <Search className="h-3.5 w-3.5 text-blue-600" />
                   <span>SEO & INDEXING</span>
+                </button>
+
+                {/* Feature: SEO Heatmap */}
+                <button
+                  type="button"
+                  id="tab-heatmap"
+                  onClick={() => setActiveTab('heatmap')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'heatmap'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Flame className="h-3.5 w-3.5 text-amber-500" />
+                  <span>SEO HEATMAP</span>
                 </button>
 
                 <button
@@ -710,6 +728,14 @@ export default function App() {
                   if (item) handleAnalyze(item.targetUrl);
                 }}
                 onCompareWithUrl={(url) => handleAnalyze(url)}
+              />
+            )}
+
+            {activeTab === 'heatmap' && (
+              <SeoHeatmapView
+                report={currentReport}
+                onOpenFixModal={(item) => setSelectedAiFixItem(item)}
+                onOpenActionPlan={() => setIsActionPlanOpen(true)}
               />
             )}
 
