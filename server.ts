@@ -27,7 +27,7 @@ async function startServer() {
     try {
       const { url } = req.body;
       if (!url || typeof url !== 'string') {
-        return res.status(400).json({ error: 'Uma URL válida é obrigatória para realizar a análise.' });
+        return res.status(400).json({ error: 'A valid URL is required to run the audit.' });
       }
 
       const report = await analyzeWebsite(url);
@@ -35,7 +35,7 @@ async function startServer() {
     } catch (err: any) {
       console.error('Audit error:', err);
       return res.status(500).json({
-        error: err.message || 'Falha interna ao analisar o website fornecido.',
+        error: err.message || 'Internal failure while analyzing the provided website.',
       });
     }
   });
@@ -44,7 +44,7 @@ async function startServer() {
     try {
       const { item, targetUrl, techStack, customFramework, userQuestion } = req.body;
       if (!item || !item.id || !item.title) {
-        return res.status(400).json({ error: 'Os dados do item auditado são obrigatórios.' });
+        return res.status(400).json({ error: 'Audited item data is required.' });
       }
 
       const fix = await generateAIFix(item, targetUrl, techStack, customFramework, userQuestion);
@@ -52,7 +52,7 @@ async function startServer() {
     } catch (err: any) {
       console.error('AI Fix error:', err);
       return res.status(500).json({
-        error: err.message || 'Falha ao gerar o guia de correção inteligente.',
+        error: err.message || 'Failed to generate intelligent fix guide.',
       });
     }
   });
@@ -61,7 +61,7 @@ async function startServer() {
     try {
       const { report, tone } = req.body;
       if (!report || !report.targetUrl) {
-        return res.status(400).json({ error: 'O relatório completo de auditoria é obrigatório.' });
+        return res.status(400).json({ error: 'Complete audit report is required.' });
       }
 
       const summary = await generateExecutiveSummary(report, tone);
@@ -69,7 +69,7 @@ async function startServer() {
     } catch (err: any) {
       console.error('AI Summary error:', err);
       return res.status(500).json({
-        error: err.message || 'Falha ao gerar o sumário executivo com IA.',
+        error: err.message || 'Failed to generate executive summary with AI.',
       });
     }
   });

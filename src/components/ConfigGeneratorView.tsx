@@ -84,7 +84,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
 
       case 'nginx':
         fileName = 'nginx.conf';
-        code = `# Diretivas de Segurança WebAudit para bloco server {}\n${headersList
+        code = `# WebAudit Security Directives for server {} block\n${headersList
           .map((h) => `add_header ${h.key} "${h.val}" always;`)
           .join('\n')}\n`;
         break;
@@ -143,17 +143,17 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
-                Gerador de Configurações de Segurança Prontas (1-Click Fix)
+                Production-Ready Security Config Generator (1-Click Fix)
               </h2>
               <p className="text-xs text-[#141414]/70">
-                Gere arquivos de configuração prontos para produção corrigindo todos os headers ausentes no seu servidor
+                Generate production config files addressing all missing HTTP security headers on your server
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
             <span className="border border-[#141414] bg-rose-100 text-rose-950 px-2.5 py-1 font-bold">
-              {missingHeaders.length} HEADERS AUSENTES NO SITE
+              {missingHeaders.length} MISSING HEADERS ON TARGET
             </span>
           </div>
         </div>
@@ -162,7 +162,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
       {/* Platform Selector Buttons */}
       <div className="border-2 border-[#141414] bg-white p-3 shadow-[2px_2px_0px_#141414]">
         <div className="text-[11px] font-mono font-bold uppercase mb-2 text-[#141414]/70">
-          SELECIONE SUA HOSPEDAGEM / PLATAFORMA DE PRODUÇÃO:
+          SELECT YOUR HOSTING / PRODUCTION PLATFORM:
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 font-mono text-xs">
           {[
@@ -201,7 +201,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
               onChange={(e) => setEnableHstsSubdomains(e.target.checked)}
               className="accent-[#141414] w-4 h-4 cursor-pointer"
             />
-            <span>HSTS com Subdomínios + Preload (63072000s)</span>
+            <span>HSTS with Subdomains + Preload (63072000s)</span>
           </label>
 
           <label className="flex items-center gap-2 cursor-pointer font-bold select-none">
@@ -211,7 +211,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
               onChange={(e) => setEnableStrictCsp(e.target.checked)}
               className="accent-[#141414] w-4 h-4 cursor-pointer"
             />
-            <span>CSP Estrito (Content Security Policy)</span>
+            <span>Strict CSP (Content Security Policy)</span>
           </label>
 
           <div className="flex items-center gap-2 font-bold">
@@ -221,8 +221,8 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
               onChange={(e) => setFrameOptions(e.target.value as any)}
               className="bg-white border border-[#141414] px-2 py-0.5 text-xs font-bold"
             >
-              <option value="SAMEORIGIN">SAMEORIGIN (Recomendado)</option>
-              <option value="DENY">DENY (Bloqueio Total)</option>
+              <option value="SAMEORIGIN">SAMEORIGIN (Recommended)</option>
+              <option value="DENY">DENY (Strict)</option>
             </select>
           </div>
         </div>
@@ -234,7 +234,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
             className="flex items-center gap-1.5 border-2 border-[#141414] bg-white px-3 py-1.5 font-bold hover:bg-[#141414] hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
           >
             {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-            <span>{copied ? 'COPIADO!' : 'COPIAR CÓDIGO'}</span>
+            <span>{copied ? 'COPIED!' : 'COPY CODE'}</span>
           </button>
 
           <button
@@ -243,7 +243,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
             className="flex items-center gap-1.5 border-2 border-[#141414] bg-[#141414] text-white px-3 py-1.5 font-bold hover:bg-neutral-800 shadow-[2px_2px_0px_#888888] transition-all cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
-            <span>BAIXAR {configData.fileName.toUpperCase()}</span>
+            <span>DOWNLOAD {configData.fileName.toUpperCase()}</span>
           </button>
         </div>
       </div>
@@ -262,7 +262,7 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
           </div>
 
           <span className="font-mono text-[10px] text-neutral-400">
-            PRONTO PARA COMMIT / DEPLOY
+            READY FOR COMMIT / DEPLOY
           </span>
         </div>
 
@@ -276,42 +276,42 @@ export const ConfigGeneratorView: React.FC<ConfigGeneratorViewProps> = ({ report
       <div className="border-2 border-[#141414] bg-white p-5 shadow-[4px_4px_0px_#141414]">
         <h4 className="text-xs font-mono font-black uppercase mb-2 flex items-center gap-1.5">
           <Terminal className="h-4 w-4" />
-          Como aplicar no seu projeto:
+          How to apply in your project:
         </h4>
         <div className="text-xs font-mono space-y-1 text-[#141414]/80">
           {platform === 'vercel' && (
             <p>
-              Salve como <strong>vercel.json</strong> na raiz do seu repositório Git e faça push para a Vercel. As alterações são aplicadas instantaneamente no Edge.
+              Save as <strong>vercel.json</strong> at the root of your Git repository and deploy to Vercel. Headers are applied instantly at the Edge.
             </p>
           )}
           {platform === 'cloudflare' && (
             <p>
-              Salve como <strong>_headers</strong> dentro da pasta de saída do seu build (ex: <code>dist/_headers</code> ou <code>public/_headers</code>) do Cloudflare Pages.
+              Save as <strong>_headers</strong> inside your build output folder (e.g., <code>dist/_headers</code> or <code>public/_headers</code>) for Cloudflare Pages.
             </p>
           )}
           {platform === 'netlify' && (
             <p>
-              Adicione o bloco acima ao seu arquivo <strong>netlify.toml</strong> existente ou crie-o na raiz do seu projeto.
+              Add the snippet above to your existing <strong>netlify.toml</strong> or create it at your project root.
             </p>
           )}
           {platform === 'nginx' && (
             <p>
-              Cole as linhas <code>add_header</code> dentro do bloco <code>server {'{ ... }'}</code> do seu arquivo <strong>/etc/nginx/sites-available/default</strong> e execute <code>sudo nginx -t && sudo systemctl reload nginx</code>.
+              Paste the <code>add_header</code> lines inside the <code>server {'{ ... }'}</code> block of your <strong>/etc/nginx/sites-available/default</strong> config and run <code>sudo nginx -t && sudo systemctl reload nginx</code>.
             </p>
           )}
           {platform === 'apache' && (
             <p>
-              Insira o bloco no arquivo <strong>.htaccess</strong> na pasta raiz pública do seu site e certifique-se de que o módulo <code>mod_headers</code> está ativo.
+              Insert the snippet into your <strong>.htaccess</strong> file in the public root folder and ensure <code>mod_headers</code> is enabled.
             </p>
           )}
           {platform === 'nextjs' && (
             <p>
-              Cole a função <code>headers()</code> dentro da sua configuração em <strong>next.config.js</strong> ou <strong>next.config.mjs</strong> e rebuilde a aplicação.
+              Paste the <code>headers()</code> async function into your <strong>next.config.js</strong> or <strong>next.config.mjs</strong> and rebuild the application.
             </p>
           )}
           {platform === 'express' && (
             <p>
-              Importe a função de middleware e aplique antes das suas rotas com <code>app.use(applySecurityHeaders)</code>.
+              Import the middleware function and register before route definitions via <code>app.use(applySecurityHeaders)</code>.
             </p>
           )}
         </div>

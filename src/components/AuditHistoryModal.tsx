@@ -38,10 +38,10 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-black text-[#141414] uppercase">
-                HISTÓRICO & TENDÊNCIAS DE AUDITORIA ({savedAudits.length})
+                AUDIT HISTORY & TRENDS ({savedAudits.length})
               </h3>
               <p className="text-[11px] text-[#141414]/70">
-                Acompanhe o histórico de execuções e evolução de métricas ao longo do tempo
+                Track historical executions and metric evolution over time
               </p>
             </div>
           </div>
@@ -59,7 +59,7 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
                 }`}
               >
                 <Activity className="h-3 w-3" />
-                <span>GRÁFICO</span>
+                <span>CHART</span>
               </button>
 
               <button
@@ -72,7 +72,7 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
                 }`}
               >
                 <ListFilter className="h-3 w-3" />
-                <span>LISTA ({savedAudits.length})</span>
+                <span>LIST ({savedAudits.length})</span>
               </button>
             </div>
 
@@ -107,8 +107,8 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
             <div className="space-y-2.5">
               {savedAudits.length === 0 ? (
                 <div className="text-center py-12 text-[#141414]/60 text-xs">
-                  <p>Nenhuma auditoria realizada ainda nesta sessão.</p>
-                  <p className="mt-1">Execute uma análise informando uma URL para listar o histórico aqui.</p>
+                  <p>No audits conducted yet in this session.</p>
+                  <p className="mt-1">Run an analysis with a valid URL to list the audit history here.</p>
                 </div>
               ) : (
                 savedAudits.map((item) => {
@@ -164,7 +164,7 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
                       <button
                         type="button"
                         className="flex h-7 w-7 items-center justify-center border border-[#141414] bg-white group-hover:bg-[#141414] group-hover:text-white transition-colors shrink-0"
-                        title="Carregar relatório"
+                        title="Load report"
                       >
                         <ArrowRight className="h-3.5 w-3.5" />
                       </button>
@@ -185,7 +185,7 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
               className="flex items-center gap-1 text-[11px] font-bold uppercase text-rose-800 hover:underline transition-colors cursor-pointer"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span>LIMPAR HISTÓRICO</span>
+              <span>CLEAR HISTORY</span>
             </button>
 
             <button
@@ -193,7 +193,7 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
               onClick={onClose}
               className="text-xs font-bold uppercase text-[#141414] px-3 py-1 bg-[#E4E3E0] hover:bg-white border border-[#141414] cursor-pointer"
             >
-              FECHAR
+              CLOSE
             </button>
           </div>
         )}

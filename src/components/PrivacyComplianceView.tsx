@@ -36,21 +36,21 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           name: tech.name,
           category: 'Web Analytics',
           risk: 'medium',
-          purpose: 'Métricas de tráfego e comportamento de navegação',
+          purpose: 'Traffic analytics and user browsing behavior',
         });
       } else if (lower.includes('facebook') || lower.includes('meta pixel') || lower.includes('ads')) {
         trackers.push({
           name: tech.name,
-          category: 'Publicidade / Remarketing',
+          category: 'Advertising / Retargeting',
           risk: 'high',
-          purpose: 'Rastreamento cross-site para campanhas de anúncios',
+          purpose: 'Cross-site tracking for marketing campaigns',
         });
       } else if (lower.includes('hotjar') || lower.includes('clarity') || lower.includes('smartlook')) {
         trackers.push({
           name: tech.name,
-          category: 'Gravação de Sessão',
+          category: 'Session Recording',
           risk: 'medium',
-          purpose: 'Mapas de calor e gravação de cliques na tela',
+          purpose: 'Heatmaps and click behavior recording',
         });
       }
     });
@@ -62,7 +62,7 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           name: 'Google Analytics / GTM',
           category: 'Web Analytics',
           risk: 'medium',
-          purpose: 'Métricas de tráfego e telemetria',
+          purpose: 'Traffic telemetry and audience metrics',
         });
       }
     }
@@ -99,17 +99,17 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
-                Privacidade, Cookies & Conformidade LGPD / GDPR
+                Privacy, Cookies & GDPR / LGPD Compliance
               </h2>
               <p className="text-xs text-[#141414]/70">
-                Mapeamento de cookies de terceiros, atributos de segurança em sessões e requisitos legais da Lei nº 13.709/2018
+                Third-party tracker mapping, session security flags, and regulatory compliance standards
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
             <span className="border border-[#141414] bg-[#E4E3E0] px-3 py-1 font-bold">
-              RASTREADORES: <strong>{privacyData.trackers.length} IDENTIFICADOS</strong>
+              TRACKERS: <strong>{privacyData.trackers.length} IDENTIFIED</strong>
             </span>
           </div>
         </div>
@@ -120,10 +120,10 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
         <div className="flex items-center justify-between border-b-2 border-[#141414] pb-3">
           <div className="flex items-center gap-2">
             <Lock className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-sm font-black uppercase">Atributos de Proteção em Cookies de Sessão</h3>
+            <h3 className="text-sm font-black uppercase">Session Cookie Protection Attributes</h3>
           </div>
           <span className="font-mono text-xs bg-emerald-100 text-emerald-950 border border-emerald-700 px-2 py-0.5 font-bold">
-            FLAGS DE SEGURANÇA
+            SECURITY FLAGS
           </span>
         </div>
 
@@ -131,42 +131,42 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           {/* Secure Flag */}
           <div className="border border-[#141414] bg-[#E4E3E0] p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold">Flag Secure</span>
+              <span className="font-bold">Secure Flag</span>
               <CheckCircle2 className="h-4 w-4 text-emerald-700" />
             </div>
             <p className="text-[11px] text-[#141414]/70">
-              Garante que cookies de autenticação nunca sejam transmitidos via conexões HTTP não criptografadas.
+              Guarantees authentication cookies are never sent over unencrypted HTTP connections.
             </p>
             <span className="inline-block text-[10px] bg-emerald-100 text-emerald-900 border border-emerald-800 px-1 font-bold">
-              CONFORME (HTTPS)
+              COMPLIANT (HTTPS)
             </span>
           </div>
 
           {/* HttpOnly Flag */}
           <div className="border border-[#141414] bg-[#E4E3E0] p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold">Flag HttpOnly</span>
+              <span className="font-bold">HttpOnly Flag</span>
               <CheckCircle2 className="h-4 w-4 text-emerald-700" />
             </div>
             <p className="text-[11px] text-[#141414]/70">
-              Impede que scripts maliciosos (ataques XSS) leiam o cookie de sessão via <code>document.cookie</code>.
+              Prevents malicious scripts (XSS attacks) from reading session cookies via <code>document.cookie</code>.
             </p>
             <span className="inline-block text-[10px] bg-emerald-100 text-emerald-900 border border-emerald-800 px-1 font-bold">
-              PROTEÇÃO CONTRA XSS
+              XSS MITIGATION
             </span>
           </div>
 
           {/* SameSite Flag */}
           <div className="border border-[#141414] bg-[#E4E3E0] p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold">Flag SameSite=Lax/Strict</span>
+              <span className="font-bold">SameSite=Lax/Strict</span>
               <CheckCircle2 className="h-4 w-4 text-emerald-700" />
             </div>
             <p className="text-[11px] text-[#141414]/70">
-              Previne que requisições forjadas entre sites (ataques CSRF) enviem credenciais da vítima.
+              Prevents cross-site forged requests (CSRF attacks) from automatically transmitting session credentials.
             </p>
             <span className="inline-block text-[10px] bg-emerald-100 text-emerald-900 border border-emerald-800 px-1 font-bold">
-              PROTEÇÃO CONTRA CSRF
+              CSRF MITIGATION
             </span>
           </div>
         </div>
@@ -177,10 +177,10 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
         <div className="flex items-center justify-between border-b-2 border-[#141414] pb-3">
           <div className="flex items-center gap-2">
             <EyeOff className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-sm font-black uppercase">Rastreadores & Scripts de Terceiros Encontrados</h3>
+            <h3 className="text-sm font-black uppercase">Detected Trackers & Third-Party Scripts</h3>
           </div>
           <span className="text-xs bg-[#E4E3E0] px-2 py-0.5 border border-[#141414] font-mono font-bold">
-            {privacyData.trackers.length} SERVIÇOS
+            {privacyData.trackers.length} SERVICES
           </span>
         </div>
 
@@ -189,10 +189,10 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#141414] text-white text-[11px] uppercase">
-                  <th className="p-2.5 border-r border-neutral-700">Serviço / Rastreador</th>
-                  <th className="p-2.5 border-r border-neutral-700">Categoria</th>
-                  <th className="p-2.5 border-r border-neutral-700">Finalidade dos Dados</th>
-                  <th className="p-2.5 text-right">Risco de Privacidade</th>
+                  <th className="p-2.5 border-r border-neutral-700">Service / Tracker</th>
+                  <th className="p-2.5 border-r border-neutral-700">Category</th>
+                  <th className="p-2.5 border-r border-neutral-700">Data Purpose</th>
+                  <th className="p-2.5 text-right">Privacy Risk</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#141414]/20">
@@ -209,7 +209,7 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
                             : 'bg-amber-100 text-amber-950 border-amber-700'
                         }`}
                       >
-                        {tracker.risk === 'high' ? 'ALTO (PUBLICIDADE)' : 'MÉDIO (TELEMETRIA)'}
+                        {tracker.risk === 'high' ? 'HIGH (ADVERTISING)' : 'MEDIUM (ANALYTICS)'}
                       </span>
                     </td>
                   </tr>
@@ -219,7 +219,7 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           </div>
         ) : (
           <div className="p-4 bg-emerald-50 border border-emerald-600 text-emerald-950 text-xs font-mono">
-            ✓ Nenhum rastreador agressivo de terceiros identificado no carregamento inicial.
+            ✓ No invasive third-party trackers identified during initial load.
           </div>
         )}
       </div>
@@ -229,10 +229,10 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
         <div className="flex items-center justify-between border-b-2 border-[#141414] pb-3">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-sm font-black uppercase">Checklist de Conformidade Legal (LGPD Art. 7º ao 14º)</h3>
+            <h3 className="text-sm font-black uppercase">Legal Compliance Checklist (GDPR / LGPD)</h3>
           </div>
           <span className="font-mono text-xs bg-[#E4E3E0] px-2 py-0.5 border border-[#141414] font-bold">
-            BRASIL & UNIÃO EUROPEIA
+            GLOBAL PRIVACY STANDARDS
           </span>
         </div>
 
@@ -240,9 +240,9 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           <div className="border border-[#141414] p-3 bg-neutral-50 flex items-start gap-2.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block">Política de Privacidade Acessível</span>
+              <span className="font-bold block">Accessible Privacy Policy</span>
               <p className="text-[11px] text-[#141414]/70 mt-0.5">
-                O site deve disponibilizar no rodapé os direitos do titular (Art. 18 LGPD) e contato do Encarregado de Dados (DPO).
+                The website must provide footer access to data subject rights and Data Protection Officer (DPO) contact information.
               </p>
             </div>
           </div>
@@ -250,9 +250,9 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           <div className="border border-[#141414] p-3 bg-neutral-50 flex items-start gap-2.5">
             <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block">Banner de Consentimento Prévio de Cookies</span>
+              <span className="font-bold block">Prior Cookie Consent Banner</span>
               <p className="text-[11px] text-[#141414]/70 mt-0.5">
-                Scripts de publicidade (pixels) não podem disparar antes da permissão afirmativa do usuário.
+                Advertising and retargeting pixels must not execute prior to affirmative user consent.
               </p>
             </div>
           </div>
@@ -260,9 +260,9 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           <div className="border border-[#141414] p-3 bg-neutral-50 flex items-start gap-2.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block">Canal de Contato do DPO / Encarregado</span>
+              <span className="font-bold block">DPO / Privacy Contact Channel</span>
               <p className="text-[11px] text-[#141414]/70 mt-0.5">
-                Exigência do Art. 41 da LGPD para esclarecimento de dúvidas e revogação de consentimento.
+                Required mechanism for addressing user inquiries and processing consent revocations.
               </p>
             </div>
           </div>
@@ -270,9 +270,9 @@ export const PrivacyComplianceView: React.FC<PrivacyComplianceViewProps> = ({ re
           <div className="border border-[#141414] p-3 bg-neutral-50 flex items-start gap-2.5">
             <CheckCircle2 className="h-4 w-4 text-emerald-700 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block">Criptografia em Formulários de Coleta</span>
+              <span className="font-bold block">Encrypted Data Collection Forms</span>
               <p className="text-[11px] text-[#141414]/70 mt-0.5">
-                {report.rawData.formsCount} formulário(s) detectados protegidos via protocolo HTTPS de ponta a ponta.
+                {report.rawData.formsCount} detected form(s) transmit inputs securely over end-to-end HTTPS.
               </p>
             </div>
           </div>

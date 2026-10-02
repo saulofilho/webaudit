@@ -19,11 +19,11 @@ const PRESET_URLS = [
 ];
 
 const AUDIT_STEPS = [
-  'Verificando Handshake TCP & Certificado TLS/SSL...',
-  'Inspecionando Security Headers (HSTS, CSP, X-Frame-Options, X-Content-Type)...',
-  'Analisando DOM HTML5, Metatags SEO, OpenGraph e Acessibilidade...',
-  'Examinando Stack Tecnológico, Compressão, Imagens e Recursos...',
-  'Processando Diagnóstico Heurístico & Recomendações Técnicas Gemini 3.7...',
+  'Verifying TCP Handshake & TLS/SSL Certificate...',
+  'Inspecting Security Headers (HSTS, CSP, X-Frame-Options, X-Content-Type)...',
+  'Analyzing HTML5 DOM, SEO Metatags, OpenGraph, and Accessibility...',
+  'Examining Tech Stack, Compression, Images, and Assets...',
+  'Processing Heuristic Diagnostics & Gemini Technical Recommendations...',
 ];
 
 export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
@@ -69,16 +69,16 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 border-2 border-[#141414] bg-white px-3 py-1 text-xs font-mono font-bold text-[#141414] shadow-[2px_2px_0px_#141414] mb-4 uppercase">
           <Terminal className="h-3.5 w-3.5 text-[#141414]" />
-          <span>DIAGNÓSTICO TÉCNICO DE WEBSITES // REAL-TIME</span>
+          <span>WEBSITE TECHNICAL DIAGNOSTIC // REAL-TIME</span>
         </div>
         
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-mono font-black tracking-tight text-[#141414] uppercase">
-          Auditoria de Segurança, <br className="hidden sm:inline" />
-          SEO e Boas Práticas
+          Security, SEO & <br className="hidden sm:inline" />
+          Best Practices Audit
         </h1>
 
         <p className="mt-3 text-xs sm:text-sm font-mono text-[#141414]/80 max-w-2xl mx-auto">
-          Insira qualquer URL pública para gerar a análise profunda de conformidade web, cabeçalhos HTTP, metatags sociais e soluções prontas de código.
+          Enter any public URL to generate an in-depth web compliance audit, HTTP headers analysis, social metatags preview, and production-ready code fixes.
         </p>
       </div>
 
@@ -95,7 +95,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="ex: github.com ou https://meusite.com.br"
+              placeholder="e.g. github.com or https://mysite.com"
               disabled={isLoading}
               className="w-full bg-transparent px-2 py-2.5 text-xs sm:text-sm font-mono text-[#141414] placeholder-[#141414]/40 focus:outline-none disabled:opacity-50"
             />
@@ -110,11 +110,11 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin text-white" />
-                <span>PROCESSANDO...</span>
+                <span>PROCESSING...</span>
               </>
             ) : (
               <>
-                <span>AUDITAR AGORA</span>
+                <span>AUDIT NOW</span>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -124,7 +124,7 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
 
       {/* Preset Pills */}
       <div className="mt-4 flex flex-wrap items-center justify-center gap-1.5 text-xs font-mono">
-        <span className="text-[#141414]/70 text-[11px] font-bold uppercase mr-1">PRESETS DE TESTE:</span>
+        <span className="text-[#141414]/70 text-[11px] font-bold uppercase mr-1">TEST PRESETS:</span>
         {PRESET_URLS.map((preset) => (
           <button
             key={preset.url}
@@ -146,10 +146,10 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
             <AlertTriangle className="h-4 w-4" />
           </div>
           <div className="text-xs font-mono">
-            <p className="font-bold uppercase text-rose-700">FALHA NO DIAGNÓSTICO DA URL</p>
+            <p className="font-bold uppercase text-rose-700">URL DIAGNOSTIC FAILED</p>
             <p className="mt-1 text-[#141414]">{error}</p>
             <p className="mt-2 text-[10px] text-[#141414]/70">
-              Certifique-se de que o host responde a conexões públicas ou tente novamente.
+              Ensure the host responds to public connections and try again.
             </p>
           </div>
         </div>
@@ -170,8 +170,8 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
                   <Cpu className="h-3.5 w-3.5 animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-mono font-black text-[#141414] uppercase">EXECUÇÃO DO PROBE DIAGNÓSTICO</h4>
-                  <p className="text-[10px] font-mono text-[#141414]/70">AUDITORIA MULTI-VETORIAL EM ANDAMENTO</p>
+                  <h4 className="text-xs font-mono font-black text-[#141414] uppercase">DIAGNOSTIC PROBE EXECUTION</h4>
+                  <p className="text-[10px] font-mono text-[#141414]/70">MULTI-VECTOR AUDIT IN PROGRESS</p>
                 </div>
               </div>
               <span className="text-xs font-mono font-bold bg-[#141414] text-white px-2 py-0.5">

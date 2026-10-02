@@ -75,10 +75,10 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
 
   // Structured Data (JSON-LD) Generator
   const schemaCode = useMemo(() => {
-    const siteTitle = meta.title || `${hostname.toUpperCase()} - Plataforma Web`;
+    const siteTitle = meta.title || `${hostname.toUpperCase()} - Web Platform`;
     const siteDesc =
       meta.description ||
-      `Soluções completas e serviços profissionais de alta performance em ${hostname}.`;
+      `Comprehensive solutions and high-performance services on ${hostname}.`;
     const siteUrl = report.targetUrl;
 
     let schemaObj: any = {};
@@ -110,8 +110,8 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
           logo: meta.openGraph.image || `${siteUrl}/logo.png`,
           description: siteDesc,
           sameAs: [
-            'https://twitter.com/sua-empresa',
-            'https://linkedin.com/company/sua-empresa',
+            'https://twitter.com/your-brand',
+            'https://linkedin.com/company/your-brand',
           ],
         };
         break;
@@ -123,14 +123,14 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
           name: siteTitle,
           url: siteUrl,
           description: siteDesc,
-          telephone: '+55-11-99999-9999',
+          telephone: '+1-800-555-0199',
           address: {
             '@type': 'PostalAddress',
-            streetAddress: 'Av. Paulista, 1000',
-            addressLocality: 'São Paulo',
-            addressRegion: 'SP',
-            postalCode: '01310-100',
-            addressCountry: 'BR',
+            streetAddress: '100 Main Street',
+            addressLocality: 'New York',
+            addressRegion: 'NY',
+            postalCode: '10001',
+            addressCountry: 'US',
           },
         };
         break;
@@ -145,7 +145,7 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
           datePublished: new Date().toISOString(),
           author: {
             '@type': 'Person',
-            name: 'Redação Editorial',
+            name: 'Editorial Team',
           },
         };
         break;
@@ -157,7 +157,7 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
           mainEntity: [
             {
               '@type': 'Question',
-              name: `Como funciona o serviço de ${hostname}?`,
+              name: `How does ${hostname} work?`,
               acceptedAnswer: {
                 '@type': 'Answer',
                 text: siteDesc,
@@ -165,10 +165,10 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
             },
             {
               '@type': 'Question',
-              name: 'Quais são os principais benefícios e garantias?',
+              name: 'What are the main benefits and guarantees?',
               acceptedAnswer: {
                 '@type': 'Answer',
-                text: 'Alta velocidade de carregamento, segurança de dados comprovada e excelente suporte ao usuário.',
+                text: 'High-speed performance, verified data security standards, and dedicated 24/7 customer support.',
               },
             },
           ],
@@ -181,14 +181,14 @@ export const SeoQuickStartModal: React.FC<SeoQuickStartModalProps> = ({
 
   // Complete HTML Meta Tags Bundle Snippet
   const completeMetaBundle = useMemo(() => {
-    const titleVal = meta.title || `${hostname.toUpperCase()} – Oficial & Seguro`;
+    const titleVal = meta.title || `${hostname.toUpperCase()} – Official & Secure`;
     const descVal =
       meta.description ||
-      `Acesse a plataforma de ${hostname}. Confira novidades, ferramentas e recursos completos com alta performance.`;
+      `Access ${hostname}. Discover modern solutions, features, and high-performance web resources.`;
     const canonicalVal = meta.canonical || report.targetUrl;
     const ogImg = meta.openGraph.image || `${report.targetUrl}/og-image.jpg`;
 
-    return `<!-- SEO Básico & Indexação Google -->
+    return `<!-- Basic SEO & Google Search Indexing -->
 <title>${titleVal}</title>
 <meta name="description" content="${descVal}" />
 <link rel="canonical" href="${canonicalVal}" />
@@ -232,108 +232,108 @@ ${schemaCode}`;
     return [
       {
         id: 'seo-title',
-        title: 'Otimização da Tag de Título (<title>)',
-        priority: 'CRÍTICO',
+        title: 'Title Tag Optimization (<title>)',
+        priority: 'CRITICAL',
         timeEst: '2 min',
         autoPassed: isTitleGood,
-        impact: 'Fator primário de relevância no algoritmo do Google e principal texto clicável nos resultados de busca.',
+        impact: 'Primary relevance factor in Google algorithms and the primary clickable headline in search engine results.',
         current: meta.title
-          ? `"${meta.title}" (${titleLen} caracteres)`
-          : 'Nenhuma tag <title> encontrada!',
+          ? `"${meta.title}" (${titleLen} characters)`
+          : 'No <title> tag found!',
         guideline:
-          'Mantenha entre 30 e 60 caracteres. Inclua o nome da marca e a palavra-chave primária sem keyword stuffing.',
-        codeSnippet: `<title>${meta.title || `${hostname.toUpperCase()} – Soluções em Alta Performance`}</title>`,
+          'Keep between 30 and 60 characters. Include brand name and primary target keyword without keyword stuffing.',
+        codeSnippet: `<title>${meta.title || `${hostname.toUpperCase()} – High Performance Solutions`}</title>`,
       },
       {
         id: 'seo-description',
-        title: 'Meta Description Convincente (<meta name="description">)',
-        priority: 'ALTO IMPACTO',
+        title: 'Compelling Meta Description (<meta name="description">)',
+        priority: 'HIGH IMPACT',
         timeEst: '3 min',
         autoPassed: isDescGood,
-        impact: 'Determina a taxa de cliques (CTR) na SERP. Um resumo atrativo atrai até 30% mais visitantes orgânicos.',
+        impact: 'Determines click-through rate (CTR) on SERPs. An engaging description earns up to 30% more organic traffic.',
         current: meta.description
-          ? `"${meta.description.slice(0, 90)}..." (${descLen} caracteres)`
-          : 'Meta description ausente!',
+          ? `"${meta.description.slice(0, 90)}..." (${descLen} characters)`
+          : 'Meta description missing!',
         guideline:
-          'Escreva entre 120 e 160 caracteres com chamada para ação clara (CTA) e valor direto para o usuário.',
+          'Write between 120 and 160 characters with a clear call-to-action (CTA) and direct user value proposition.',
         codeSnippet: `<meta name="description" content="${
           meta.description ||
-          `Descubra como o ${hostname} pode transformar sua experiência online com rapidez, segurança e facilidade. Confira agora!`
+          `Discover how ${hostname} transforms your online workflow with speed, security, and precision. Explore now!`
         }" />`,
       },
       {
         id: 'seo-canonical',
-        title: 'Tag Canônica de URL (<link rel="canonical">)',
-        priority: 'ALTO IMPACTO',
+        title: 'Canonical URL Tag (<link rel="canonical">)',
+        priority: 'HIGH IMPACT',
         timeEst: '1 min',
         autoPassed: hasCanonical,
-        impact: 'Elimina canibalização de conteúdo duplicado gerado por parâmetros de rastreamento (?utm_, ?ref=) e variações HTTP/HTTPS.',
-        current: meta.canonical || 'Não declarada!',
-        guideline: 'Sempre aponte para a versão HTTPS canônica e definitiva da página.',
+        impact: 'Prevents duplicate content cannibalization caused by tracking parameters (?utm_, ?ref=) and HTTP/HTTPS variations.',
+        current: meta.canonical || 'Not declared!',
+        guideline: 'Always specify the definitive canonical HTTPS URL for the current document.',
         codeSnippet: `<link rel="canonical" href="${meta.canonical || report.targetUrl}" />`,
       },
       {
         id: 'seo-schema',
-        title: 'Dados Estruturados Schema.org (JSON-LD)',
-        priority: 'ALTO IMPACTO',
+        title: 'Schema.org Structured Data (JSON-LD)',
+        priority: 'HIGH IMPACT',
         timeEst: '5 min',
         autoPassed: hasSchema,
-        impact: 'Habilita Rich Snippets (estrelas de avaliação, FAQs, caixas de busca e logotipo da empresa) no Google.',
+        impact: 'Enables Rich Snippets (review stars, FAQs, sitelinks searchbox, and company logos) in Google search results.',
         current: hasSchema
-          ? `Detectado: ${(meta.structuredDataTypes || []).join(', ')}`
-          : 'Nenhum script JSON-LD Schema.org identificado!',
+          ? `Detected: ${(meta.structuredDataTypes || []).join(', ')}`
+          : 'No Schema.org JSON-LD scripts identified!',
         guideline:
-          'Utilize formatos padronizados como WebApplication, Organization ou LocalBusiness na tag <script type="application/ld+json">.',
+          'Use standardized types such as WebApplication, Organization, or LocalBusiness in a <script type="application/ld+json"> tag.',
         codeSnippet: schemaCode,
       },
       {
         id: 'seo-opengraph',
-        title: 'Cartões Sociais OpenGraph & Twitter Cards',
-        priority: 'MÉDIO IMPACTO',
+        title: 'OpenGraph & Twitter Social Cards',
+        priority: 'MEDIUM IMPACT',
         timeEst: '4 min',
         autoPassed: hasOgImage && hasTwitter,
-        impact: 'Garante que links compartilhados no WhatsApp, Slack, LinkedIn e X/Twitter exibam banner, título e descrição atraentes.',
-        current: hasOgImage ? `Imagem OG: ${meta.openGraph.image}` : 'Imagem og:image ausente!',
+        impact: 'Ensures links shared on WhatsApp, Slack, LinkedIn, and X/Twitter display rich preview banners, titles, and summaries.',
+        current: hasOgImage ? `OG Image: ${meta.openGraph.image}` : 'og:image missing!',
         guideline:
-          'Crie uma imagem de destaque com proporção 1200x630px (1.91:1) com peso inferior a 300KB para carregamento instantâneo.',
+          'Provide a featured banner with 1200x630px resolution (1.91:1 ratio) under 300KB for near-instant rendering.',
         codeSnippet: `<meta property="og:image" content="${meta.openGraph.image || `${report.targetUrl}/og-image.jpg`}" />\n<meta name="twitter:card" content="summary_large_image" />`,
       },
       {
         id: 'seo-h1',
-        title: 'Estrutura de Título Principal (H1 Único)',
-        priority: 'ALTO IMPACTO',
+        title: 'Primary Heading Hierarchy (Single H1)',
+        priority: 'HIGH IMPACT',
         timeEst: '2 min',
         autoPassed: isH1Good,
-        impact: 'O H1 contextualiza o tópico principal da página para o Googlebot e leitores de tela acessíveis.',
-        current: `${h1Count} tag(s) H1 encontrada(s)`,
-        guideline: 'Tenha exatamente 1 tag <h1> por página, seguida de seções hierárquicas em <h2> e <h3>.',
-        codeSnippet: `<h1>${report.rawData.h1Sample || meta.title || 'Título Principal da Página'}</h1>`,
+        impact: 'The H1 tag grounds the page core topic for Googlebot and accessible screen reader users.',
+        current: `${h1Count} H1 tag(s) detected`,
+        guideline: 'Maintain exactly one <h1> tag per page, followed by clear <h2> and <h3> hierarchical sections.',
+        codeSnippet: `<h1>${report.rawData.h1Sample || meta.title || 'Main Page Heading'}</h1>`,
       },
       {
         id: 'seo-images-alt',
-        title: 'Texto Alternativo em Todas as Imagens (alt)',
-        priority: 'MÉDIO IMPACTO',
+        title: 'Descriptive Alt Attributes on Images',
+        priority: 'MEDIUM IMPACT',
         timeEst: '5 min',
         autoPassed: isAltGood,
-        impact: 'Permite rankear no Google Imagens e garante conformidade com as diretrizes de acessibilidade WCAG.',
+        impact: 'Enables ranking in Google Image Search and ensures compliance with WCAG accessibility guidelines.',
         current:
           missingAlt === 0
-            ? 'Todas as imagens possuem alt'
-            : `${missingAlt} imagem(ns) sem texto alternativo`,
+            ? 'All images have alt text'
+            : `${missingAlt} image(s) missing alt text`,
         guideline:
-          'Descreva de forma suscinta e precisa o conteúdo visual da imagem. Não use termos genéricos como "imagem" ou "foto".',
-        codeSnippet: `<img src="/foto.webp" alt="Descrição clara do conteúdo visual da imagem" width="600" height="400" />`,
+          'Succinctly describe image visual context. Avoid generic words like "image" or "photo".',
+        codeSnippet: `<img src="/image.webp" alt="Clear descriptive summary of the visual element" width="600" height="400" />`,
       },
       {
         id: 'seo-indexing',
-        title: 'Diretivas de Indexação & Sitemap (robots / sitemap.xml)',
-        priority: 'CRÍTICO',
+        title: 'Indexing Directives & Sitemap (robots / sitemap.xml)',
+        priority: 'CRITICAL',
         timeEst: '3 min',
         autoPassed: !meta.robots?.includes('noindex'),
-        impact: 'Evita bloqueios acidentais de indexação após deploys e facilita a descoberta de páginas novas pelo rastreador.',
-        current: meta.robots ? `Meta robots: ${meta.robots}` : 'Padrão (index, follow)',
+        impact: 'Prevents accidental indexation blocks after deployments and facilitates crawler site discovery.',
+        current: meta.robots ? `Meta robots: ${meta.robots}` : 'Standard (index, follow)',
         guideline:
-          'Certifique-se de que o site em produção não contenha "noindex". Submeta o arquivo sitemap.xml no Google Search Console.',
+          'Verify production does not leak "noindex". Submit your sitemap.xml directly into Google Search Console.',
         codeSnippet: `User-agent: *\nAllow: /\nSitemap: ${report.targetUrl.replace(/\/$/, '')}/sitemap.xml`,
       },
     ];
@@ -369,8 +369,8 @@ ${schemaCode}`;
   const handleCopyMarkdownChecklist = () => {
     const md = [
       `# SEO Quick-Start Checklist – ${hostname}`,
-      `Data: ${new Date().toLocaleDateString('pt-BR')}`,
-      `Progresso: ${stats.completed}/${stats.total} (${stats.percentage}%)`,
+      `Date: ${new Date().toLocaleDateString('en-US')}`,
+      `Progress: ${stats.completed}/${stats.total} (${stats.percentage}%)`,
       '',
       ...checklistItems.map((item) => {
         const isDone = item.autoPassed || !!customCompletedIds[item.id];
@@ -398,11 +398,11 @@ ${schemaCode}`;
                   SEO Quick-Start Checklist
                 </h3>
                 <span className="bg-blue-100 text-blue-950 border border-blue-800 px-2 py-0.5 text-[10px] font-black">
-                  SCORE SEO: {report.categories.seo.score}/100
+                  SEO SCORE: {report.categories.seo.score}/100
                 </span>
               </div>
               <p className="text-[11px] text-[#141414]/70">
-                Ações essenciais e de alto impacto para meta tags, indexação e dados estruturados no Google
+                Essential and high-impact actions for meta tags, indexing, and structured data on Google
               </p>
             </div>
           </div>
@@ -412,14 +412,14 @@ ${schemaCode}`;
               type="button"
               onClick={handleCopyMarkdownChecklist}
               className="hidden sm:flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-bold hover:bg-[#141414] hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
-              title="Copiar checklist em formato Markdown"
+              title="Copy checklist in Markdown format"
             >
               {copiedId === 'markdown-checklist' ? (
                 <Check className="h-3.5 w-3.5 text-emerald-600" />
               ) : (
                 <Copy className="h-3.5 w-3.5" />
               )}
-              <span>{copiedId === 'markdown-checklist' ? 'COPIADO!' : 'COPIAR EM MD'}</span>
+              <span>{copiedId === 'markdown-checklist' ? 'COPIED!' : 'COPY AS MD'}</span>
             </button>
 
             <button
@@ -437,10 +437,10 @@ ${schemaCode}`;
           <div className="flex items-center justify-between text-xs font-bold">
             <span className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-amber-500" />
-              STATUS DA CHECKLIST: <strong>{stats.completed} de {stats.total} itens concluídos</strong>
+              CHECKLIST PROGRESS: <strong>{stats.completed} of {stats.total} items completed</strong>
             </span>
             <span className="text-sm font-black text-[#141414]">
-              {stats.percentage}% PRONTO
+              {stats.percentage}% COMPLETE
             </span>
           </div>
 
@@ -455,7 +455,7 @@ ${schemaCode}`;
           {/* Filter Pills */}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[#141414]/70 mr-1">EXIBIR:</span>
+              <span className="text-[11px] font-bold text-[#141414]/70 mr-1">VIEW:</span>
               {(['all', 'pending', 'completed'] as const).map((mode) => (
                 <button
                   key={mode}
@@ -467,7 +467,7 @@ ${schemaCode}`;
                       : 'bg-white text-[#141414] border-[#141414] hover:bg-[#E4E3E0]'
                   }`}
                 >
-                  {mode === 'all' ? 'TODOS OS ITENS' : mode === 'pending' ? 'PENDENTES' : 'RESOLVIDOS'}
+                  {mode === 'all' ? 'ALL ITEMS' : mode === 'pending' ? 'PENDING' : 'COMPLETED'}
                 </button>
               ))}
             </div>
@@ -484,8 +484,8 @@ ${schemaCode}`;
               )}
               <span>
                 {copiedId === 'meta-bundle'
-                  ? 'BUNDLE COMPLETO COPIADO!'
-                  : 'COPIAR BUNDLE <HEAD> COMPLETO'}
+                  ? 'FULL BUNDLE COPIED!'
+                  : 'COPY COMPLETE <HEAD> BUNDLE'}
               </span>
             </button>
           </div>
@@ -512,7 +512,7 @@ ${schemaCode}`;
                         type="button"
                         onClick={() => toggleCheck(item.id)}
                         className="mt-0.5 cursor-pointer text-[#141414] hover:opacity-70"
-                        title={isChecked ? 'Marcar como pendente' : 'Marcar como concluído'}
+                        title={isChecked ? 'Mark as pending' : 'Mark as completed'}
                       >
                         {isChecked ? (
                           <CheckSquare className="h-5 w-5 text-emerald-700 stroke-[2.5]" />
@@ -532,9 +532,9 @@ ${schemaCode}`;
                           </h4>
                           <span
                             className={`text-[9px] font-black px-1.5 py-0.2 border ${
-                              item.priority === 'CRÍTICO'
+                              item.priority === 'CRITICAL'
                                 ? 'bg-rose-100 text-rose-950 border-rose-700'
-                                : item.priority === 'ALTO IMPACTO'
+                                : item.priority === 'HIGH IMPACT'
                                 ? 'bg-amber-100 text-amber-950 border-amber-700'
                                 : 'bg-blue-100 text-blue-950 border-blue-700'
                             }`}
@@ -563,17 +563,17 @@ ${schemaCode}`;
                         {item.autoPassed ? (
                           <>
                             <CheckCircle2 className="h-3 w-3 text-emerald-700" />
-                            CONFORME NA AUDITORIA
+                            AUDIT PASSED
                           </>
                         ) : isChecked ? (
                           <>
                             <Check className="h-3 w-3 text-emerald-700" />
-                            MARCADO COMO FEITO
+                            MARKED AS DONE
                           </>
                         ) : (
                           <>
                             <AlertTriangle className="h-3 w-3 text-rose-700" />
-                            PENDENTE / AÇÃO EXIGIDA
+                            PENDING / ACTION REQUIRED
                           </>
                         )}
                       </span>
@@ -585,7 +585,7 @@ ${schemaCode}`;
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px]">
                       <div className="border border-[#141414]/20 bg-[#E4E3E0] p-2">
                         <span className="font-bold block text-[10px] text-[#141414]/70 uppercase">
-                          Estado Atual Auditado:
+                          Current Audited State:
                         </span>
                         <div className="font-mono mt-0.5 truncate text-[#141414]">
                           {item.current}
@@ -594,7 +594,7 @@ ${schemaCode}`;
 
                       <div className="border border-[#141414]/20 bg-white p-2">
                         <span className="font-bold block text-[10px] text-[#141414]/70 uppercase">
-                          Recomendação Prática:
+                          Actionable Guideline:
                         </span>
                         <div className="mt-0.5 text-[#141414]/90">
                           {item.guideline}
@@ -605,7 +605,7 @@ ${schemaCode}`;
                     {/* Code Snippet Box */}
                     <div className="border border-[#141414] bg-[#141414] text-[#E4E3E0]">
                       <div className="flex items-center justify-between border-b border-neutral-700 px-3 py-1.5 bg-[#1C1C1C] text-[10px]">
-                        <span className="font-bold text-neutral-300">Snippet Pronto para Inserir no HTML</span>
+                        <span className="font-bold text-neutral-300">Ready-to-use HTML Snippet</span>
                         <button
                           type="button"
                           onClick={() => handleCopy(item.codeSnippet, item.id)}
@@ -616,7 +616,7 @@ ${schemaCode}`;
                           ) : (
                             <Copy className="h-3 w-3" />
                           )}
-                          <span>{copiedId === item.id ? 'COPIADO' : 'COPIAR'}</span>
+                          <span>{copiedId === item.id ? 'COPIED' : 'COPY'}</span>
                         </button>
                       </div>
                       <pre className="p-2.5 font-mono text-[11px] overflow-x-auto leading-relaxed selection:bg-amber-400 selection:text-black">
@@ -636,10 +636,10 @@ ${schemaCode}`;
                 <FileCode className="h-5 w-5 text-blue-600" />
                 <div>
                   <h3 className="text-sm font-black uppercase">
-                    Gerador Interativo de Dados Estruturados Schema.org
+                    Interactive Schema.org Structured Data Generator
                   </h3>
                   <p className="text-[11px] text-[#141414]/70">
-                    Gere marcações semânticas compatíveis com os Rich Results e Snippets enriquecidos do Google
+                    Generate semantic markup compatible with Google Rich Results and enhanced snippets
                   </p>
                 </div>
               </div>
@@ -650,7 +650,7 @@ ${schemaCode}`;
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 border border-[#141414] bg-[#E4E3E0] px-2.5 py-1 text-xs font-bold hover:bg-white"
               >
-                <span>TESTE DE RESULTADOS DO GOOGLE</span>
+                <span>GOOGLE RICH RESULTS TEST</span>
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
@@ -658,7 +658,7 @@ ${schemaCode}`;
             {/* Schema Type Buttons */}
             <div>
               <span className="text-[10px] font-bold uppercase text-[#141414]/70 block mb-1.5">
-                SELECIONE A ENTIDADE PRINCIPAL DO SEU SITE:
+                SELECT PRIMARY WEBSITE ENTITY:
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {(
@@ -702,7 +702,7 @@ ${schemaCode}`;
                   ) : (
                     <Copy className="h-3 w-3" />
                   )}
-                  <span>{copiedId === 'schema-generator' ? 'COPIADO!' : 'COPIAR JSON-LD'}</span>
+                  <span>{copiedId === 'schema-generator' ? 'COPIED!' : 'COPY JSON-LD'}</span>
                 </button>
               </div>
               <pre className="p-3.5 font-mono text-[11px] overflow-x-auto max-h-52 leading-relaxed selection:bg-amber-400 selection:text-black">
@@ -715,7 +715,7 @@ ${schemaCode}`;
         {/* Modal Footer */}
         <div className="flex items-center justify-between border-t-2 border-[#141414] p-4 bg-[#E4E3E0] shrink-0 text-xs">
           <div className="text-[11px] text-[#141414]/70">
-            Pronto para aplicar no arquivo <strong>index.html</strong> ou no componente raiz do seu projeto.
+            Ready to apply inside <strong>index.html</strong> or your project's root document.
           </div>
 
           <button
@@ -723,7 +723,7 @@ ${schemaCode}`;
             onClick={onClose}
             className="border-2 border-[#141414] bg-[#141414] text-white px-5 py-1.5 font-bold hover:bg-neutral-800 shadow-[2px_2px_0px_#888888] cursor-pointer"
           >
-            CONCLUIR E FECHAR
+            DONE & CLOSE
           </button>
         </div>
       </div>

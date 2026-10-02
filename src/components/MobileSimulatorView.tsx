@@ -28,8 +28,8 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
 
   // Device dimensions in pixels
   const dimensions = {
-    mobile: isLandscape ? { width: 667, height: 375, name: 'Mobile (Paisagem)' } : { width: 375, height: 667, name: 'Mobile (375 × 667px)' },
-    tablet: isLandscape ? { width: 1024, height: 768, name: 'Tablet (Paisagem)' } : { width: 768, height: 1024, name: 'Tablet (768 × 1024px)' },
+    mobile: isLandscape ? { width: 667, height: 375, name: 'Mobile (Landscape)' } : { width: 375, height: 667, name: 'Mobile (375 × 667px)' },
+    tablet: isLandscape ? { width: 1024, height: 768, name: 'Tablet (Landscape)' } : { width: 768, height: 1024, name: 'Tablet (768 × 1024px)' },
     desktop: { width: 1200, height: 750, name: 'Desktop (1200 × 750px)' },
   };
 
@@ -47,17 +47,17 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
-                Simulação Multi-Dispositivo & Usabilidade Mobile
+                Multi-Device Simulation & Mobile Usability
               </h2>
               <p className="text-xs text-[#141414]/70">
-                Visualize a experiência em telas móveis, áreas de toque e compatibilidade com viewports responsivos
+                Inspect responsive viewport rendering, touch target areas, and mobile ergonomics
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
             <span className={`px-2.5 py-1 border font-bold ${hasViewportMeta ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-rose-100 text-rose-950 border-rose-700'}`}>
-              {hasViewportMeta ? '✓ METATAG VIEWPORT CONFIGURADA' : '⚠ SEM METATAG VIEWPORT'}
+              {hasViewportMeta ? '✓ VIEWPORT METATAG CONFIGURED' : '⚠ MISSING VIEWPORT METATAG'}
             </span>
           </div>
         </div>
@@ -66,7 +66,7 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
       {/* Control Bar: Device Switcher & Orientation */}
       <div className="border-2 border-[#141414] bg-white p-3 shadow-[2px_2px_0px_#141414] flex flex-wrap items-center justify-between gap-3 font-mono text-xs">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-[#141414]/70 mr-1">DISPOSITIVO:</span>
+          <span className="font-bold text-[#141414]/70 mr-1">DEVICE:</span>
           <button
             type="button"
             onClick={() => setDevice('mobile')}
@@ -115,7 +115,7 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
               className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#141414] bg-[#E4E3E0] hover:bg-white font-bold cursor-pointer"
             >
               <RotateCw className="h-3.5 w-3.5" />
-              <span>GIRAR TELA</span>
+              <span>ROTATE</span>
             </button>
           )}
 
@@ -125,7 +125,7 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
             rel="noopener noreferrer"
             className="flex items-center gap-1 border border-[#141414] px-2.5 py-1.5 bg-[#E4E3E0] hover:bg-white font-bold"
           >
-            <span>ABRIR SITE</span>
+            <span>OPEN SITE</span>
             <ExternalLink className="h-3 w-3" />
           </a>
         </div>
@@ -158,7 +158,7 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
             {!iframeError ? (
               <iframe
                 src={report.targetUrl}
-                title="Simulador de Viewport"
+                title="Viewport Simulator"
                 className="w-full h-full border-none"
                 onError={() => setIframeError(true)}
                 sandbox="allow-scripts allow-same-origin"
@@ -166,9 +166,9 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
             ) : (
               <div className="space-y-3 font-mono max-w-sm">
                 <AlertTriangle className="h-8 w-8 text-amber-600 mx-auto" />
-                <h4 className="font-black text-sm uppercase">Bloqueio de Frame Detectado (X-Frame-Options)</h4>
+                <h4 className="font-black text-sm uppercase">Frame Embedding Blocked (X-Frame-Options)</h4>
                 <p className="text-xs text-[#141414]/70">
-                  O site original envia a diretiva de segurança de frame que impede exibição dentro de iframes externos.
+                  The target website specifies a frame security policy preventing rendering inside external iframes.
                 </p>
                 <div className="pt-2">
                   <a
@@ -177,7 +177,7 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#141414] bg-[#141414] text-white text-xs font-bold shadow-[2px_2px_0px_#888888]"
                   >
-                    <span>ABRIR DIRETAMENTE</span>
+                    <span>OPEN DIRECTLY</span>
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </div>
@@ -192,33 +192,33 @@ export const MobileSimulatorView: React.FC<MobileSimulatorViewProps> = ({ report
         {/* Viewport Tag */}
         <div className="border-2 border-[#141414] bg-white p-4 shadow-[2px_2px_0px_#141414] space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold uppercase">Configuração de Viewport</span>
+            <span className="font-bold uppercase">Viewport Configuration</span>
             <CheckCircle2 className="h-4 w-4 text-emerald-700" />
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            <code>width=device-width, initial-scale=1.0</code> ajusta a escala nativa na tela sem exigir zoom horizontal pelo visitante.
+            <code>width=device-width, initial-scale=1.0</code> establishes the responsive layout scale without horizontal pinch-to-zoom requirements.
           </p>
         </div>
 
         {/* Touch Targets 48x48 */}
         <div className="border-2 border-[#141414] bg-white p-4 shadow-[2px_2px_0px_#141414] space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold uppercase">Alvos de Toque (≥48px)</span>
+            <span className="font-bold uppercase">Touch Targets (≥48px)</span>
             <CheckCircle2 className="h-4 w-4 text-emerald-700" />
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            Botões e links de navegação devem ter área mínima de clique de 48×48px com espaçamento de 8px para evitar cliques acidentais em smartphones.
+            Interactive buttons and navigation links must provide a minimum 48×48px tap target with 8px spacing to prevent accidental touches.
           </p>
         </div>
 
         {/* Font Legibility */}
         <div className="border-2 border-[#141414] bg-white p-4 shadow-[2px_2px_0px_#141414] space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold uppercase">Legibilidade de Texto</span>
+            <span className="font-bold uppercase">Text Legibility</span>
             <CheckCircle2 className="h-4 w-4 text-emerald-700" />
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            Tamanhos de fonte inferiores a 12px forçam o usuário a aplicar zoom e prejudicam a pontuação no Google Mobile-First Index.
+            Base font sizes below 12px force users to pinch-zoom and adversely affect Google Mobile-First Indexing scores.
           </p>
         </div>
       </div>

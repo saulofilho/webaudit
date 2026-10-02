@@ -130,7 +130,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                 : 'bg-rose-100 text-rose-950 border-rose-700'
             }`}>
               {report.targetUrl.startsWith('https://') ? <ShieldCheck className="h-3.5 w-3.5 text-emerald-700" /> : <ShieldAlert className="h-3.5 w-3.5 text-rose-700" />}
-              {report.targetUrl.startsWith('https://') ? 'PROTOCOLO HTTPS VÁLIDO' : 'INSEGURO (HTTP SIMPLES)'}
+              {report.targetUrl.startsWith('https://') ? 'VALID HTTPS PROTOCOL' : 'INSECURE (PLAIN HTTP)'}
             </span>
 
             <span className="text-[#141414]/70 bg-[#E4E3E0] px-2 py-0.5 border border-[#141414]">
@@ -142,7 +142,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
               <button
                 type="button"
                 onClick={onViewTrends}
-                title={`Comparado com auditoria anterior de ${evolution.fullPreviousDate} (${evolution.previousScore} pts). Clique para ver histórico.`}
+                title={`Compared with previous audit from ${evolution.fullPreviousDate} (${evolution.previousScore} pts). Click to view history.`}
                 className={`inline-flex items-center gap-1.5 px-2 py-0.5 font-bold border transition-transform hover:scale-102 cursor-pointer shadow-[1px_1px_0px_#141414] ${
                   evolution.diff > 0
                     ? 'bg-emerald-100 text-emerald-950 border-emerald-700'
@@ -159,7 +159,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                   <Minus className="h-3.5 w-3.5 text-zinc-600 stroke-[2.5]" />
                 )}
                 <span>
-                  EVOLUÇÃO: <strong>{evolution.formattedPercent} desde {evolution.formattedDate}</strong>
+                  EVOLUTION: <strong>{evolution.formattedPercent} since {evolution.formattedDate}</strong>
                 </span>
               </button>
             )}
@@ -174,7 +174,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#141414] hover:opacity-70 p-1 border border-[#141414] bg-[#E4E3E0]"
-              title="Abrir site original em nova aba"
+              title="Open original website in new tab"
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
@@ -202,7 +202,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             className="flex items-center gap-1.5 border border-[#141414] bg-white px-3 py-1 font-bold text-[#141414] hover:bg-[#141414] hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>RE-ANALISAR</span>
+            <span>RE-AUDIT</span>
           </button>
 
           {onOpenActionPlan && (
@@ -212,7 +212,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
               className="flex items-center gap-1.5 border-2 border-[#141414] bg-amber-400 px-3 py-1 font-bold text-[#141414] hover:bg-amber-300 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <ListTodo className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span>PLANO DE AÇÃO</span>
+              <span>ACTION PLAN</span>
               {pendingActionCount > 0 && (
                 <span className="bg-[#141414] text-amber-300 text-[10px] px-1 py-0.2 font-black">
                   {pendingActionCount}
@@ -225,11 +225,11 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <button
               id="btn-hero-seo-checklist"
               onClick={onOpenSeoChecklist}
-              title="Abrir SEO Quick-Start Checklist com diagnóstico de meta tags e dados estruturados"
+              title="Open SEO Quick-Start Checklist with meta tag and structured data audit"
               className="flex items-center gap-1.5 border border-[#141414] bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-1 font-bold text-blue-900 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <Search className="h-3.5 w-3.5 text-blue-600 group-hover:text-white" />
-              <span>CHECKLIST SEO</span>
+              <span>SEO CHECKLIST</span>
             </button>
           )}
 
@@ -239,7 +239,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             className="flex items-center gap-1.5 border border-[#141414] bg-[#141414] px-3 py-1 font-bold text-white hover:bg-black shadow-[2px_2px_0px_#888888] transition-all cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
-            <span>EXPORTAR</span>
+            <span>EXPORT</span>
           </button>
         </div>
       </div>
@@ -285,24 +285,24 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
 
           <div className="mt-3 text-center w-full">
             <div className={`py-1 px-3 font-mono font-black text-xs uppercase border-2 shadow-[2px_2px_0px_#141414] ${getGradeBadgeClass(report.overallGrade)}`}>
-              CLASSIFICAÇÃO GERAL: {report.overallGrade}
+              OVERALL GRADE: {report.overallGrade}
             </div>
             <p className="text-[11px] font-mono text-[#141414]/70 mt-1.5 uppercase">
-              ÍNDICE PONDERADO DE SAÚDE WEB
+              WEIGHTED WEB HEALTH INDEX
             </p>
           </div>
 
-          {/* Score de Evolução Card */}
+          {/* Score Evolution Card */}
           <div className="mt-3.5 w-full border-2 border-[#141414] bg-white p-3 shadow-[2px_2px_0px_#141414] text-left">
             <div className="flex items-center justify-between border-b border-[#141414]/20 pb-1.5 mb-2">
               <div className="flex items-center gap-1.5">
                 <Activity className="h-3.5 w-3.5 text-[#141414]" />
                 <span className="text-[11px] font-mono font-black uppercase text-[#141414] tracking-wider">
-                  Score de Evolução
+                  Score Evolution
                 </span>
               </div>
               <span className="text-[9px] font-mono text-[#141414]/60 uppercase font-bold">
-                {evolution ? 'vs. anterior' : 'Ponto de Partida'}
+                {evolution ? 'vs. previous' : 'Baseline'}
               </span>
             </div>
 
@@ -326,7 +326,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                     ) : (
                       <Minus className="h-4 w-4 text-zinc-600 stroke-[2.5]" />
                     )}
-                    <span>{evolution.formattedPercent} desde {evolution.formattedDate}</span>
+                    <span>{evolution.formattedPercent} since {evolution.formattedDate}</span>
                   </div>
 
                   {/* Previous vs Current Score */}
@@ -346,12 +346,12 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                 {/* Pillar Breakdown */}
                 <div className="pt-2 border-t border-[#141414]/15">
                   <div className="text-[9px] font-mono text-[#141414]/70 uppercase font-bold mb-1 flex items-center justify-between">
-                    <span>Variação por Pilar:</span>
+                    <span>Pillar Delta:</span>
                     <span className="text-[8px] text-[#141414]/50">PTS</span>
                   </div>
                   <div className="grid grid-cols-4 gap-1 text-[10px] font-mono text-center">
-                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Segurança: ${evolution.secDiff > 0 ? '+' : ''}${evolution.secDiff} pts`}>
-                      <div className="text-[8px] text-[#141414]/70 font-bold">SEG</div>
+                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Security: ${evolution.secDiff > 0 ? '+' : ''}${evolution.secDiff} pts`}>
+                      <div className="text-[8px] text-[#141414]/70 font-bold">SEC</div>
                       <div className={`font-black ${getPillarDiffColor(evolution.secDiff)}`}>
                         {evolution.secDiff > 0 ? `+${evolution.secDiff}` : evolution.secDiff}
                       </div>
@@ -362,8 +362,8 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                         {evolution.seoDiff > 0 ? `+${evolution.seoDiff}` : evolution.seoDiff}
                       </div>
                     </div>
-                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Boas Práticas: ${evolution.bpDiff > 0 ? '+' : ''}${evolution.bpDiff} pts`}>
-                      <div className="text-[8px] text-[#141414]/70 font-bold">PRÁT</div>
+                    <div className="bg-[#E4E3E0] p-1 border border-[#141414]/30" title={`Best Practices: ${evolution.bpDiff > 0 ? '+' : ''}${evolution.bpDiff} pts`}>
+                      <div className="text-[8px] text-[#141414]/70 font-bold">PRACT</div>
                       <div className={`font-black ${getPillarDiffColor(evolution.bpDiff)}`}>
                         {evolution.bpDiff > 0 ? `+${evolution.bpDiff}` : evolution.bpDiff}
                       </div>
@@ -385,7 +385,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
                     className="w-full flex items-center justify-center gap-1.5 pt-1.5 text-[10px] font-mono font-bold text-[#141414] hover:text-emerald-800 transition-colors border-t border-[#141414]/10 cursor-pointer"
                   >
                     <TrendingUp className="h-3 w-3" />
-                    <span>HISTÓRICO & TENDÊNCIAS COMPLETAS</span>
+                    <span>FULL HISTORY & TRENDS</span>
                   </button>
                 )}
               </div>
@@ -393,10 +393,10 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
               <div className="py-1 text-left font-mono">
                 <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-neutral-100 border border-neutral-400 text-neutral-800 text-[10px] font-bold mb-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block" />
-                  <span>LINHA DE BASE REGISTRADA</span>
+                  <span>BASELINE RECORDED</span>
                 </div>
                 <p className="text-[10px] text-[#141414]/70 leading-normal">
-                  Esta é a 1ª auditoria para este domínio ({report.overallScore} pts). Re-audite após correções para comparar a evolução.
+                  This is the 1st audit for this domain ({report.overallScore} pts). Re-audit after fixes to track progress.
                 </p>
               </div>
             )}
@@ -409,7 +409,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <div className="flex items-center gap-2 mb-1.5 border-b border-[#141414]/30 pb-1.5">
               <Sparkles className="h-4 w-4 text-[#141414]" />
               <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#141414]">
-                DIAGNÓSTICO EXECUTIVO // GEMINI 3.7 AI
+                EXECUTIVE DIAGNOSTIC // GEMINI AI
               </h3>
             </div>
             <p className="text-xs sm:text-sm font-mono text-[#141414] leading-relaxed">
@@ -423,7 +423,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <div className="border border-[#141414] bg-white p-3 shadow-[2px_2px_0px_#141414]">
               <h4 className="flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-800 uppercase tracking-wider mb-2 border-b border-emerald-800/30 pb-1">
                 <CheckCircle className="h-3.5 w-3.5 text-emerald-700" />
-                Pontos Fortes Identificados
+                Identified Key Strengths
               </h4>
               <ul className="space-y-1 text-xs font-mono text-[#141414]">
                 {report.keyStrengths.map((str, i) => (
@@ -439,7 +439,7 @@ export const AuditSummaryHero: React.FC<AuditSummaryHeroProps> = ({
             <div className="border border-[#141414] bg-white p-3 shadow-[2px_2px_0px_#141414]">
               <h4 className="flex items-center gap-1.5 text-xs font-mono font-bold text-amber-800 uppercase tracking-wider mb-2 border-b border-amber-800/30 pb-1">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-700" />
-                Ações Prioritárias Recomendadas
+                Recommended Priority Actions
               </h4>
               <ul className="space-y-1 text-xs font-mono text-[#141414]">
                 {report.topPriorityFixes.slice(0, 3).map((fix, i) => (

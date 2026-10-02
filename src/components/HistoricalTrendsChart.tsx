@@ -138,13 +138,13 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
           <div className="space-y-1 text-[11px]">
             {showOverall && (
               <div className="flex justify-between items-center bg-[#141414] text-white px-1.5 py-0.5 font-black">
-                <span>SCORE GERAL:</span>
+                <span>OVERALL SCORE:</span>
                 <span>{data.overall} / 100</span>
               </div>
             )}
             {showSecurity && (
               <div className="flex justify-between items-center text-emerald-800 font-bold">
-                <span>SEGURANÇA:</span>
+                <span>SECURITY:</span>
                 <span>{data.security}%</span>
               </div>
             )}
@@ -162,7 +162,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
             )}
             {showBestPractices && (
               <div className="flex justify-between items-center text-purple-800 font-bold">
-                <span>BOAS PRÁTICAS:</span>
+                <span>BEST PRACTICES:</span>
                 <span>{data.bestPractices}%</span>
               </div>
             )}
@@ -170,7 +170,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
 
           {onSelectAudit && (
             <div className="mt-2 pt-1.5 border-t border-[#141414]/20 text-[9px] text-[#141414]/60 uppercase text-center">
-              Clique no ponto para carregar este relatório
+              Click data point to load this report
             </div>
           )}
         </div>
@@ -183,9 +183,9 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
     return (
       <div className="border-2 border-[#141414] bg-white p-8 text-center font-mono shadow-[4px_4px_0px_#141414]">
         <Activity className="h-8 w-8 text-[#141414]/40 mx-auto mb-2" />
-        <h4 className="text-xs font-black uppercase text-[#141414]">NENHUM DADO HISTÓRICO DISPONÍVEL</h4>
+        <h4 className="text-xs font-black uppercase text-[#141414]">NO HISTORICAL DATA AVAILABLE</h4>
         <p className="text-[11px] text-[#141414]/70 mt-1 max-w-md mx-auto">
-          Execute uma ou mais auditorias para gerar a curva temporal de evolução de score, segurança, SEO e performance.
+          Run one or more audits to plot the trend timeline across overall score, security, SEO, and performance.
         </p>
       </div>
     );
@@ -199,18 +199,18 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-[#141414]" />
             <h3 className="text-xs sm:text-sm font-black text-[#141414] uppercase">
-              EVOLUÇÃO TEMPORAL & TENDÊNCIAS HISTÓRICAS
+              TIMELINE EVOLUTION & HISTORICAL TRENDS
             </h3>
           </div>
           <p className="text-[11px] text-[#141414]/70 mt-0.5">
-            Acompanhe como os scores de segurança, SEO, performance e conformidade evoluíram ao longo das auditorias.
+            Track how security, SEO, performance, and best practices scores trend over time across audits.
           </p>
         </div>
 
         {/* URL Filter selector */}
         <div className="flex items-center gap-2 shrink-0">
           <label htmlFor="url-filter-select" className="text-[11px] font-bold uppercase text-[#141414]">
-            FILTRAR URL:
+            FILTER URL:
           </label>
           <select
             id="url-filter-select"
@@ -218,7 +218,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
             onChange={(e) => setSelectedUrl(e.target.value)}
             className="bg-[#E4E3E0] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-bold text-[#141414] focus:outline-none focus:bg-white"
           >
-            {uniqueUrls.length > 1 && <option value="all">TODAS AS URLS ({uniqueUrls.length})</option>}
+            {uniqueUrls.length > 1 && <option value="all">ALL URLS ({uniqueUrls.length})</option>}
             {uniqueUrls.map((url) => {
               let display = url;
               try {
@@ -239,10 +239,10 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
               type="button"
               onClick={() => onReaudit(selectedUrl)}
               className="flex items-center gap-1 bg-[#141414] text-white hover:bg-black px-2.5 py-1 text-xs font-black uppercase border border-[#141414] shadow-[2px_2px_0px_#888888] cursor-pointer"
-              title="Executar nova auditoria agora para registrar um novo ponto na linha do tempo"
+              title="Run a new audit right now to record a fresh point on the timeline"
             >
               <RefreshCw className="h-3 w-3" />
-              <span>REAUDITAR</span>
+              <span>RE-AUDIT</span>
             </button>
           )}
         </div>
@@ -253,13 +253,13 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Total Runs */}
           <div className="border border-[#141414] bg-[#E4E3E0]/30 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">EXECUÇÕES:</span>
-            <div className="text-base font-black text-[#141414] mt-0.5">{stats.runsCount} AUDITORIAS</div>
+            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">RUNS:</span>
+            <div className="text-base font-black text-[#141414] mt-0.5">{stats.runsCount} AUDITS</div>
           </div>
 
           {/* Latest Score & Delta */}
           <div className="border border-[#141414] bg-[#E4E3E0]/30 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">SCORE ATUAL:</span>
+            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">CURRENT SCORE:</span>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-base font-black text-[#141414]">{stats.latestScore}/100</span>
               {stats.runsCount > 1 && (
@@ -287,13 +287,13 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
 
           {/* Peak Score */}
           <div className="border border-[#141414] bg-[#E4E3E0]/30 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">PICO MÁXIMO:</span>
+            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">PEAK SCORE:</span>
             <div className="text-base font-black text-emerald-800 mt-0.5">{stats.maxScore} PTS</div>
           </div>
 
           {/* Average Score */}
           <div className="border border-[#141414] bg-[#E4E3E0]/30 p-2.5">
-            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">MÉDIA GERAL:</span>
+            <span className="text-[10px] font-bold uppercase text-[#141414]/70 block">AVERAGE SCORE:</span>
             <div className="text-base font-black text-[#141414] mt-0.5">{stats.avgScore} PTS</div>
           </div>
         </div>
@@ -301,7 +301,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
 
       {/* Metrics visibility toggle buttons */}
       <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#141414]/20">
-        <span className="text-[10px] font-bold uppercase text-[#141414]/70 mr-1">EXIBIR SÉRIES:</span>
+        <span className="text-[10px] font-bold uppercase text-[#141414]/70 mr-1">SERIES VISIBILITY:</span>
 
         <button
           type="button"
@@ -311,7 +311,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
           }`}
         >
           <span className="h-2 w-2 bg-white inline-block border border-black" />
-          <span>SCORE GERAL</span>
+          <span>OVERALL SCORE</span>
         </button>
 
         <button
@@ -322,7 +322,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
           }`}
         >
           <span className="h-2 w-2 bg-emerald-300 inline-block border border-black" />
-          <span>SEGURANÇA</span>
+          <span>SECURITY</span>
         </button>
 
         <button
@@ -355,7 +355,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
           }`}
         >
           <span className="h-2 w-2 bg-purple-300 inline-block border border-black" />
-          <span>BOAS PRÁTICAS</span>
+          <span>BEST PRACTICES</span>
         </button>
       </div>
 
@@ -389,8 +389,8 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
                 ticks={[0, 25, 50, 75, 100]}
               />
 
-              <ReferenceLine y={90} stroke="#10b981" strokeDasharray="4 4" label={{ value: 'Meta 90+', fill: '#047857', fontSize: 10, position: 'insideTopRight' }} />
-              <ReferenceLine y={50} stroke="#f43f5e" strokeDasharray="4 4" label={{ value: 'Alerta <50', fill: '#be123c', fontSize: 10, position: 'insideBottomRight' }} />
+              <ReferenceLine y={90} stroke="#10b981" strokeDasharray="4 4" label={{ value: 'Target 90+', fill: '#047857', fontSize: 10, position: 'insideTopRight' }} />
+              <ReferenceLine y={50} stroke="#f43f5e" strokeDasharray="4 4" label={{ value: 'Warning <50', fill: '#be123c', fontSize: 10, position: 'insideBottomRight' }} />
 
               <Tooltip content={<CustomTooltip />} />
               
@@ -402,7 +402,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
                 <Line
                   type="monotone"
                   dataKey="overall"
-                  name="Score Geral"
+                  name="Overall Score"
                   stroke="#141414"
                   strokeWidth={3}
                   dot={{ r: 5, fill: '#141414', stroke: '#ffffff', strokeWidth: 2 }}
@@ -414,7 +414,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
                 <Line
                   type="monotone"
                   dataKey="security"
-                  name="Segurança"
+                  name="Security"
                   stroke="#047857"
                   strokeWidth={2}
                   strokeDasharray={showOverall ? "4 2" : undefined}
@@ -453,7 +453,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
                 <Line
                   type="monotone"
                   dataKey="bestPractices"
-                  name="Boas Práticas"
+                  name="Best Practices"
                   stroke="#7e22ce"
                   strokeWidth={2}
                   strokeDasharray={showOverall ? "4 2" : undefined}
@@ -469,21 +469,21 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
       {/* Audit Points Timeline Table */}
       <div className="space-y-2">
         <h4 className="text-[11px] font-black uppercase text-[#141414]">
-          REGISTROS DA LINHA DO TEMPO ({chartData.length} PONTOS):
+          TIMELINE RECORDS ({chartData.length} POINTS):
         </h4>
 
         <div className="overflow-x-auto border-2 border-[#141414]">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#141414] text-white uppercase text-[10px] font-bold">
               <tr>
-                <th className="p-2 border-r border-white/20">EXECUÇÃO</th>
-                <th className="p-2 border-r border-white/20">DATA / HORA</th>
-                <th className="p-2 border-r border-white/20">DOMÍNIO</th>
-                <th className="p-2 border-r border-white/20 text-center">GERAL</th>
+                <th className="p-2 border-r border-white/20">RUN</th>
+                <th className="p-2 border-r border-white/20">DATE / TIME</th>
+                <th className="p-2 border-r border-white/20">DOMAIN</th>
+                <th className="p-2 border-r border-white/20 text-center">OVERALL</th>
                 <th className="p-2 border-r border-white/20 text-center">SEC</th>
                 <th className="p-2 border-r border-white/20 text-center">SEO</th>
                 <th className="p-2 border-r border-white/20 text-center">PERF</th>
-                <th className="p-2 text-right">AÇÃO</th>
+                <th className="p-2 text-right">ACTION</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#141414]">
@@ -509,7 +509,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
                         onClick={() => onSelectAudit(row.id)}
                         className="bg-white hover:bg-[#141414] hover:text-white px-2 py-0.5 border border-[#141414] text-[10px] font-bold uppercase transition-colors cursor-pointer"
                       >
-                        ABRIR
+                        OPEN
                       </button>
                     )}
                   </td>

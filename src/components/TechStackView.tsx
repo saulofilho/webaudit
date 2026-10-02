@@ -32,20 +32,20 @@ export const TechStackView: React.FC<TechStackViewProps> = ({ techStack, serverH
         <Layers className="h-5 w-5 text-[#141414]" />
         <div>
           <h3 className="text-xs sm:text-sm font-black text-[#141414] uppercase">
-            STACK TECNOLÓGICO & INFRAESTRUTURA DETECTADA
+            TECHNOLOGY STACK & DETECTED INFRASTRUCTURE
           </h3>
           <p className="text-[11px] text-[#141414]/70">
-            Tecnologias, servidores, bibliotecas e CDNs identificados via assinaturas HTTP e DOM.
+            Technologies, servers, libraries, and CDNs identified via HTTP and DOM signatures.
           </p>
         </div>
       </div>
 
       {techStack.length === 0 ? (
         <div className="text-center py-8 text-[#141414]/70">
-          <p className="text-xs">Nenhuma tecnologia específica identificada por assinaturas padrão.</p>
+          <p className="text-xs">No specific technologies identified via standard signatures.</p>
           {serverHeader && (
             <p className="text-[11px] text-[#141414] mt-1">
-              CABEÇALHO SERVER: <strong className="bg-[#E4E3E0] px-1 py-0.5 border border-[#141414]">{serverHeader}</strong>
+              SERVER HEADER: <strong className="bg-[#E4E3E0] px-1 py-0.5 border border-[#141414]">{serverHeader}</strong>
             </p>
           )}
         </div>
@@ -70,7 +70,7 @@ export const TechStackView: React.FC<TechStackViewProps> = ({ techStack, serverH
                   </h4>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[10px] text-[#141414]/80">
-                      CONFIANÇA: <strong>{tech.confidence}%</strong>
+                      CONFIDENCE: <strong>{tech.confidence}%</strong>
                     </span>
                   </div>
                 </div>

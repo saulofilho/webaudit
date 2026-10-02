@@ -45,21 +45,21 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
 
     if (config.platform === 'slack') {
       return {
-        text: `🚨 Alerta WebAudit: ${hostname} recebeu nota ${report.overallScore}/100`,
+        text: `🚨 WebAudit Alert: ${hostname} scored ${report.overallScore}/100`,
         blocks: [
           {
             type: 'header',
             text: {
               type: 'plain_text',
-              text: `🚨 Relatório de Auditoria: ${hostname}`,
+              text: `🚨 Audit Report: ${hostname}`,
             },
           },
           {
             type: 'section',
             fields: [
-              { type: 'mrkdwn', text: `*Score Geral:*\n${report.overallScore}/100 (Grade ${report.overallGrade})` },
-              { type: 'mrkdwn', text: `*Falhas Críticas:*\n${criticalCount} itens` },
-              { type: 'mrkdwn', text: `*Segurança:*\n${report.categories.security.score}%` },
+              { type: 'mrkdwn', text: `*Overall Score:*\n${report.overallScore}/100 (Grade ${report.overallGrade})` },
+              { type: 'mrkdwn', text: `*Critical Issues:*\n${criticalCount} items` },
+              { type: 'mrkdwn', text: `*Security:*\n${report.categories.security.score}%` },
               { type: 'mrkdwn', text: `*Performance:*\n${report.categories.performance_accessibility.score}%` },
             ],
           },
@@ -67,7 +67,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `*Resumo da IA:*\n>${report.aiExecutiveSummary.slice(0, 180)}...`,
+              text: `*AI Executive Summary:*\n>${report.aiExecutiveSummary.slice(0, 180)}...`,
             },
           },
           {
@@ -75,7 +75,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
             elements: [
               {
                 type: 'button',
-                text: { type: 'plain_text', text: 'Ver Auditoria Completa' },
+                text: { type: 'plain_text', text: 'View Full Audit' },
                 url: report.targetUrl,
               },
             ],
@@ -90,16 +90,16 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
         avatar_url: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
         embeds: [
           {
-            title: `🛡️ Auditoria Web Concluída: ${hostname}`,
+            title: `🛡️ Web Audit Completed: ${hostname}`,
             url: report.targetUrl,
             color: report.overallScore >= 80 ? 3066993 : 15158332,
             fields: [
-              { name: 'Pontuação Geral', value: `${report.overallScore}/100 (Nota ${report.overallGrade})`, inline: true },
-              { name: 'Falhas Críticas', value: `${criticalCount} críticas`, inline: true },
-              { name: 'Segurança', value: `${report.categories.security.score}%`, inline: true },
-              { name: 'Diagnóstico IA', value: report.aiExecutiveSummary.slice(0, 200) + '...' },
+              { name: 'Overall Score', value: `${report.overallScore}/100 (Grade ${report.overallGrade})`, inline: true },
+              { name: 'Critical Issues', value: `${criticalCount} critical`, inline: true },
+              { name: 'Security', value: `${report.categories.security.score}%`, inline: true },
+              { name: 'AI Diagnostics', value: report.aiExecutiveSummary.slice(0, 200) + '...' },
             ],
-            footer: { text: `WebAudit Engine • ${new Date().toLocaleDateString('pt-BR')}` },
+            footer: { text: `WebAudit Engine • ${new Date().toLocaleDateString('en-US')}` },
           },
         ],
       };
@@ -134,7 +134,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
 
   const handleTestSend = async () => {
     if (!config.webhookUrl.trim()) {
-      setSendStatus({ type: 'error', message: 'Por favor, informe a URL do Webhook do Slack ou Discord.' });
+      setSendStatus({ type: 'error', message: 'Please enter a Slack or Discord Webhook URL.' });
       return;
     }
 
@@ -152,12 +152,12 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
 
       setSendStatus({
         type: 'success',
-        message: 'Disparo de teste efetuado com sucesso! Verifique o canal no seu Slack ou Discord.',
+        message: 'Test alert sent successfully! Check your Slack or Discord channel.',
       });
     } catch (err: any) {
       setSendStatus({
         type: 'error',
-        message: `Erro ao disparar webhook: ${err.message || 'Falha de rede'}. O comando cURL pode ser usado em pipelines.`,
+        message: `Error sending webhook: ${err.message || 'Network failure'}. The cURL command can be used in CI pipelines.`,
       });
     } finally {
       setIsSending(false);
@@ -179,10 +179,10 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
             <Bell className="h-5 w-5 text-[#141414]" />
             <div>
               <h3 className="text-sm font-black uppercase">
-                Monitoramento Contínuo & Webhooks (Slack / Discord)
+                Continuous Monitoring & Webhooks (Slack / Discord)
               </h3>
               <p className="text-[11px] text-[#141414]/70">
-                Configure notificações automáticas em tempo real para regressões de score e falhas críticas
+                Configure real-time automated alerts for score regressions and critical security failures
               </p>
             </div>
           </div>
@@ -201,10 +201,10 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
           {/* Webhook Configuration Card */}
           <div className="border-2 border-[#141414] bg-[#E4E3E0] p-4 shadow-[2px_2px_0px_#141414] space-y-3">
             <div>
-              <label className="font-bold block mb-1">URL do Webhook Receptor:</label>
+              <label className="font-bold block mb-1">Incoming Webhook URL:</label>
               <input
                 type="url"
-                placeholder="https://hooks.slack.com/services/... ou https://discord.com/api/webhooks/..."
+                placeholder="https://hooks.slack.com/services/... or https://discord.com/api/webhooks/..."
                 value={config.webhookUrl}
                 onChange={(e) => setConfig({ ...config, webhookUrl: e.target.value })}
                 className="w-full bg-white border border-[#141414] p-2 font-mono text-xs"
@@ -213,7 +213,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="font-bold block mb-1">Formato do Payload:</label>
+                <label className="font-bold block mb-1">Payload Format:</label>
                 <div className="flex items-center gap-2">
                   {(['slack', 'discord', 'generic'] as const).map((plat) => (
                     <button
@@ -226,14 +226,14 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
                           : 'bg-white text-[#141414] border-[#141414] hover:bg-neutral-100'
                       }`}
                     >
-                      {plat === 'generic' ? 'JSON PURO' : plat.toUpperCase()}
+                      {plat === 'generic' ? 'RAW JSON' : plat.toUpperCase()}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="font-bold block mb-1">Disparar Alerta Se Score Menor Que:</label>
+                <label className="font-bold block mb-1">Trigger Alert If Score Below:</label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -243,7 +243,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
                     onChange={(e) => setConfig({ ...config, triggerMinScore: Number(e.target.value) })}
                     className="w-20 bg-white border border-[#141414] p-1.5 font-bold"
                   />
-                  <span className="text-[11px] text-[#141414]/70">/ 100 pontos</span>
+                  <span className="text-[11px] text-[#141414]/70">/ 100 points</span>
                 </div>
               </div>
             </div>
@@ -257,7 +257,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
                   onChange={(e) => setConfig({ ...config, triggerOnCritical: e.target.checked })}
                   className="accent-[#141414] w-4 h-4 cursor-pointer"
                 />
-                <span>Alertar se houver falha de segurança crítica</span>
+                <span>Alert on critical security failures</span>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer font-bold select-none">
@@ -267,7 +267,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
                   onChange={(e) => setConfig({ ...config, triggerOnRegression: e.target.checked })}
                   className="accent-[#141414] w-4 h-4 cursor-pointer"
                 />
-                <span>Alertar em caso de regressão de nota vs. anterior</span>
+                <span>Alert on score regression vs. previous run</span>
               </label>
             </div>
           </div>
@@ -295,7 +295,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
             <div className="flex items-center justify-between border-b border-[#333333] px-4 py-2 bg-[#1C1C1C]">
               <div className="flex items-center gap-2">
                 <Code className="h-4 w-4 text-neutral-400" />
-                <span className="font-bold text-white">Payload Formatado ({config.platform.toUpperCase()})</span>
+                <span className="font-bold text-white">Formatted Payload ({config.platform.toUpperCase()})</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -304,7 +304,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
                   className="flex items-center gap-1 border border-neutral-600 px-2 py-0.5 text-[10px] text-neutral-300 hover:text-white cursor-pointer"
                 >
                   {copiedType === 'json' ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                  <span>{copiedType === 'json' ? 'COPIADO' : 'COPIAR JSON'}</span>
+                  <span>{copiedType === 'json' ? 'COPIED' : 'COPY JSON'}</span>
                 </button>
 
                 <button
@@ -313,7 +313,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
                   className="flex items-center gap-1 border border-neutral-600 px-2 py-0.5 text-[10px] text-neutral-300 hover:text-white cursor-pointer"
                 >
                   {copiedType === 'curl' ? <Check className="h-3 w-3 text-emerald-400" /> : <Terminal className="h-3 w-3" />}
-                  <span>{copiedType === 'curl' ? 'COPIADO' : 'COPIAR CURL'}</span>
+                  <span>{copiedType === 'curl' ? 'COPIED' : 'COPY CURL'}</span>
                 </button>
               </div>
             </div>
@@ -325,9 +325,9 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
 
           {/* CI/CD Integration Guide */}
           <div className="border border-[#141414] p-3 bg-neutral-50 text-[11px] space-y-1">
-            <span className="font-bold block uppercase text-[#141414]">Como usar em Pipelines CI/CD (GitHub Actions):</span>
+            <span className="font-bold block uppercase text-[#141414]">How to use in CI/CD Pipelines (GitHub Actions):</span>
             <p className="text-[#141414]/70">
-              Adicione a chamada cURL acima no seu workflow após o comando <code>npm run build && npm run deploy</code> para alertar o time instantaneamente no Slack sempre que uma nova versão entrar no ar.
+              Add the cURL command above in your workflow following <code>npm run build && npm run deploy</code> to notify your team instantly on Slack whenever a new release goes live.
             </p>
           </div>
         </div>
@@ -335,7 +335,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
         {/* Modal Footer Actions */}
         <div className="flex items-center justify-between border-t-2 border-[#141414] p-4 bg-[#E4E3E0] shrink-0">
           <span className="text-[11px] text-[#141414]/70">
-            Pronto para testar o envio com as regras configuradas
+            Ready to test dispatch with configured rules
           </span>
 
           <div className="flex items-center gap-2">
@@ -344,7 +344,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
               onClick={onClose}
               className="border border-[#141414] bg-white px-3 py-1.5 font-bold hover:bg-neutral-100 cursor-pointer"
             >
-              FECHAR
+              CLOSE
             </button>
 
             <button
@@ -354,7 +354,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
               className="flex items-center gap-1.5 border-2 border-[#141414] bg-[#141414] text-white px-4 py-1.5 font-bold hover:bg-neutral-800 shadow-[2px_2px_0px_#888888] cursor-pointer disabled:opacity-50"
             >
               <Send className="h-3.5 w-3.5" />
-              <span>{isSending ? 'DISPARANDO...' : 'TESTAR DISPARO DE ALERTA'}</span>
+              <span>{isSending ? 'DISPATCHING...' : 'TEST ALERT DISPATCH'}</span>
             </button>
           </div>
         </div>

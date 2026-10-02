@@ -62,10 +62,10 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
         <div>
           <h3 className="text-xs sm:text-sm font-black text-[#141414] flex items-center gap-2 uppercase">
             <ArrowLeftRight className="h-4 w-4 text-[#141414]" />
-            COMPARADOR DE DESEMPENHO & BENCHMARK
+            PERFORMANCE COMPARATOR & BENCHMARK
           </h3>
           <p className="text-[11px] text-[#141414]/70">
-            Compare o relatório ativo com registros do histórico ou audite um domínio concorrente.
+            Compare the active report with historical records or audit a competitor domain.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
             }`}
           >
             <SplitSquareVertical className="h-4 w-4" />
-            <span>REGRESSÃO VISUAL (DIFF)</span>
+            <span>VISUAL REGRESSION (DIFF)</span>
             <span
               className={`text-[9px] px-1.5 py-0.2 font-black border ${
                 showVisualRegression
@@ -89,7 +89,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
                   : 'bg-blue-600 text-white border-blue-800'
               }`}
             >
-              {showVisualRegression ? 'ATIVO' : 'ATIVAR'}
+              {showVisualRegression ? 'ACTIVE' : 'ENABLE'}
             </span>
           </button>
         </div>
@@ -100,11 +100,11 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
         {/* Compare with Saved Audit */}
         <div className="border-2 border-[#141414] bg-[#E4E3E0]/30 p-4 space-y-3 shadow-[2px_2px_0px_#141414]">
           <h4 className="text-xs font-black uppercase tracking-wider text-[#141414] border-b border-[#141414] pb-1">
-            1. COMPARAR COM HISTÓRICO LOCAL
+            1. COMPARE WITH LOCAL HISTORY
           </h4>
           {otherAudits.length === 0 ? (
             <p className="text-xs text-[#141414]/60">
-              Nenhuma outra análise salva no histórico para comparar no momento.
+              No other audits saved in history to compare right now.
             </p>
           ) : (
             <div className="space-y-2">
@@ -113,7 +113,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
                 onChange={(e) => setSelectedAuditId(e.target.value)}
                 className="w-full bg-white border-2 border-[#141414] px-2.5 py-1.5 text-xs font-mono text-[#141414] focus:outline-none"
               >
-                <option value="">Selecione uma análise do histórico...</option>
+                <option value="">Select an audit from history...</option>
                 {otherAudits.map((a) => (
                   <option key={a.id} value={a.id}>
                     {new URL(a.targetUrl).hostname} — Score: {a.overallScore}/100 ({a.overallGrade})
@@ -124,7 +124,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
               {selectedAudit && (
                 <div className="mt-3 pt-3 border-t-2 border-[#141414] space-y-2 text-xs">
                   <div className="flex justify-between items-center bg-white p-2 border border-[#141414]">
-                    <span className="text-[#141414]/70 font-bold">SCORE GERAL:</span>
+                    <span className="text-[#141414]/70 font-bold">OVERALL SCORE:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-[#141414]">{currentReport.overallScore} vs {selectedAudit.overallScore}</span>
                       {renderDelta(currentReport.overallScore, selectedAudit.overallScore)}
@@ -132,7 +132,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center bg-white p-2 border border-[#141414]">
-                    <span className="text-[#141414]/70 font-bold">SEGURANÇA:</span>
+                    <span className="text-[#141414]/70 font-bold">SECURITY:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-[#141414]">{currentReport.categories.security.score} vs {selectedAudit.securityScore}</span>
                       {renderDelta(currentReport.categories.security.score, selectedAudit.securityScore)}
@@ -148,7 +148,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center bg-white p-2 border border-[#141414]">
-                    <span className="text-[#141414]/70 font-bold">BOAS PRÁTICAS:</span>
+                    <span className="text-[#141414]/70 font-bold">BEST PRACTICES:</span>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-[#141414]">{currentReport.categories.best_practices.score} vs {selectedAudit.bestPracticesScore}</span>
                       {renderDelta(currentReport.categories.best_practices.score, selectedAudit.bestPracticesScore)}
@@ -163,17 +163,17 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
         {/* Compare with Competitor / New URL */}
         <div className="border-2 border-[#141414] bg-[#E4E3E0]/30 p-4 space-y-3 shadow-[2px_2px_0px_#141414]">
           <h4 className="text-xs font-black uppercase tracking-wider text-[#141414] border-b border-[#141414] pb-1">
-            2. AUDITAR CONCORRENTE DIRETO
+            2. AUDIT DIRECT COMPETITOR
           </h4>
           <p className="text-xs text-[#141414]/70">
-            Insira o domínio de referência ou concorrente para executar nova análise:
+            Enter a benchmark or competitor domain to run a new audit:
           </p>
           <form onSubmit={handleStartComparison} className="space-y-2">
             <input
               type="text"
               value={competitorUrl}
               onChange={(e) => setCompetitorUrl(e.target.value)}
-              placeholder="ex: concorrente.com.br"
+              placeholder="e.g. competitor.com"
               className="w-full bg-white border-2 border-[#141414] px-2.5 py-1.5 text-xs font-mono text-[#141414] placeholder-[#141414]/40 focus:outline-none"
             />
             <button
@@ -181,7 +181,7 @@ export const SiteComparator: React.FC<SiteComparatorProps> = ({
               disabled={!competitorUrl.trim()}
               className="w-full bg-[#141414] text-white hover:bg-black font-black py-2 border border-[#141414] text-xs uppercase transition-all shadow-[2px_2px_0px_#888888] disabled:opacity-50 cursor-pointer"
             >
-              EXECUTAR BENCHMARK
+              RUN BENCHMARK
             </button>
           </form>
         </div>

@@ -71,7 +71,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
   const targetLabel = useMemo(() => {
     if (comparedAudit) {
       try {
-        return `${new URL(comparedAudit.targetUrl).hostname} (${new Date(comparedAudit.analyzedAt).toLocaleDateString('pt-BR')})`;
+        return `${new URL(comparedAudit.targetUrl).hostname} (${new Date(comparedAudit.analyzedAt).toLocaleDateString('en-US')})`;
       } catch {
         return comparedAudit.targetUrl;
       }
@@ -79,7 +79,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
     if (competitorUrl) {
       return competitorUrl;
     }
-    return 'Versão Anterior (Simulada Pré-Otimização)';
+    return 'Baseline Previous Version (Simulated Pre-Optimization)';
   }, [comparedAudit, competitorUrl]);
 
   const isRealComparison = Boolean(comparedAudit || competitorUrl);
@@ -89,13 +89,13 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
     const list: DetectedShift[] = [
       {
         id: 'shift-header',
-        name: 'Deslocamento da Barra de Navegação',
+        name: 'Navigation Bar Layout Shift',
         type: 'layout_shift',
-        location: 'Header / Topo',
+        location: 'Header / Top',
         shiftPixels: '+16px vertical',
         clsContribution: 0.048,
         severity: 'high',
-        description: 'Variação na altura da barra de navegação devido à inserção de banner informativo ou alteração de padding.',
+        description: 'Header height expansion caused by informational banner insertion or increased padding.',
         boxStyle: {
           top: '0%',
           left: '0%',
@@ -105,13 +105,13 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
       },
       {
         id: 'shift-h1',
-        name: 'Troca de Tipografia no Título Principal (H1)',
+        name: 'Hero Heading (H1) Typography Swap',
         type: 'typography',
         location: 'Hero Section',
-        shiftPixels: '+22px deslocamento vertical',
+        shiftPixels: '+22px vertical shift',
         clsContribution: 0.062,
         severity: 'high',
-        description: 'Atraso de renderização de webfont (FOUT/FOIT) provocando reflow dos blocos de texto subsequentes.',
+        description: 'Webfont render delay (FOUT/FOIT) triggering content reflow across subsequent text blocks.',
         boxStyle: {
           top: '22%',
           left: '8%',
@@ -121,13 +121,13 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
       },
       {
         id: 'shift-cta',
-        name: 'Reposicionamento do Botão de Ação Primário',
+        name: 'Primary Action Button Repositioning',
         type: 'style_change',
         location: 'Hero CTA',
         shiftPixels: '-12px horizontal / +18px vertical',
         clsContribution: 0.024,
         severity: 'medium',
-        description: 'Alteração no alinhamento do botão principal de conversão com alteração de contraste e padding interno.',
+        description: 'Main call-to-action button alignment, internal padding, and contrast variation.',
         boxStyle: {
           top: '44%',
           left: '8%',
@@ -137,13 +137,13 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
       },
       {
         id: 'shift-media',
-        name: 'Dimensão de Imagem de Destaque sem Proporção Fixa',
+        name: 'Hero Media Element Missing Explicit Aspect Ratio',
         type: 'layout_shift',
-        location: 'Coluna de Mídia Lateral',
-        shiftPixels: '+34px salto dinâmico',
+        location: 'Sidebar Media Column',
+        shiftPixels: '+34px dynamic jump',
         clsContribution: 0.055,
         severity: 'high',
-        description: 'Falta de atributos width/height explícitos na imagem, causando empurrão no rodapé quando o asset termina de carregar.',
+        description: 'Missing width/height attributes on media asset pushing surrounding layout downward on asset load.',
         boxStyle: {
           top: '22%',
           left: '72%',
@@ -161,13 +161,13 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
         ...list,
         {
           id: 'shift-footer',
-          name: 'Micro-variação de Espaçamento no Rodapé',
+          name: 'Footer Link Micro-Spacing Drift',
           type: 'style_change',
           location: 'Footer',
           shiftPixels: '+4px vertical',
           clsContribution: 0.008,
           severity: 'low',
-          description: 'Ajuste de margem sutil entre links de navegação secundária.',
+          description: 'Subtle margin adjustment across secondary navigation links.',
           boxStyle: {
             top: '84%',
             left: '0%',
@@ -186,18 +186,18 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
 
   const handleCopyReport = () => {
     const text = [
-      `=== RELATÓRIO DE REGRESSÃO VISUAL // WEBAUDIT PRO ===`,
+      `=== VISUAL REGRESSION REPORT // WEBAUDIT PRO ===`,
       `Base: ${currentReport.targetUrl}`,
-      `Alvo Comparado: ${targetLabel}`,
-      `Total de Shifts Detectados: ${detectedShifts.length}`,
-      `Impacto Cumulativo Estimado no CLS: ${totalClsEstimate}`,
+      `Compared Target: ${targetLabel}`,
+      `Total Detected Shifts: ${detectedShifts.length}`,
+      `Estimated Cumulative CLS Impact: ${totalClsEstimate}`,
       '',
-      `ELEMENTOS DIVERGENTES:`,
+      `DIVERGENT ELEMENTS:`,
       ...detectedShifts.map(
         (s, i) => `${i + 1}. [${s.severity.toUpperCase()}] ${s.name} (${s.location})
-   - Deslocamento: ${s.shiftPixels}
-   - Estimativa CLS: +${s.clsContribution}
-   - Detalhes: ${s.description}`
+   - Shift: ${s.shiftPixels}
+   - Estimated CLS: +${s.clsContribution}
+   - Details: ${s.description}`
       ),
     ].join('\n');
 
@@ -214,14 +214,14 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm sm:text-base font-black uppercase text-[#141414] flex items-center gap-2">
               <SplitSquareVertical className="h-5 w-5 text-blue-600 stroke-[2.5]" />
-              ESTÚDIO DE REGRESSÃO VISUAL & DIFF DE SCREENSHOTS
+              VISUAL REGRESSION STUDIO & SCREENSHOT DIFF
             </h3>
             <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5">
               PIXEL DIFF SIMULATOR
             </span>
           </div>
           <p className="text-[11px] text-[#141414]/70 mt-1">
-            Detecte saltos de layout (CLS), reflows de tipografia e deslocamentos de elementos entre versões
+            Detect layout shifts (CLS), typography reflows, and UI element drift between versions
           </p>
         </div>
 
@@ -239,7 +239,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
               }`}
             >
               <Columns className="h-3 w-3" />
-              <span>LADO A LADO</span>
+              <span>SIDE-BY-SIDE</span>
             </button>
 
             <button
@@ -252,7 +252,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
               }`}
             >
               <Sliders className="h-3 w-3" />
-              <span>SLIDER CORTINA</span>
+              <span>CURTAIN SLIDER</span>
             </button>
 
             <button
@@ -265,7 +265,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
               }`}
             >
               <Flame className="h-3 w-3 text-rose-500" />
-              <span>DIFERENÇA TÉRMICA</span>
+              <span>HEATMAP DIFF</span>
             </button>
           </div>
 
@@ -277,7 +277,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
               className={`p-1.5 cursor-pointer ${
                 deviceMode === 'desktop' ? 'bg-[#141414] text-white' : 'hover:bg-neutral-100'
               }`}
-              title="Visualizar em Desktop (1280px)"
+              title="View on Desktop (1280px)"
             >
               <Monitor className="h-3.5 w-3.5" />
             </button>
@@ -287,7 +287,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
               className={`p-1.5 cursor-pointer ${
                 deviceMode === 'mobile' ? 'bg-[#141414] text-white' : 'hover:bg-neutral-100'
               }`}
-              title="Visualizar em Mobile (375px)"
+              title="View on Mobile (375px)"
             >
               <Smartphone className="h-3.5 w-3.5" />
             </button>
@@ -304,7 +304,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
             }`}
           >
             {showBoundingBoxes ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-            <span>MARCAÇÕES ({detectedShifts.length})</span>
+            <span>BOUNDING BOXES ({detectedShifts.length})</span>
           </button>
 
           {/* Copy Report */}
@@ -314,7 +314,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
             className="flex items-center gap-1 border-2 border-[#141414] bg-white px-2 py-1 text-[10px] font-bold hover:bg-[#141414] hover:text-white shadow-[1px_1px_0px_#141414] cursor-pointer"
           >
             {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-            <span>{isCopied ? 'COPIADO' : 'COPIAR DIFF'}</span>
+            <span>{isCopied ? 'COPIED' : 'COPY DIFF'}</span>
           </button>
         </div>
       </div>
@@ -324,19 +324,19 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5 font-bold">
             <span className="w-2.5 h-2.5 bg-blue-600 border border-[#141414] inline-block" />
-            <span>VERSÃO BASE (A): <strong>{currentDomain}</strong></span>
+            <span>BASE VERSION (A): <strong>{currentDomain}</strong></span>
           </div>
 
           <span className="text-[#141414]/40 font-bold">vs</span>
 
           <div className="flex items-center gap-1.5 font-bold">
             <span className="w-2.5 h-2.5 bg-rose-600 border border-[#141414] inline-block" />
-            <span>VERSÃO ALVO (B): <strong>{targetLabel}</strong></span>
+            <span>TARGET VERSION (B): <strong>{targetLabel}</strong></span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-[#141414]/70">SENSIBILIDADE:</span>
+          <span className="text-[11px] font-bold text-[#141414]/70">SENSITIVITY:</span>
           {(['low', 'medium', 'high'] as const).map((s) => (
             <button
               key={s}
@@ -348,7 +348,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
                   : 'bg-white text-[#141414] border-[#141414] hover:bg-[#E4E3E0]'
               }`}
             >
-              {s === 'low' ? 'Baixa' : s === 'medium' ? 'Média' : 'Alta'}
+              {s === 'low' ? 'Low' : s === 'medium' ? 'Medium' : 'High'}
             </button>
           ))}
         </div>
@@ -372,7 +372,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#141414]" />
                   <span className="ml-2 truncate max-w-[180px]">{currentReport.targetUrl}</span>
                 </div>
-                <span className="bg-blue-600 text-white text-[9px] px-1.5 py-0.2">VERSÃO ATUAL (A)</span>
+                <span className="bg-blue-600 text-white text-[9px] px-1.5 py-0.2">CURRENT VERSION (A)</span>
               </div>
 
               {/* Render Mock Webpage A */}
@@ -395,7 +395,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#141414]" />
                   <span className="ml-2 truncate max-w-[180px]">{targetLabel}</span>
                 </div>
-                <span className="bg-rose-600 text-white text-[9px] px-1.5 py-0.2">VERSÃO COMPARADA (B)</span>
+                <span className="bg-rose-600 text-white text-[9px] px-1.5 py-0.2">COMPARED VERSION (B)</span>
               </div>
 
               {/* Render Mock Webpage B with Shift Bounding Boxes */}
@@ -435,9 +435,9 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
           <div className="space-y-3">
             <div className="border-2 border-[#141414] bg-white shadow-[4px_4px_0px_#141414] overflow-hidden max-w-4xl mx-auto">
               <div className="flex items-center justify-between border-b-2 border-[#141414] bg-[#E4E3E0] px-3 py-1.5 text-[11px] font-bold">
-                <span>SLIDER INTERATIVO DE COMPARAÇÃO PIXEL-A-PIXEL</span>
+                <span>INTERACTIVE PIXEL-BY-PIXEL COMPARISON SLIDER</span>
                 <span className="text-[10px] bg-white border border-[#141414] px-1.5 py-0.2">
-                  CORTE: {sliderPos}%
+                  SPLIT: {sliderPos}%
                 </span>
               </div>
 
@@ -493,17 +493,17 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
 
                 {/* Floating Tags */}
                 <span className="absolute top-3 left-3 bg-blue-600 text-white px-2 py-0.5 text-[9px] font-black border border-white">
-                  VERSÃO A (ORIGINAL)
+                  VERSION A (ORIGINAL)
                 </span>
                 <span className="absolute top-3 right-3 bg-rose-600 text-white px-2 py-0.5 text-[9px] font-black border border-white">
-                  VERSÃO B (ALTERADA)
+                  VERSION B (ALTERED)
                 </span>
               </div>
             </div>
 
             {/* Slider Control Bar */}
             <div className="flex items-center gap-3 max-w-xl mx-auto border-2 border-[#141414] bg-[#E4E3E0] p-3 text-xs font-bold shadow-[2px_2px_0px_#141414]">
-              <span className="text-[10px] text-blue-900 shrink-0">VERSÃO A</span>
+              <span className="text-[10px] text-blue-900 shrink-0">VERSION A</span>
               <input
                 type="range"
                 min="0"
@@ -512,12 +512,12 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
                 onChange={(e) => setSliderPos(Number(e.target.value))}
                 className="w-full h-2 bg-neutral-300 accent-blue-600 cursor-pointer"
               />
-              <span className="text-[10px] text-rose-900 shrink-0">VERSÃO B</span>
+              <span className="text-[10px] text-rose-900 shrink-0">VERSION B</span>
               <button
                 type="button"
                 onClick={() => setSliderPos(50)}
                 className="p-1 border border-[#141414] bg-white hover:bg-neutral-100 cursor-pointer shrink-0"
-                title="Centralizar corte em 50%"
+                title="Center split at 50%"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </button>
@@ -531,10 +531,10 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
             <div className="flex items-center justify-between border-b-2 border-[#141414] bg-[#E4E3E0] px-3 py-1.5 text-[11px] font-bold">
               <span className="flex items-center gap-1.5">
                 <Flame className="h-3.5 w-3.5 text-rose-600" />
-                SOBREPOSIÇÃO DE DIFERENÇA TÉRMICA & DIVERGÊNCIA DE PIXELS
+                HEATMAP OVERLAY & PIXEL DIVERGENCE
               </span>
               <span className="text-[10px] bg-rose-600 text-white px-2 py-0.2">
-                ÁREA ALTERADA: ~4.2%
+                ALTERED AREA: ~4.2%
               </span>
             </div>
 
@@ -557,7 +557,7 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
                   style={shift.boxStyle}
                 >
                   <div className="p-2 text-white font-mono text-[9px] font-black bg-black/60 inline-block m-1">
-                    DIVERGÊNCIA #{idx + 1}: {shift.name} ({shift.shiftPixels})
+                    DIVERGENCE #{idx + 1}: {shift.name} ({shift.shiftPixels})
                   </div>
                 </div>
               ))}
@@ -571,17 +571,17 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <h4 className="text-xs font-black uppercase text-[#141414]">
-                Detecção Analítica de Layout Shifts & Riscos de CLS
+                Analytical Layout Shift & CLS Risk Detection
               </h4>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <span className="text-[#141414]/70">CLS ESTIMADO ACUMULADO:</span>
+              <span className="text-[#141414]/70">ESTIMATED CUMULATIVE CLS:</span>
               <span className={`px-2 py-0.5 font-bold border ${
                 Number(totalClsEstimate) > 0.1
                   ? 'bg-rose-100 text-rose-950 border-rose-700'
                   : 'bg-emerald-100 text-emerald-950 border-emerald-700'
               }`}>
-                {totalClsEstimate} {Number(totalClsEstimate) > 0.1 ? '(ATENÇÃO / RISCO)' : '(BOM)'}
+                {totalClsEstimate} {Number(totalClsEstimate) > 0.1 ? '(ATTENTION / RISK)' : '(GOOD)'}
               </span>
             </div>
           </div>
@@ -620,8 +620,8 @@ export const VisualRegressionView: React.FC<VisualRegressionViewProps> = ({
                 </p>
 
                 <div className="mt-2 pt-1.5 border-t border-[#141414]/10 flex items-center justify-between text-[10px] text-[#141414]/60 font-bold">
-                  <span>LOCALIZAÇÃO: {shift.location}</span>
-                  <span className="text-rose-700">Impacto CLS: +{shift.clsContribution}</span>
+                  <span>LOCATION: {shift.location}</span>
+                  <span className="text-rose-700">CLS Impact: +{shift.clsContribution}</span>
                 </div>
               </div>
             ))}
@@ -657,11 +657,11 @@ const MockWebpage: React.FC<{
         </div>
 
         <div className="flex items-center gap-3 text-[10px] text-neutral-600 font-medium">
-          <span className="hidden sm:inline">Recursos</span>
-          <span className="hidden sm:inline">Preços</span>
-          <span className="hidden sm:inline">Contato</span>
+          <span className="hidden sm:inline">Features</span>
+          <span className="hidden sm:inline">Pricing</span>
+          <span className="hidden sm:inline">Contact</span>
           <div className="px-2.5 py-1 bg-[#141414] text-white font-bold text-[9px]">
-            Começar
+            Get Started
           </div>
         </div>
       </div>
@@ -672,7 +672,7 @@ const MockWebpage: React.FC<{
         <div className="col-span-8 flex flex-col justify-center space-y-2.5">
           {/* Badge */}
           <div className="inline-flex items-center gap-1 bg-neutral-100 text-neutral-800 px-2 py-0.5 text-[9px] font-bold w-fit border border-neutral-300">
-            <span>PLATAFORMA WEB OFICIAL</span>
+            <span>OFFICIAL WEB PLATFORM</span>
           </div>
 
           {/* Title with potential shift */}
@@ -689,7 +689,7 @@ const MockWebpage: React.FC<{
           {/* Description */}
           <p className="text-[10px] sm:text-[11px] text-neutral-600 line-clamp-2 leading-relaxed">
             {description ||
-              'Soluções completas com alta performance, segurança de nível enterprise e otimização comprovada para motores de busca.'}
+              'Complete web solutions with high performance, enterprise-grade security, and verified search engine optimization.'}
           </p>
 
           {/* CTA Buttons with potential shift */}
@@ -703,10 +703,10 @@ const MockWebpage: React.FC<{
                 isShifted ? 'bg-indigo-600' : 'bg-emerald-600'
               }`}
             >
-              Experimentar Grátis
+              Try Free
             </div>
             <div className="px-3 py-1 text-[10px] font-bold border border-neutral-300 text-neutral-700 bg-white">
-              Saber Mais
+              Learn More
             </div>
           </div>
         </div>
@@ -722,7 +722,7 @@ const MockWebpage: React.FC<{
           >
             <div className="w-8 h-8 rounded-full bg-neutral-300/80 mb-1" />
             <span className="text-[8px] font-bold text-neutral-500 uppercase">
-              Mídia / Banner
+              Media / Banner
             </span>
           </div>
         </div>
@@ -730,8 +730,8 @@ const MockWebpage: React.FC<{
 
       {/* Mock Footer Strip */}
       <div className="border-t border-neutral-200 pt-2 flex items-center justify-between text-[8px] text-neutral-400">
-        <span>© 2026 {title.slice(0, 18)} – Todos os direitos reservados.</span>
-        <span>Privacidade & Termos</span>
+        <span>© 2026 {title.slice(0, 18)} – All rights reserved.</span>
+        <span>Privacy & Terms</span>
       </div>
     </div>
   );

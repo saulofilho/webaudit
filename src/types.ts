@@ -188,7 +188,7 @@ export interface CriticalIssueSummary {
   score: number;
   businessImpact: string;
   technicalRootCause: string;
-  urgency: 'Imediata' | 'Alta' | 'Média';
+  urgency: 'Immediate' | 'High' | 'Medium';
   suggestedQuickAction: string;
 }
 

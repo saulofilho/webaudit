@@ -30,7 +30,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `auditoria-${hostname}-${Date.now()}.md`;
+    a.download = `audit-${hostname}-${Date.now()}.md`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -40,7 +40,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `auditoria-${hostname}-${Date.now()}.json`;
+    a.download = `audit-${hostname}-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -60,10 +60,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
             </div>
             <div>
               <h3 className="text-sm font-black text-[#141414] uppercase">
-                EXPORTAR RELATÓRIO DE AUDITORIA
+                EXPORT AUDIT REPORT
               </h3>
               <p className="text-[11px] text-[#141414]/70">
-                Selecione o formato para arquivamento, compartilhamento ou documentação
+                Select format for archiving, sharing, or documentation
               </p>
             </div>
           </div>
@@ -82,9 +82,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
           <div className="flex flex-col justify-between border-2 border-[#141414] bg-[#E4E3E0]/30 p-4 shadow-[2px_2px_0px_#141414]">
             <div>
               <Printer className="h-5 w-5 text-[#141414] mb-2" />
-              <h4 className="text-xs font-black text-[#141414] uppercase">IMPRIMIR / PDF</h4>
+              <h4 className="text-xs font-black text-[#141414] uppercase">PRINT / PDF</h4>
               <p className="text-[11px] text-[#141414]/70 mt-1">
-                Gera visualização de impressão e PDF estruturado.
+                Generates print preview and structured PDF document.
               </p>
             </div>
             <button
@@ -93,7 +93,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
               className="mt-4 flex items-center justify-center gap-1.5 border border-[#141414] bg-[#141414] text-white hover:bg-black py-2 px-3 text-xs font-bold uppercase transition-all shadow-[2px_2px_0px_#888888] cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span>IMPRIMIR PDF</span>
+              <span>PRINT PDF</span>
             </button>
           </div>
 
@@ -103,7 +103,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
               <FileText className="h-5 w-5 text-[#141414] mb-2" />
               <h4 className="text-xs font-black text-[#141414] uppercase">MARKDOWN (.MD)</h4>
               <p className="text-[11px] text-[#141414]/70 mt-1">
-                Perfeito para issues no GitHub, PRs e documentação.
+                Ideal for GitHub issues, PRs, and team docs.
               </p>
             </div>
             <div className="mt-4 flex flex-col gap-1.5">
@@ -113,7 +113,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
                 className="flex items-center justify-center gap-1.5 border border-[#141414] bg-white hover:bg-[#E4E3E0] py-1.5 px-3 text-xs font-bold text-[#141414] uppercase transition-colors cursor-pointer"
               >
                 {copiedMd ? <Check className="h-3.5 w-3.5 text-emerald-700" /> : <Copy className="h-3.5 w-3.5" />}
-                <span>{copiedMd ? 'COPIADO!' : 'COPIAR TEXTO'}</span>
+                <span>{copiedMd ? 'COPIED!' : 'COPY TEXT'}</span>
               </button>
               <button
                 type="button"
@@ -121,7 +121,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
                 className="flex items-center justify-center gap-1.5 border border-[#141414] bg-[#141414] text-white hover:bg-black py-1.5 px-3 text-xs font-bold uppercase transition-colors cursor-pointer shadow-[2px_2px_0px_#888888]"
               >
                 <Download className="h-3.5 w-3.5" />
-                <span>BAIXAR .MD</span>
+                <span>DOWNLOAD .MD</span>
               </button>
             </div>
           </div>
@@ -132,16 +132,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
               <Code className="h-5 w-5 text-[#141414] mb-2" />
               <h4 className="text-xs font-black text-[#141414] uppercase">RAW JSON</h4>
               <p className="text-[11px] text-[#141414]/70 mt-1">
-                Exporta dados brutos e cabeçalhos para automações e CI/CD.
+                Export raw audit data and headers for CI/CD automation.
               </p>
             </div>
             <button
               type="button"
               onClick={handleDownloadJson}
-              className="mt-4 flex items-center justify-center gap-1.5 border border-[#141414] bg-[#141414] text-white hover:bg-black py-2 px-3 text-xs font-bold uppercase transition-colors shadow-[2px_2px_0px_#888888] cursor-pointer"
+              className="mt-4 flex items-center justify-center gap-1.5 border border-[#141414] bg-[#141414] text-white hover:bg-black py-2 px-3 text-xs font-bold uppercase transition-all shadow-[2px_2px_0px_#888888] cursor-pointer"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>BAIXAR .JSON</span>
+              <span>DOWNLOAD .JSON</span>
             </button>
           </div>
         </div>
@@ -149,7 +149,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ report, isOpen, onClos
         {/* Preview Markdown Box */}
         <div className="border border-[#141414] bg-[#E4E3E0]/30 p-3.5">
           <span className="text-[10px] font-black uppercase tracking-wider text-[#141414] block mb-1.5">
-            PRÉ-VISUALIZAÇÃO DO DOCUMENTO MARKDOWN:
+            MARKDOWN DOCUMENT PREVIEW:
           </span>
           <div className="max-h-32 overflow-y-auto border border-[#141414] bg-[#141414] p-2.5 font-mono text-[11px] text-[#E4E3E0]">
             <pre className="whitespace-pre-wrap">{markdownContent.slice(0, 450)}...</pre>

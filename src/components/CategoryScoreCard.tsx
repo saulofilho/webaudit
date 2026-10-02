@@ -78,7 +78,7 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
                   >
                     <button
                       type="button"
-                      aria-label="Ver detalhes das métricas avaliadas em Segurança"
+                      aria-label="View security evaluation metrics details"
                       className="p-0.5 text-[#141414]/60 hover:text-[#141414] hover:bg-neutral-200 transition-colors cursor-pointer"
                     >
                       <HelpCircle className="h-3.5 w-3.5" />
@@ -93,44 +93,44 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
                         <div className="flex items-center justify-between border-b border-neutral-700 pb-1.5 mb-2">
                           <span className="font-black text-amber-300 text-xs uppercase flex items-center gap-1.5">
                             <Shield className="h-3.5 w-3.5 text-amber-300" />
-                            MÉTRICAS AVALIADAS EM SEGURANÇA
+                            SECURITY EVALUATION METRICS
                           </span>
                         </div>
 
                         <p className="text-[10px] text-neutral-300 mb-2 leading-relaxed">
-                          Verificações automáticas baseadas nas diretrizes defensivas <strong>OWASP Top 10</strong> e padrões <strong>IETF/NIST</strong>:
+                          Automated checks based on <strong>OWASP Top 10</strong> guidelines and <strong>IETF/NIST</strong> defensive standards:
                         </p>
 
                         <ul className="space-y-1.5 text-[10px] text-neutral-200">
                           <li className="flex items-start gap-1.5">
                             <span className="text-emerald-400 font-bold shrink-0">•</span>
-                            <span><strong>HTTPS & TLS:</strong> Validação de certificado e criptografia de tráfego ativa</span>
+                            <span><strong>HTTPS & TLS:</strong> Certificate validation and active traffic encryption</span>
                           </li>
                           <li className="flex items-start gap-1.5">
                             <span className="text-emerald-400 font-bold shrink-0">•</span>
-                            <span><strong>HSTS:</strong> Strict-Transport-Security (bloqueio contra ataques MitM & downgrade)</span>
+                            <span><strong>HSTS:</strong> Strict-Transport-Security (protection against MitM & downgrade attacks)</span>
                           </li>
                           <li className="flex items-start gap-1.5">
                             <span className="text-emerald-400 font-bold shrink-0">•</span>
-                            <span><strong>CSP:</strong> Content-Security-Policy (mitigação de injeção de script XSS)</span>
+                            <span><strong>CSP:</strong> Content-Security-Policy (mitigation against XSS injection attacks)</span>
                           </li>
                           <li className="flex items-start gap-1.5">
                             <span className="text-emerald-400 font-bold shrink-0">•</span>
-                            <span><strong>X-Frame-Options:</strong> Bloqueio de sequestro de cliques (Clickjacking via iframe)</span>
+                            <span><strong>X-Frame-Options:</strong> Clickjacking protection via iframe restrictions</span>
                           </li>
                           <li className="flex items-start gap-1.5">
                             <span className="text-emerald-400 font-bold shrink-0">•</span>
-                            <span><strong>X-Content-Type-Options:</strong> Prevenção contra ataques de MIME-sniffing</span>
+                            <span><strong>X-Content-Type-Options:</strong> Anti-MIME-sniffing protection (nosniff)</span>
                           </li>
                           <li className="flex items-start gap-1.5">
                             <span className="text-emerald-400 font-bold shrink-0">•</span>
-                            <span><strong>Permissions & Referrer:</strong> Controle de vazamento de URLs e APIs de hardware</span>
+                            <span><strong>Permissions & Referrer:</strong> URL leakage control and hardware API policies</span>
                           </li>
                         </ul>
 
                         <div className="mt-2.5 pt-1.5 border-t border-neutral-800 text-[9px] text-neutral-400 flex items-center justify-between">
-                          <span>PADRÕES: OWASP / NIST</span>
-                          <span className="text-amber-400 font-bold">TOTAL: 6+ REQUISITOS</span>
+                          <span>STANDARDS: OWASP / NIST</span>
+                          <span className="text-amber-400 font-bold">TOTAL: 6+ REQUIREMENTS</span>
                         </div>
                       </div>
                     )}
@@ -155,7 +155,7 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
                     ? 'bg-emerald-100 text-emerald-950 border-emerald-700'
                     : 'bg-rose-100 text-rose-950 border-rose-700'
                 }`}
-                title={`Variação vs. auditoria anterior: ${diff > 0 ? `+${diff}` : diff} pts`}
+                title={`Change vs. previous audit: ${diff > 0 ? `+${diff}` : diff} pts`}
               >
                 {diff > 0 ? `+${diff}` : diff}
               </span>
@@ -180,13 +180,13 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
           {scoreData.warningCount > 0 && (
             <span className="flex items-center gap-0.5 text-amber-800 font-bold">
               <AlertCircle className="h-3 w-3 text-amber-700" />
-              {scoreData.warningCount} ALERTA
+              {scoreData.warningCount} WARNING
             </span>
           )}
           {scoreData.criticalCount > 0 && (
             <span className="flex items-center gap-0.5 text-rose-800 font-bold">
               <XCircle className="h-3 w-3 text-rose-700" />
-              {scoreData.criticalCount} CRÍTICO
+              {scoreData.criticalCount} CRITICAL
             </span>
           )}
         </div>
@@ -194,7 +194,7 @@ export const CategoryScoreCard: React.FC<CategoryScoreCardProps> = ({
 
       {/* Footer link */}
       <div className="mt-3 flex items-center justify-between text-[11px] font-mono font-bold text-[#141414] group-hover:opacity-80 pt-2 border-t border-[#141414]/20">
-        <span>INSPECIONAR ITENS</span>
+        <span>INSPECT ITEMS</span>
         <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
       </div>
     </div>

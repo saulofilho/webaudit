@@ -3,9 +3,9 @@ import { AuditReport } from '../types';
 export function formatDate(isoDate: string): string {
   try {
     const d = new Date(isoDate);
-    return new Intl.DateTimeFormat('pt-BR', {
+    return new Intl.DateTimeFormat('en-US', {
       day: '2-digit',
-      month: '2-digit',
+      month: 'short',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
@@ -25,38 +25,38 @@ export function generateMarkdownReport(report: AuditReport): string {
   const dateStr = formatDate(report.analyzedAt);
   const hostname = new URL(report.targetUrl).hostname;
 
-  let md = `# 📊 Relatório de Auditoria Web: ${hostname}\n\n`;
-  md += `> **Data da Análise:** ${dateStr}  \n`;
-  md += `> **URL Auditada:** ${report.targetUrl}  \n`;
-  md += `> **Pontuação Geral:** **${report.overallScore}/100** (Classificação: **${report.overallGrade}**)  \n\n`;
+  let md = `# 📊 Web Audit Report: ${hostname}\n\n`;
+  md += `> **Audit Date:** ${dateStr}  \n`;
+  md += `> **Audited URL:** ${report.targetUrl}  \n`;
+  md += `> **Overall Score:** **${report.overallScore}/100** (Grade: **${report.overallGrade}**)  \n\n`;
 
-  md += `## 🎯 Resumo Executivo da IA\n\n${report.aiExecutiveSummary}\n\n`;
+  md += `## 🎯 AI Executive Summary\n\n${report.aiExecutiveSummary}\n\n`;
 
-  md += `## 📈 Pontuações por Categoria\n\n`;
-  md += `| Categoria | Score | Nota | Aprovados | Alertas | Críticos |\n`;
+  md += `## 📈 Category Scores\n\n`;
+  md += `| Category | Score | Grade | Passed | Warnings | Critical |\n`;
   md += `| :--- | :---: | :---: | :---: | :---: | :---: |\n`;
-  md += `| 🛡️ Segurança | ${report.categories.security.score}% | ${report.categories.security.grade} | ${report.categories.security.passedCount} | ${report.categories.security.warningCount} | ${report.categories.security.criticalCount} |\n`;
-  md += `| 🔍 SEO & Visibilidade | ${report.categories.seo.score}% | ${report.categories.seo.grade} | ${report.categories.seo.passedCount} | ${report.categories.seo.warningCount} | ${report.categories.seo.criticalCount} |\n`;
-  md += `| ✨ Boas Práticas | ${report.categories.best_practices.score}% | ${report.categories.best_practices.grade} | ${report.categories.best_practices.passedCount} | ${report.categories.best_practices.warningCount} | ${report.categories.best_practices.criticalCount} |\n`;
-  md += `| ⚡ Performance & Acessibilidade | ${report.categories.performance_accessibility.score}% | ${report.categories.performance_accessibility.grade} | ${report.categories.performance_accessibility.passedCount} | ${report.categories.performance_accessibility.warningCount} | ${report.categories.performance_accessibility.criticalCount} |\n\n`;
+  md += `| 🛡️ Security | ${report.categories.security.score}% | ${report.categories.security.grade} | ${report.categories.security.passedCount} | ${report.categories.security.warningCount} | ${report.categories.security.criticalCount} |\n`;
+  md += `| 🔍 SEO & Visibility | ${report.categories.seo.score}% | ${report.categories.seo.grade} | ${report.categories.seo.passedCount} | ${report.categories.seo.warningCount} | ${report.categories.seo.criticalCount} |\n`;
+  md += `| ✨ Best Practices | ${report.categories.best_practices.score}% | ${report.categories.best_practices.grade} | ${report.categories.best_practices.passedCount} | ${report.categories.best_practices.warningCount} | ${report.categories.best_practices.criticalCount} |\n`;
+  md += `| ⚡ Performance & Accessibility | ${report.categories.performance_accessibility.score}% | ${report.categories.performance_accessibility.grade} | ${report.categories.performance_accessibility.passedCount} | ${report.categories.performance_accessibility.warningCount} | ${report.categories.performance_accessibility.criticalCount} |\n\n`;
 
-  md += `## 🚨 Correções de Alta Prioridade\n\n`;
+  md += `## 🚨 High-Priority Remediations\n\n`;
   report.topPriorityFixes.forEach((fix, idx) => {
     md += `${idx + 1}. ${fix}\n`;
   });
   md += `\n`;
 
-  md += `## 🛠️ Detalhamento dos Itens Auditados\n\n`;
+  md += `## 🛠️ Detailed Audit Breakdown\n\n`;
   const criticals = report.items.filter((i) => i.severity === 'critical');
   const warnings = report.items.filter((i) => i.severity === 'warning');
   const goods = report.items.filter((i) => i.severity === 'good');
 
   if (criticals.length > 0) {
-    md += `### 🔴 Falhas Críticas (${criticals.length})\n\n`;
+    md += `### 🔴 Critical Issues (${criticals.length})\n\n`;
     criticals.forEach((item) => {
       md += `#### ❌ ${item.title}\n`;
-      md += `- **Impacto:** ${item.impact}\n`;
-      md += `- **Detalhe:** ${item.summary}\n`;
+      md += `- **Impact:** ${item.impact}\n`;
+      md += `- **Detail:** ${item.summary}\n`;
       if (item.codeSnippet) {
         md += `\n\`\`\`${item.codeSnippet.language}\n// ${item.codeSnippet.title}\n${item.codeSnippet.code}\n\`\`\`\n\n`;
       }
@@ -64,11 +64,11 @@ export function generateMarkdownReport(report: AuditReport): string {
   }
 
   if (warnings.length > 0) {
-    md += `### 🟡 Alertas & Atenção (${warnings.length})\n\n`;
+    md += `### 🟡 Warnings & Recommendations (${warnings.length})\n\n`;
     warnings.forEach((item) => {
       md += `#### ⚠️ ${item.title}\n`;
-      md += `- **Impacto:** ${item.impact}\n`;
-      md += `- **Detalhe:** ${item.summary}\n`;
+      md += `- **Impact:** ${item.impact}\n`;
+      md += `- **Detail:** ${item.summary}\n`;
       if (item.codeSnippet) {
         md += `\n\`\`\`${item.codeSnippet.language}\n// ${item.codeSnippet.title}\n${item.codeSnippet.code}\n\`\`\`\n\n`;
       }
@@ -76,7 +76,7 @@ export function generateMarkdownReport(report: AuditReport): string {
   }
 
   if (goods.length > 0) {
-    md += `### 🟢 Aprovados (${goods.length})\n\n`;
+    md += `### 🟢 Passed (${goods.length})\n\n`;
     goods.forEach((item) => {
       md += `- ✅ **${item.title}**: ${item.summary}\n`;
     });
@@ -84,13 +84,13 @@ export function generateMarkdownReport(report: AuditReport): string {
   }
 
   if (report.rawData.techStack.length > 0) {
-    md += `## 💻 Tecnologias Detectadas\n\n`;
+    md += `## 💻 Detected Technologies\n\n`;
     report.rawData.techStack.forEach((tech) => {
-      md += `- **${tech.category}:** ${tech.name} (Confiança: ${tech.confidence}%)\n`;
+      md += `- **${tech.category}:** ${tech.name} (Confidence: ${tech.confidence}%)\n`;
     });
     md += `\n`;
   }
 
-  md += `---\n*Relatório gerado automaticamente pela ferramenta Website Analyzer & Audit Tool.*`;
+  md += `---\n*Report automatically generated by the Website Analyzer & Audit Tool.*`;
   return md;
 }

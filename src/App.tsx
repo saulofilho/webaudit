@@ -192,7 +192,7 @@ export default function App() {
       setSearchTerm('');
     } catch (err: any) {
       console.error('Analysis failed:', err);
-      setError(err.message || 'Ocorreu um erro ao auditar o website. Verifique a URL informada.');
+      setError(err.message || 'An error occurred while auditing the website. Please verify the URL.');
     } finally {
       setIsLoading(false);
     }
@@ -302,10 +302,10 @@ export default function App() {
 
   const categoryLabel = useMemo(() => {
     switch (activeTab) {
-      case 'security': return 'SEGURANÇA';
+      case 'security': return 'SECURITY';
       case 'seo': return 'SEO';
-      case 'best_practices': return 'BOAS PRÁTICAS';
-      case 'performance_accessibility': return 'PERFORMANCE & ACESSIBILIDADE';
+      case 'best_practices': return 'BEST PRACTICES';
+      case 'performance_accessibility': return 'PERFORMANCE & ACCESSIBILITY';
       default: return undefined;
     }
   }, [activeTab]);
@@ -445,7 +445,7 @@ export default function App() {
                   }`}
                 >
                   <FileCheck2 className="h-3.5 w-3.5" />
-                  <span>TODOS OS ITENS ({currentReport.items.length})</span>
+                  <span>ALL ITEMS ({currentReport.items.length})</span>
                 </button>
 
                 <button
@@ -459,7 +459,7 @@ export default function App() {
                   }`}
                 >
                   <Shield className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>SEGURANÇA</span>
+                  <span>SECURITY</span>
                 </button>
 
                 <button
@@ -473,7 +473,7 @@ export default function App() {
                   }`}
                 >
                   <Search className="h-3.5 w-3.5 text-blue-600" />
-                  <span>SEO & INDEXAÇÃO</span>
+                  <span>SEO & INDEXING</span>
                 </button>
 
                 <button
@@ -487,7 +487,7 @@ export default function App() {
                   }`}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5 text-purple-600" />
-                  <span>BOAS PRÁTICAS</span>
+                  <span>BEST PRACTICES</span>
                 </button>
 
                 <button
@@ -531,7 +531,7 @@ export default function App() {
                   }`}
                 >
                   <Code2 className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>GERADOR CONFIG</span>
+                  <span>CONFIG GENERATOR</span>
                 </button>
 
                 {/* Feature 3: SSL, DNS & Email Security */}
@@ -561,10 +561,10 @@ export default function App() {
                   }`}
                 >
                   <Eye className="h-3.5 w-3.5 text-purple-600" />
-                  <span>ACESSIBILIDADE WCAG</span>
+                  <span>WCAG ACCESSIBILITY</span>
                 </button>
 
-                {/* Feature 5: Privacy & LGPD */}
+                {/* Feature 5: Privacy & Compliance */}
                 <button
                   type="button"
                   id="tab-privacy"
@@ -576,7 +576,7 @@ export default function App() {
                   }`}
                 >
                   <Cookie className="h-3.5 w-3.5 text-cyan-600" />
-                  <span>PRIVACIDADE & LGPD</span>
+                  <span>PRIVACY & COMPLIANCE</span>
                 </button>
 
                 {/* Feature 6: Mobile Simulator */}
@@ -591,7 +591,7 @@ export default function App() {
                   }`}
                 >
                   <Smartphone className="h-3.5 w-3.5 text-indigo-600" />
-                  <span>SIMULADOR MOBILE</span>
+                  <span>MOBILE SIMULATOR</span>
                 </button>
 
                 <button
@@ -605,7 +605,7 @@ export default function App() {
                   }`}
                 >
                   <Share2 className="h-3.5 w-3.5" />
-                  <span>REDES & SERP</span>
+                  <span>SOCIAL & SERP</span>
                 </button>
 
                 <button
@@ -619,7 +619,7 @@ export default function App() {
                   }`}
                 >
                   <Terminal className="h-3.5 w-3.5" />
-                  <span>HEADERS HTTP</span>
+                  <span>HTTP HEADERS</span>
                 </button>
 
                 <button
@@ -633,7 +633,7 @@ export default function App() {
                   }`}
                 >
                   <Layers className="h-3.5 w-3.5" />
-                  <span>STACK</span>
+                  <span>TECH STACK</span>
                 </button>
 
                 <button
@@ -647,7 +647,7 @@ export default function App() {
                   }`}
                 >
                   <ArrowLeftRight className="h-3.5 w-3.5" />
-                  <span>COMPARADOR</span>
+                  <span>SITE COMPARATOR</span>
                 </button>
 
                 <button
@@ -661,7 +661,7 @@ export default function App() {
                   }`}
                 >
                   <Activity className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>TENDÊNCIAS & HISTÓRICO</span>
+                  <span>TRENDS & HISTORY</span>
                 </button>
               </div>
             </div>
@@ -764,7 +764,7 @@ export default function App() {
                           : 'bg-[#E4E3E0] text-[#141414] hover:bg-white'
                       }`}
                     >
-                      TODOS ({scopeItems.length})
+                      ALL ({scopeItems.length})
                     </button>
 
                     <button
@@ -776,7 +776,7 @@ export default function App() {
                           : 'bg-rose-100 text-rose-900 hover:bg-rose-200'
                       }`}
                     >
-                      <span>CRÍTICOS</span>
+                      <span>CRITICAL</span>
                       <span className="bg-white/80 px-1 text-[10px] text-rose-900 border border-rose-900">{scopeCriticalCount}</span>
                     </button>
 
@@ -789,7 +789,7 @@ export default function App() {
                           : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
                       }`}
                     >
-                      <span>ALERTAS</span>
+                      <span>WARNINGS</span>
                       <span className="bg-white/80 px-1 text-[10px] text-amber-900 border border-amber-900">{scopeWarningCount}</span>
                     </button>
 
@@ -802,7 +802,7 @@ export default function App() {
                           : 'bg-emerald-100 text-emerald-900 hover:bg-emerald-200'
                       }`}
                     >
-                      <span>APROVADOS</span>
+                      <span>PASSED</span>
                       <span className="bg-white/80 px-1 text-[10px] text-emerald-900 border border-emerald-900">{scopeGoodCount}</span>
                     </button>
                   </div>
@@ -814,7 +814,7 @@ export default function App() {
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="FILTRAR AUDITORIAS..."
+                      placeholder="SEARCH AUDIT ITEMS..."
                       className="w-full sm:w-60 bg-[#E4E3E0] border border-[#141414] pl-8 pr-2.5 py-1 text-xs font-mono text-[#141414] placeholder-[#141414]/50 focus:outline-none focus:bg-white"
                     />
                   </div>
@@ -824,7 +824,7 @@ export default function App() {
                 <div id="audit-items-container" className="space-y-3">
                   {filteredItems.length === 0 ? (
                     <div className="text-center py-12 border-2 border-[#141414] bg-white text-[#141414]/70 text-xs shadow-[2px_2px_0px_#141414]">
-                      <p>NENHUM ITEM ENCONTRADO COM OS FILTROS SELECIONADOS.</p>
+                      <p>NO ITEMS FOUND MATCHING THE SELECTED FILTERS.</p>
                       <button
                         type="button"
                         onClick={() => {
@@ -834,7 +834,7 @@ export default function App() {
                         }}
                         className="mt-2 text-[#141414] font-bold uppercase underline"
                       >
-                        LIMPAR FILTROS
+                        CLEAR FILTERS
                       </button>
                     </div>
                   ) : (
@@ -861,7 +861,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <span className="font-black text-[#141414] uppercase">WEBAUDIT PRO</span>
             <span>•</span>
-            <span className="text-[#141414]/70">SISTEMA DE DIAGNÓSTICO E AUDITORIA WEB</span>
+            <span className="text-[#141414]/70">PROFESSIONAL WEB AUDIT & DIAGNOSTICS SUITE</span>
           </div>
 
           <div className="flex items-center gap-4 text-[#141414]/80">
@@ -869,7 +869,7 @@ export default function App() {
               onClick={() => setIsGitHubPagesOpen(true)}
               className="hover:underline uppercase font-bold cursor-pointer"
             >
-              GUIA GITHUB PAGES
+              GITHUB PAGES GUIDE
             </button>
             <span>•</span>
             <span className="uppercase text-[11px]">STANDALONE / CI/CD READY</span>

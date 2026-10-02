@@ -100,28 +100,28 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         return (
           <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-950 border border-emerald-700 px-2 py-0.5 text-xs font-black">
             <CheckCircle2 className="h-3 w-3 text-emerald-700" />
-            BOM (PASSOU)
+            GOOD (PASSED)
           </span>
         );
       case 'needs-improvement':
         return (
           <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-950 border border-amber-700 px-2 py-0.5 text-xs font-black">
             <AlertTriangle className="h-3 w-3 text-amber-700" />
-            PRECISA MELHORAR
+            NEEDS WORK
           </span>
         );
       case 'poor':
         return (
           <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-950 border border-rose-700 px-2 py-0.5 text-xs font-black">
             <XCircle className="h-3 w-3 text-rose-700" />
-            RUIM (FALHOU)
+            POOR (FAILED)
           </span>
         );
     }
   };
 
   const getMetricColor = (status: 'good' | 'needs-improvement' | 'poor') => {
-    if (status === 'good') return 'text-emerald-700 border-emerald-700 bg-emerald-50';
+    if (status === 'good') return 'text-emerald-800 border-emerald-700 bg-emerald-50';
     if (status === 'needs-improvement') return 'text-amber-800 border-amber-700 bg-amber-50';
     return 'text-rose-800 border-rose-700 bg-rose-50';
   };
@@ -137,17 +137,17 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
-                Métricas de Core Web Vitals & Performance Real
+                Core Web Vitals & Real-User Performance Metrics
               </h2>
               <p className="text-xs text-[#141414]/70">
-                Padrões oficiais do Google Chrome UX Report (CrUX) para SEO, ranking e velocidade de carregamento
+                Official Google Chrome UX Report (CrUX) thresholds for ranking, page experience, and load speed
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold border border-[#141414] bg-[#E4E3E0] px-3 py-1">
-              STATUS GERAL: <strong>{vitals.lcp.status === 'good' && vitals.cls.status === 'good' ? 'APROVADO PELO GOOGLE' : 'OTIMIZAÇÕES NECESSÁRIAS'}</strong>
+              OVERALL STATUS: <strong>{vitals.lcp.status === 'good' && vitals.cls.status === 'good' ? 'GOOGLE CRUX PASSED' : 'OPTIMIZATION NEEDED'}</strong>
             </span>
           </div>
         </div>
@@ -168,10 +168,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           </div>
           <div className="text-3xl font-mono font-black">{vitals.lcp.val}</div>
           <div className="text-[10px] uppercase font-bold text-[#141414]/70 mt-1">
-            Maior Conteúdo Visível
+            Largest Contentful Paint
           </div>
           <div className="mt-3">{getStatusBadge(vitals.lcp.status)}</div>
-          <div className="mt-2 text-[10px] text-[#141414]/60">Meta: ≤ 2.5s</div>
+          <div className="mt-2 text-[10px] text-[#141414]/60">Target: ≤ 2.5s</div>
         </div>
 
         {/* INP */}
@@ -187,10 +187,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           </div>
           <div className="text-3xl font-mono font-black">{vitals.inp.val}</div>
           <div className="text-[10px] uppercase font-bold text-[#141414]/70 mt-1">
-            Resposta à Interação
+            Interaction to Next Paint
           </div>
           <div className="mt-3">{getStatusBadge(vitals.inp.status)}</div>
-          <div className="mt-2 text-[10px] text-[#141414]/60">Meta: ≤ 200ms</div>
+          <div className="mt-2 text-[10px] text-[#141414]/60">Target: ≤ 200ms</div>
         </div>
 
         {/* CLS */}
@@ -206,10 +206,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           </div>
           <div className="text-3xl font-mono font-black">{vitals.cls.val}</div>
           <div className="text-[10px] uppercase font-bold text-[#141414]/70 mt-1">
-            Estabilidade Visual
+            Visual Stability
           </div>
           <div className="mt-3">{getStatusBadge(vitals.cls.status)}</div>
-          <div className="mt-2 text-[10px] text-[#141414]/60">Meta: ≤ 0.1</div>
+          <div className="mt-2 text-[10px] text-[#141414]/60">Target: ≤ 0.1</div>
         </div>
 
         {/* FCP */}
@@ -225,10 +225,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           </div>
           <div className="text-3xl font-mono font-black">{vitals.fcp.val}</div>
           <div className="text-[10px] uppercase font-bold text-[#141414]/70 mt-1">
-            Primeiro Conteúdo Visível
+            First Contentful Paint
           </div>
           <div className="mt-3">{getStatusBadge(vitals.fcp.status)}</div>
-          <div className="mt-2 text-[10px] text-[#141414]/60">Meta: ≤ 1.8s</div>
+          <div className="mt-2 text-[10px] text-[#141414]/60">Target: ≤ 1.8s</div>
         </div>
 
         {/* TTFB */}
@@ -244,10 +244,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           </div>
           <div className="text-3xl font-mono font-black">{vitals.ttfb.val}</div>
           <div className="text-[10px] uppercase font-bold text-[#141414]/70 mt-1">
-            Latência do Servidor
+            Server Response Latency
           </div>
           <div className="mt-3">{getStatusBadge(vitals.ttfb.status)}</div>
-          <div className="mt-2 text-[10px] text-[#141414]/60">Meta: ≤ 800ms</div>
+          <div className="mt-2 text-[10px] text-[#141414]/60">Target: ≤ 800ms</div>
         </div>
       </div>
 
@@ -256,7 +256,7 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         <div className="flex items-center gap-2 border-b-2 border-[#141414] pb-3 mb-4">
           <Sparkles className="h-4 w-4 text-[#141414]" />
           <h3 className="text-sm font-black uppercase">
-            Diagnóstico Detalhado: {selectedMetric.toUpperCase()} ({
+            Detailed Diagnostic: {selectedMetric.toUpperCase()} ({
               selectedMetric === 'lcp' ? 'Largest Contentful Paint' :
               selectedMetric === 'inp' ? 'Interaction to Next Paint' :
               selectedMetric === 'cls' ? 'Cumulative Layout Shift' :
@@ -268,25 +268,25 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         {selectedMetric === 'lcp' && (
           <div className="space-y-3 text-xs">
             <p>
-              O <strong>LCP ({vitals.lcp.val})</strong> mede o tempo até o principal bloco de conteúdo (banner hero, imagem de destaque ou título H1) estar totalmente renderizado na tela.
+              <strong>LCP ({vitals.lcp.val})</strong> measures the time until the primary content block (hero banner, featured image, or H1 heading) is fully rendered on screen.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">1. Otimizar Imagem Hero</span>
+                <span className="font-bold block mb-1">1. Optimize Hero Image</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Converta o maior ativo visual para WebP ou AVIF e adicione <code>rel="preload"</code> para priorizar o download antes do parsing do DOM.
+                  Convert the largest visual asset to WebP or AVIF and add <code>rel="preload"</code> to prioritize downloading before DOM parsing.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">2. Eliminar Bloqueio de CSS</span>
+                <span className="font-bold block mb-1">2. Eliminate CSS Blocking</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  {vitals.renderBlockingStyles} folha(s) de estilo bloqueiam a pintura inicial. Faça inline do CSS crítico da primeira dobra.
+                  {vitals.renderBlockingStyles} stylesheet(s) block initial paint. Inline critical above-the-fold CSS.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
                 <span className="font-bold block mb-1">3. CDN Edge Caching</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Sirva o HTML estático por meio de uma CDN global (Cloudflare, Vercel ou Fastly) para reduzir o TTFB.
+                  Serve static HTML through a global CDN (Cloudflare, Vercel, or Fastly) to reduce TTFB.
                 </p>
               </div>
             </div>
@@ -296,25 +296,25 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         {selectedMetric === 'inp' && (
           <div className="space-y-3 text-xs">
             <p>
-              O <strong>INP ({vitals.inp.val})</strong> avalia a responsividade geral da página a cliques, toques e teclas durante toda a sessão do visitante.
+              <strong>INP ({vitals.inp.val})</strong> assesses overall page responsiveness to user clicks, taps, and key presses throughout the visitor's session.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">1. Desmembrar Long Tasks (&gt;50ms)</span>
+                <span className="font-bold block mb-1">1. Break Up Long Tasks (&gt;50ms)</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Utilize <code>scheduler.yield()</code> ou <code>requestIdleCallback()</code> para liberar a thread principal entre tarefas pesadas.
+                  Use <code>scheduler.yield()</code> or <code>requestIdleCallback()</code> to free the main thread between heavy computations.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">2. Reduzir Scripts de Terceiros</span>
+                <span className="font-bold block mb-1">2. Reduce Third-Party Scripts</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  {report.rawData.scriptsCount} scripts detectados. Carregue rastreadores e widgets de chat de forma lazy ou via Web Workers com Partytown.
+                  {report.rawData.scriptsCount} scripts detected. Lazy load trackers and chat widgets or run them in Web Workers via Partytown.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">3. Otimizar Handlers de Eventos</span>
+                <span className="font-bold block mb-1">3. Optimize Event Handlers</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Aplique debounce e throttle em ouvintes de scroll e resize para evitar repinturas constantes.
+                  Apply debounce and throttle to scroll and resize event listeners to avoid continuous repaints.
                 </p>
               </div>
             </div>
@@ -324,25 +324,25 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         {selectedMetric === 'cls' && (
           <div className="space-y-3 text-xs">
             <p>
-              O <strong>CLS ({vitals.cls.val})</strong> quantifica mudanças inesperadas de layout causadas por imagens sem dimensões, fontes web não trocadas suavemente ou anúncios dinâmicos.
+              <strong>CLS ({vitals.cls.val})</strong> quantifies unexpected layout shifts caused by images without dimensions, un-swapped web fonts, or dynamic ads.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">1. Definir width e height em Imagens</span>
+                <span className="font-bold block mb-1">1. Set Explicit width and height</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Sempre especifique os atributos explícitos ou utilize a propriedade CSS <code>aspect-ratio</code>.
+                  Always specify explicit dimension attributes or use the CSS <code>aspect-ratio</code> property.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">2. Reservar Espaço para Conteúdo Dinâmico</span>
+                <span className="font-bold block mb-1">2. Reserve Space for Dynamic Content</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Use min-height em contêineres de banners, toasts ou avisos de cookies para evitar empurrar o layout.
+                  Use min-height on banner containers, toasts, or cookie banners to avoid pushing layout elements down.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
                 <span className="font-bold block mb-1">3. Font Display Swap</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Use <code>font-display: optional</code> ou <code>swap</code> com métricas de fallback para evitar o FOIT/FOUT.
+                  Use <code>font-display: optional</code> or <code>swap</code> with metric overrides to prevent FOIT/FOUT.
                 </p>
               </div>
             </div>
@@ -352,25 +352,25 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         {selectedMetric === 'fcp' && (
           <div className="space-y-3 text-xs">
             <p>
-              O <strong>FCP ({vitals.fcp.val})</strong> marca o instante em que qualquer parte do conteúdo do site (seja um texto ou imagem de fundo) se torna visível ao usuário.
+              <strong>FCP ({vitals.fcp.val})</strong> marks the moment when any part of the page content (text or background image) becomes visible to the user.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">1. Adicionar defer / async</span>
+                <span className="font-bold block mb-1">1. Add defer / async</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Garanta que scripts síncronos no <code>&lt;head&gt;</code> usem <code>defer</code> para não travar a exibição.
+                  Ensure synchronous scripts in <code>&lt;head&gt;</code> use <code>defer</code> to prevent render blocking.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">2. Pré-conectar a Fontes e CDNs</span>
+                <span className="font-bold block mb-1">2. Preconnect to Fonts & CDNs</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Insira <code>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</code> para antecipar o handshake DNS/TLS.
+                  Add <code>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</code> to initiate early DNS/TLS handshakes.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">3. Compactação Brotli / Gzip</span>
+                <span className="font-bold block mb-1">3. Brotli / Gzip Compression</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Habilite Brotli no servidor web para compactar o HTML inicial em até 20% a mais que o Gzip tradicional.
+                  Enable Brotli on the web server to compress initial HTML up to 20% smaller than legacy Gzip.
                 </p>
               </div>
             </div>
@@ -380,25 +380,25 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
         {selectedMetric === 'ttfb' && (
           <div className="space-y-3 text-xs">
             <p>
-              O <strong>TTFB ({vitals.ttfb.val})</strong> é o tempo que o navegador aguarda pelo primeiro byte de resposta do servidor após fazer a requisição HTTP.
+              <strong>TTFB ({vitals.ttfb.val})</strong> is the duration the browser waits for the first byte of response from the server after sending an HTTP request.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">1. Cache de Página no Servidor</span>
+                <span className="font-bold block mb-1">1. Server Page Caching</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Implemente cache de resposta (Redis, Varnish ou ISR em Next.js) para evitar queries repetitivas no banco de dados.
+                  Implement server-side response caching (Redis, Varnish, or Next.js ISR) to avoid redundant database queries.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">2. Otimizar Consultas SQL</span>
+                <span className="font-bold block mb-1">2. Optimize SQL Queries</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Verifique gargalos em ORMs e adicione índices nas tabelas mais consultadas.
+                  Check ORM query bottlenecks and add missing indexes on high-frequency tables.
                 </p>
               </div>
               <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-                <span className="font-bold block mb-1">3. Conexão HTTP/2 ou HTTP/3</span>
+                <span className="font-bold block mb-1">3. HTTP/2 or HTTP/3 Protocol</span>
                 <p className="text-[11px] text-[#141414]/70">
-                  Permite reutilizar conexões TCP únicas e multiplexar múltiplos assets sem head-of-line blocking.
+                  Multiplex multiple assets over a single TCP connection without head-of-line blocking.
                 </p>
               </div>
             </div>
@@ -413,10 +413,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           <div className="flex items-center justify-between border-b-2 border-[#141414] pb-2">
             <div className="flex items-center gap-2">
               <FileCode className="h-4 w-4 text-[#141414]" />
-              <h3 className="text-sm font-black uppercase">Recursos com Potencial de Bloqueio</h3>
+              <h3 className="text-sm font-black uppercase">Render-Blocking Resources</h3>
             </div>
             <span className="text-xs bg-[#E4E3E0] px-2 py-0.5 border border-[#141414] font-bold">
-              {vitals.renderBlockingScripts + vitals.renderBlockingStyles} RECURSOS
+              {vitals.renderBlockingScripts + vitals.renderBlockingStyles} RESOURCES
             </span>
           </div>
 
@@ -425,14 +425,14 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
               <div>
                 <div className="font-bold text-[#141414] flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-amber-500 rounded-full" />
-                  Scripts Síncronos Detectados
+                  Synchronous Scripts Detected
                 </div>
                 <div className="text-[11px] text-[#141414]/70 mt-0.5">
-                  {report.rawData.scriptsCount} scripts no DOM ({report.rawData.inlineScriptsCount} inline). Scripts sem defer atrasam o DOMContentLoaded.
+                  {report.rawData.scriptsCount} scripts in DOM ({report.rawData.inlineScriptsCount} inline). Scripts without defer delay DOMContentLoaded.
                 </div>
               </div>
               <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-800 px-1.5 py-0.5 font-bold shrink-0">
-                USAR DEFER
+                USE DEFER
               </span>
             </div>
 
@@ -440,10 +440,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
               <div>
                 <div className="font-bold text-[#141414] flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-rose-500 rounded-full" />
-                  Folhas de Estilo Externas
+                  External Stylesheets
                 </div>
                 <div className="text-[11px] text-[#141414]/70 mt-0.5">
-                  {report.rawData.stylesCount} folhas CSS externas no cabeçalho. Considere inlining de CSS crítico.
+                  {report.rawData.stylesCount} external CSS stylesheets in head. Consider inlining critical CSS.
                 </div>
               </div>
               <span className="text-[10px] bg-rose-100 text-rose-900 border border-rose-800 px-1.5 py-0.5 font-bold shrink-0">
@@ -455,10 +455,10 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
               <div>
                 <div className="font-bold text-[#141414] flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-blue-500 rounded-full" />
-                  Otimização de Imagens
+                  Image Optimization
                 </div>
                 <div className="text-[11px] text-[#141414]/70 mt-0.5">
-                  {report.rawData.imagesTotal} imagens totais. {report.rawData.imagesMissingAlt} sem texto alternativo.
+                  {report.rawData.imagesTotal} total images. {report.rawData.imagesMissingAlt} missing alt text.
                 </div>
               </div>
               <span className="text-[10px] bg-blue-100 text-blue-900 border border-blue-800 px-1.5 py-0.5 font-bold shrink-0">
@@ -473,7 +473,7 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
           <div className="flex items-center justify-between border-b-2 border-[#141414] pb-2">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-[#141414]" />
-              <h3 className="text-sm font-black uppercase">Distribuição de Peso da Página</h3>
+              <h3 className="text-sm font-black uppercase">Page Weight Distribution</h3>
             </div>
             <span className="text-xs bg-[#141414] text-white px-2 py-0.5 font-bold">
               EST. ~{formatBytes(vitals.payload.total)}
@@ -498,7 +498,7 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
             {/* Imagens */}
             <div>
               <div className="flex justify-between text-[11px] font-mono font-bold mb-1">
-                <span>Imagens & Mídia ({report.rawData.imagesTotal} ativos)</span>
+                <span>Images & Media ({report.rawData.imagesTotal} assets)</span>
                 <span>~{formatBytes(vitals.payload.images)}</span>
               </div>
               <div className="w-full bg-[#E4E3E0] h-2.5 border border-[#141414]">
@@ -526,7 +526,7 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
             {/* HTML Base */}
             <div>
               <div className="flex justify-between text-[11px] font-mono font-bold mb-1">
-                <span>Documento HTML DOM</span>
+                <span>HTML DOM Document</span>
                 <span>{formatBytes(vitals.payload.html)}</span>
               </div>
               <div className="w-full bg-[#E4E3E0] h-2.5 border border-[#141414]">
@@ -545,7 +545,7 @@ export const CoreWebVitalsView: React.FC<CoreWebVitalsViewProps> = ({
                 onClick={onOpenActionPlan}
                 className="w-full flex items-center justify-center gap-1.5 border-2 border-[#141414] bg-amber-400 py-2 font-bold text-xs hover:bg-amber-300 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
               >
-                <span>VER TAREFAS DE OTIMIZAÇÃO NO PLANO DE AÇÃO</span>
+                <span>VIEW OPTIMIZATION TASKS IN ACTION PLAN</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>

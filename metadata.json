@@ -1,6 +1,6 @@
 {
   "name": "Website Analyzer & Audit Tool",
-  "description": "Ferramenta profissional para auditoria de websites: análise de Segurança, SEO, Boas Práticas, Performance e emissão de relatórios detalhados com sugestões de correção.",
+  "description": "Professional website audit tool: in-depth analysis of Security, SEO, Best Practices, Performance, Accessibility, and actionable remediation reports.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

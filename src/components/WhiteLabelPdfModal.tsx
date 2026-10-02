@@ -28,9 +28,9 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
 }) => {
   const [settings, setSettings] = useState<WhiteLabelSettings>({
     agencyName: 'Studio Web Security & Performance',
-    consultantName: 'Especialista em Auditoria Web',
+    consultantName: 'Senior Web Audit Specialist',
     clientName: new URL(report.targetUrl).hostname.toUpperCase(),
-    customNotes: 'Relatório técnico e executivo com auditoria de segurança, SEO, boas práticas e performance.',
+    customNotes: 'Technical and executive report covering security, SEO, best practices, and performance audit.',
     includeExecutiveRoi: true,
   });
 
@@ -49,10 +49,10 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
             <Building2 className="h-5 w-5 text-[#141414]" />
             <div>
               <h3 className="text-sm font-black uppercase">
-                Relatório White-Label em PDF para Clientes
+                Client White-Label PDF Report
               </h3>
               <p className="text-[11px] text-[#141414]/70">
-                Personalize com sua marca, dados do cliente e notas executivas antes de exportar
+                Customize with your brand, client details, and executive summary before exporting
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
               className="flex items-center gap-1.5 border-2 border-[#141414] bg-[#141414] text-white px-3 py-1 font-bold text-xs hover:bg-neutral-800 shadow-[2px_2px_0px_#888888] cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span>IMPRIMIR / SALVAR PDF</span>
+              <span>PRINT / SAVE PDF</span>
             </button>
 
             <button
@@ -82,7 +82,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
           {/* Settings Grid */}
           <div className="border-2 border-[#141414] bg-[#E4E3E0] p-4 shadow-[2px_2px_0px_#141414] grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="font-bold block mb-1">Sua Empresa / Agência:</label>
+              <label className="font-bold block mb-1">Your Company / Agency:</label>
               <input
                 type="text"
                 value={settings.agencyName}
@@ -92,7 +92,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
             </div>
 
             <div>
-              <label className="font-bold block mb-1">Auditor / Consultor:</label>
+              <label className="font-bold block mb-1">Auditor / Consultant:</label>
               <input
                 type="text"
                 value={settings.consultantName}
@@ -102,7 +102,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
             </div>
 
             <div>
-              <label className="font-bold block mb-1">Nome do Cliente:</label>
+              <label className="font-bold block mb-1">Client Name:</label>
               <input
                 type="text"
                 value={settings.clientName}
@@ -119,7 +119,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
                   onChange={(e) => setSettings({ ...settings, includeExecutiveRoi: e.target.checked })}
                   className="accent-[#141414] w-4 h-4 cursor-pointer"
                 />
-                <span>Incluir Seção Executiva de Impacto de Negócio & ROI para Tomadores de Decisão</span>
+                <span>Include Executive Business Impact & ROI Section for Decision Makers</span>
               </label>
             </div>
           </div>
@@ -130,18 +130,18 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-4 border-[#141414] pb-5">
               <div>
                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#141414]/60">
-                  RELATÓRIO TÉCNICO DE AUDITORIA WEB
+                  TECHNICAL WEB AUDIT REPORT
                 </span>
                 <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#141414] mt-0.5">
-                  {settings.agencyName || 'AGÊNCIA DE AUDITORIA'}
+                  {settings.agencyName || 'AUDIT AGENCY'}
                 </h1>
                 <div className="text-xs text-[#141414]/80 mt-1">
-                  Consultor Responsável: <strong>{settings.consultantName}</strong>
+                  Responsible Consultant: <strong>{settings.consultantName}</strong>
                 </div>
               </div>
 
               <div className="text-right">
-                <div className="text-xs font-bold text-[#141414]/70">PREPARADO PARA:</div>
+                <div className="text-xs font-bold text-[#141414]/70">PREPARED FOR:</div>
                 <div className="text-base font-black text-[#141414] uppercase">{settings.clientName}</div>
                 <div className="text-[11px] text-[#141414]/70 mt-0.5">{formatDate(report.analyzedAt)}</div>
               </div>
@@ -150,7 +150,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
             {/* Score Overview Row */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
               <div className="border-2 border-[#141414] p-4 bg-[#E4E3E0] text-center">
-                <span className="text-[10px] font-bold uppercase block text-[#141414]/70">Score Geral</span>
+                <span className="text-[10px] font-bold uppercase block text-[#141414]/70">Overall Score</span>
                 <div className="text-4xl font-black text-[#141414] mt-1">{report.overallScore}/100</div>
                 <span className="inline-block mt-2 px-2 py-0.5 bg-[#141414] text-white text-[10px] font-bold">
                   GRADE [{report.overallGrade}]
@@ -158,13 +158,13 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
               </div>
 
               <div className="border border-[#141414] p-3 text-center">
-                <span className="text-[10px] font-bold uppercase block text-[#141414]/70">Segurança</span>
+                <span className="text-[10px] font-bold uppercase block text-[#141414]/70">Security</span>
                 <div className="text-2xl font-black text-emerald-800 mt-1">{report.categories.security.score}%</div>
                 <span className="text-[10px] text-[#141414]/60 block mt-1">Grade {report.categories.security.grade}</span>
               </div>
 
               <div className="border border-[#141414] p-3 text-center">
-                <span className="text-[10px] font-bold uppercase block text-[#141414]/70">SEO & Busca</span>
+                <span className="text-[10px] font-bold uppercase block text-[#141414]/70">SEO & Search</span>
                 <div className="text-2xl font-black text-blue-800 mt-1">{report.categories.seo.score}%</div>
                 <span className="text-[10px] text-[#141414]/60 block mt-1">Grade {report.categories.seo.grade}</span>
               </div>
@@ -181,25 +181,25 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
               <div className="border-2 border-[#141414] bg-[#E4E3E0]/40 p-4 space-y-2">
                 <h4 className="font-black text-xs uppercase flex items-center gap-1.5 border-b border-[#141414]/20 pb-1.5">
                   <TrendingUp className="h-4 w-4 text-[#141414]" />
-                  Resumo Executivo para Tomadores de Decisão (Impacto de Negócio & ROI)
+                  Executive Decision Maker Summary (Business Impact & ROI)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px] pt-1">
                   <div className="border border-[#141414] bg-white p-2.5">
-                    <strong className="block text-[#141414] mb-1">Proteção de Reputação & Marca</strong>
+                    <strong className="block text-[#141414] mb-1">Reputation & Brand Protection</strong>
                     <p className="text-[#141414]/70">
-                      A implementação de HSTS e CSP elimina 98% dos vetores de ataques de injeção de script e clickjacking, garantindo imunidade contra vazamentos de dados.
+                      Implementation of HSTS and CSP mitigates 98% of script injection and clickjacking attack vectors, ensuring enterprise data breach protection.
                     </p>
                   </div>
                   <div className="border border-[#141414] bg-white p-2.5">
-                    <strong className="block text-[#141414] mb-1">Impacto na Taxa de Conversão</strong>
+                    <strong className="block text-[#141414] mb-1">Conversion Rate Lift</strong>
                     <p className="text-[#141414]/70">
-                      Reduzir o TTFB e o LCP abaixo de 2.5s eleva a taxa de conversão do comércio eletrônico em até +8.4% segundo estudos do Google e Deloitte.
+                      Keeping TTFB and LCP below 2.5s boosts e-commerce conversion rates by up to +8.4% according to Google and Deloitte benchmarks.
                     </p>
                   </div>
                   <div className="border border-[#141414] bg-white p-2.5">
-                    <strong className="block text-[#141414] mb-1">Conformidade Legal & LGPD</strong>
+                    <strong className="block text-[#141414] mb-1">Compliance & Risk Mitigation</strong>
                     <p className="text-[#141414]/70">
-                      Adequação total às diretrizes de cookies e transmissão cifrada evita notificações da ANPD e litígios por falta de acessibilidade ADA/WCAG.
+                      Full adherence to privacy guidelines, encrypted transmission, and ADA/WCAG accessibility mitigates regulatory exposure and litigation risk.
                     </p>
                   </div>
                 </div>
@@ -208,7 +208,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
 
             {/* AI Diagnosis */}
             <div className="border border-[#141414] bg-[#E4E3E0] p-4">
-              <h4 className="font-black text-xs uppercase mb-1.5">Diagnóstico Técnico Executivo:</h4>
+              <h4 className="font-black text-xs uppercase mb-1.5">Executive Technical Diagnosis:</h4>
               <p className="text-xs leading-relaxed text-[#141414]">
                 {report.aiExecutiveSummary}
               </p>
@@ -216,7 +216,7 @@ export const WhiteLabelPdfModal: React.FC<WhiteLabelPdfModalProps> = ({
 
             {/* Key Priority Fixes */}
             <div>
-              <h4 className="font-black text-xs uppercase mb-2">Principais Ações Prioritárias Recomendadas:</h4>
+              <h4 className="font-black text-xs uppercase mb-2">Top Priority Recommended Actions:</h4>
               <div className="space-y-1.5">
                 {report.topPriorityFixes.slice(0, 4).map((fix, idx) => (
                   <div key={idx} className="border border-[#141414] p-2 bg-neutral-50 flex items-start gap-2">

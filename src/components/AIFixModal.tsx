@@ -49,7 +49,7 @@ interface AIFixData {
   targetUrl?: string;
   problemAnalysis: string;
   estimatedTime: string;
-  riskLevel: 'Baixo' | 'Médio' | 'Alto';
+  riskLevel: 'Low' | 'Medium' | 'High';
   riskDescription?: string;
   steps: AIFixStep[];
   codeImplementations: AICodeOption[];
@@ -70,7 +70,7 @@ interface AIFixModalProps {
 }
 
 const POPULAR_FRAMEWORKS = [
-  'Auto-Detectado',
+  'Auto-Detected',
   'Nginx',
   'Apache (.htaccess)',
   'Node.js / Express',
@@ -92,7 +92,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [fixData, setFixData] = useState<AIFixData | null>(null);
-  const [selectedFramework, setSelectedFramework] = useState<string>('Auto-Detectado');
+  const [selectedFramework, setSelectedFramework] = useState<string>('Auto-Detected');
   const [activeCodeTab, setActiveCodeTab] = useState<number>(0);
   const [copiedCodeIdx, setCopiedCodeIdx] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState<boolean>(false);
@@ -117,14 +117,14 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
           item,
           targetUrl,
           techStack,
-          customFramework: frameworkChoice && frameworkChoice !== 'Auto-Detectado' ? frameworkChoice : undefined,
+          customFramework: frameworkChoice && frameworkChoice !== 'Auto-Detected' ? frameworkChoice : undefined,
           userQuestion: customPrompt,
         }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Falha ao se comunicar com o serviço de IA.');
+        throw new Error(errData.error || 'Failed to communicate with AI service.');
       }
 
       const data: AIFixData = await res.json();
@@ -132,7 +132,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
       setActiveCodeTab(0);
     } catch (err: any) {
       console.error('Failed to fetch AI Fix:', err);
-      setError(err.message || 'Ocorreu um erro ao carregar as instruções de correção.');
+      setError(err.message || 'An error occurred while loading remediation instructions.');
     } finally {
       setLoading(false);
     }
@@ -142,8 +142,8 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
     if (isOpen && item) {
       setCustomResponses([]);
       setUserQuery('');
-      setSelectedFramework('Auto-Detectado');
-      fetchFix('Auto-Detectado');
+      setSelectedFramework('Auto-Detected');
+      fetchFix('Auto-Detected');
     } else {
       setFixData(null);
       setError(null);
@@ -177,7 +177,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
       });
 
       if (!res.ok) {
-        throw new Error('Falha ao obter resposta de acompanhamento.');
+        throw new Error('Failed to get follow-up answer.');
       }
 
       const data: AIFixData = await res.json();
@@ -195,7 +195,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
     } catch (err: any) {
       setCustomResponses((prev) => [
         ...prev,
-        { q: currentQ, a: 'Desculpe, não foi possível processar a pergunta no momento.' },
+        { q: currentQ, a: 'Sorry, unable to process the question at this time.' },
       ]);
     } finally {
       setIsAsking(false);
@@ -221,29 +221,29 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
 
   const generateMarkdownReport = (): string => {
     if (!fixData) return '';
-    let md = `# Guia de Correção Técnica: ${fixData.itemTitle}\n`;
+    let md = `# Technical Fix Guide: ${fixData.itemTitle}\n`;
     md += `**Website:** ${fixData.targetUrl || 'N/A'}\n`;
-    md += `**Severidade:** ${fixData.severity.toUpperCase()} | **Categoria:** ${fixData.category} | **Tempo Estimado:** ${fixData.estimatedTime}\n`;
-    md += `**Risco:** ${fixData.riskLevel} - ${fixData.riskDescription || ''}\n\n`;
-    md += `## Diagnóstico do Problema\n${fixData.problemAnalysis}\n\n`;
-    md += `## Passo a Passo de Implementação\n`;
+    md += `**Severity:** ${fixData.severity.toUpperCase()} | **Category:** ${fixData.category} | **Estimated Time:** ${fixData.estimatedTime}\n`;
+    md += `**Risk:** ${fixData.riskLevel} - ${fixData.riskDescription || ''}\n\n`;
+    md += `## Problem Diagnosis\n${fixData.problemAnalysis}\n\n`;
+    md += `## Step-by-Step Implementation\n`;
     fixData.steps.forEach((s) => {
-      md += `### Passo ${s.stepNumber}: ${s.title}\n${s.description}\n`;
-      if (s.filePath) md += `*Arquivo:* \`${s.filePath}\`\n`;
+      md += `### Step ${s.stepNumber}: ${s.title}\n${s.description}\n`;
+      if (s.filePath) md += `*File:* \`${s.filePath}\`\n`;
       if (s.code) md += `\`\`\`${s.language || 'text'}\n${s.code}\n\`\`\`\n`;
       md += `\n`;
     });
     if (fixData.codeImplementations.length > 0) {
-      md += `## Implementações por Plataforma\n`;
+      md += `## Platform Implementations\n`;
       fixData.codeImplementations.forEach((impl) => {
         md += `### ${impl.platform} - ${impl.title}\n`;
-        if (impl.filePath) md += `*Arquivo:* \`${impl.filePath}\`\n`;
+        if (impl.filePath) md += `*File:* \`${impl.filePath}\`\n`;
         md += `\`\`\`${impl.language}\n${impl.code}\n\`\`\`\n`;
         md += `${impl.explanation}\n\n`;
       });
     }
-    md += `## Validação\n\`\`\`bash\n${fixData.verificationCommand}\n\`\`\`\n${fixData.verificationInstructions}\n\n`;
-    md += `## Commit Sugerido\n\`\`\`bash\ngit commit -m "${fixData.suggestedCommitMessage}"\n\`\`\`\n`;
+    md += `## Verification\n\`\`\`bash\n${fixData.verificationCommand}\n\`\`\`\n${fixData.verificationInstructions}\n\n`;
+    md += `## Suggested Commit\n\`\`\`bash\ngit commit -m "${fixData.suggestedCommitMessage}"\n\`\`\`\n`;
     return md;
   };
 
@@ -271,7 +271,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                     GEMINI 3.7 FLASH // SRE ASSISTANT
                   </span>
                   <span className="hidden sm:inline-block px-1.5 py-0.2 text-[9px] font-bold bg-white/20 text-white uppercase">
-                    GUIA DE IMPLEMENTAÇÃO
+                    IMPLEMENTATION GUIDE
                   </span>
                 </div>
                 <h3 className="text-sm sm:text-base font-black truncate uppercase text-white mt-0.5">
@@ -290,17 +290,17 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                       ? 'bg-emerald-600 text-white border-emerald-400'
                       : 'bg-white/10 text-white hover:bg-white/20 border-white/40'
                   }`}
-                  title="Marcar este item como resolvido"
+                  title="Mark this item as resolved"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>{isCompleted ? 'RESOLVIDO' : 'MARCAR CORRIGIDO'}</span>
+                  <span>{isCompleted ? 'RESOLVED' : 'MARK AS RESOLVED'}</span>
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Fechar modal de correção com IA"
+                aria-label="Close AI fix modal"
                 className="p-1 text-white hover:bg-rose-600 hover:text-white border border-white/30 transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5" />
@@ -322,11 +322,11 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                     : 'bg-blue-200 text-blue-900 border-blue-800'
                 }`}
               >
-                {item.severity === 'critical' ? 'CRÍTICO' : item.severity === 'warning' ? 'ALERTA' : 'INFO'}
+                {item.severity === 'critical' ? 'CRITICAL' : item.severity === 'warning' ? 'WARNING' : 'INFO'}
               </span>
 
               <span className="px-2 py-0.5 bg-white border border-[#141414] text-[10px] font-bold uppercase text-[#141414]">
-                CATEGORIA: {item.category.replace('_', ' ')}
+                CATEGORY: {item.category.replace('_', ' ')}
               </span>
 
               {targetUrl && (
@@ -346,14 +346,14 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                 <div className="flex items-center gap-1 font-bold">
                   <ShieldAlert
                     className={`h-3.5 w-3.5 ${
-                      fixData.riskLevel === 'Alto'
+                      fixData.riskLevel === 'High'
                         ? 'text-rose-700'
-                        : fixData.riskLevel === 'Médio'
+                        : fixData.riskLevel === 'Medium'
                         ? 'text-amber-700'
                         : 'text-emerald-700'
                     }`}
                   />
-                  <span>RISCO: {fixData.riskLevel.toUpperCase()}</span>
+                  <span>RISK: {fixData.riskLevel.toUpperCase()}</span>
                 </div>
               </div>
             )}
@@ -388,9 +388,9 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
               <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center border-2 border-dashed border-[#141414] bg-[#F2F1ED]/50 p-6">
                 <RefreshCw className="h-7 w-7 animate-spin text-[#141414]" />
                 <div>
-                  <p className="font-bold text-sm uppercase">Sintetizando Correção Passo a Passo com Gemini 3.7 Flash...</p>
+                  <p className="font-bold text-sm uppercase">Synthesizing Step-by-Step Fix with Gemini 3.7 Flash...</p>
                   <p className="text-xs text-[#141414]/70 mt-1">
-                    Analisando {item.title} para a stack {selectedFramework} e formulando instruções de engenharia.
+                    Analyzing {item.title} for the {selectedFramework} stack and formulating engineering directives.
                   </p>
                 </div>
               </div>
@@ -401,7 +401,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
               <div className="p-4 border-2 border-rose-800 bg-rose-50 text-rose-950 space-y-2">
                 <div className="flex items-center gap-2 font-bold uppercase">
                   <AlertCircle className="h-4 w-4 text-rose-700" />
-                  <span>Erro ao gerar guia de correção</span>
+                  <span>Error generating remediation guide</span>
                 </div>
                 <p className="text-xs">{error}</p>
                 <button
@@ -409,7 +409,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                   onClick={() => fetchFix(selectedFramework)}
                   className="px-3 py-1 bg-rose-900 text-white font-bold uppercase text-[10px] hover:bg-rose-800 cursor-pointer"
                 >
-                  Tentar Novamente
+                  Try Again
                 </button>
               </div>
             )}
@@ -421,7 +421,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                 <div className="p-3.5 border-2 border-[#141414] bg-[#F2F1ED] shadow-[2px_2px_0px_#141414] space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="px-1.5 py-0.5 bg-[#141414] text-white text-[9px] font-bold uppercase">
-                      DIAGNÓSTICO & IMPACTO
+                      DIAGNOSTIC & IMPACT
                     </span>
                     <span className="font-bold text-xs uppercase text-[#141414]">
                       {fixData.headline}
@@ -434,7 +434,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                     <div className="pt-2 border-t border-[#141414]/20 flex items-start gap-1.5 text-[11px] text-[#141414]/80">
                       <AlertTriangle className="h-3.5 w-3.5 text-amber-700 shrink-0 mt-0.5" />
                       <span>
-                        <strong>Aviso de Risco ({fixData.riskLevel}):</strong> {fixData.riskDescription}
+                        <strong>Risk Advisory ({fixData.riskLevel}):</strong> {fixData.riskDescription}
                       </span>
                     </div>
                   )}
@@ -448,7 +448,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                       <div className="flex items-center gap-1.5">
                         <Code2 className="h-4 w-4 text-amber-400" />
                         <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 mr-2">
-                          CÓDIGO PRONTO:
+                          READY-TO-USE CODE:
                         </span>
                         {fixData.codeImplementations.map((impl, idx) => (
                           <button
@@ -481,12 +481,12 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                         {copiedCodeIdx === activeCodeTab ? (
                           <>
                             <Check className="h-3 w-3 text-emerald-400" />
-                            <span className="text-emerald-400">COPIADO</span>
+                            <span className="text-emerald-400">COPIED</span>
                           </>
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            <span>COPIAR CÓDIGO</span>
+                            <span>COPY CODE</span>
                           </>
                         )}
                       </button>
@@ -501,7 +501,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                           </span>
                           {fixData.codeImplementations[activeCodeTab].filePath && (
                             <span className="bg-[#222] px-2 py-0.5 border border-[#444] text-[#E4E3E0] font-mono">
-                              Arquivo: {fixData.codeImplementations[activeCodeTab].filePath}
+                              File: {fixData.codeImplementations[activeCodeTab].filePath}
                             </span>
                           )}
                         </div>
@@ -524,10 +524,10 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
                     <span className="bg-[#141414] text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                      PASSO A PASSO GUIADO
+                      GUIDED STEP-BY-STEP
                     </span>
                     <span className="text-xs text-[#141414]/60 font-bold uppercase">
-                      ({fixData.steps.length} ETAPAS)
+                      ({fixData.steps.length} STEPS)
                     </span>
                   </div>
 
@@ -568,7 +568,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                               onClick={() => handleCopy(step.code!, 'code', 100 + step.stepNumber)}
                               className="absolute right-2 top-2 px-1.5 py-0.5 bg-[#333] hover:bg-[#555] text-white text-[9px] font-bold uppercase border border-[#555] opacity-80 group-hover:opacity-100 transition-opacity cursor-pointer"
                             >
-                              {copiedCodeIdx === 100 + step.stepNumber ? 'COPIADO' : 'COPIAR'}
+                              {copiedCodeIdx === 100 + step.stepNumber ? 'COPIED' : 'COPY'}
                             </button>
                           </div>
                         )}
@@ -584,7 +584,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                       <div className="flex items-center gap-1.5">
                         <Terminal className="h-4 w-4 text-[#141414]" />
                         <span className="font-black text-xs uppercase tracking-wider text-[#141414]">
-                          COMANDO DE VALIDAÇÃO (TERMINAL)
+                          VERIFICATION COMMAND (TERMINAL)
                         </span>
                       </div>
 
@@ -596,12 +596,12 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                         {copiedCurl ? (
                           <>
                             <Check className="h-3 w-3 text-emerald-400" />
-                            <span className="text-emerald-400">COPIADO</span>
+                            <span className="text-emerald-400">COPIED</span>
                           </>
                         ) : (
                           <>
                             <Copy className="h-3 w-3" />
-                            <span>COPIAR COMANDO</span>
+                            <span>COPY COMMAND</span>
                           </>
                         )}
                       </button>
@@ -623,7 +623,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                   {fixData.proTips && fixData.proTips.length > 0 && (
                     <div className="p-3 border-2 border-[#141414] bg-white space-y-1.5">
                       <span className="font-bold text-[10px] uppercase text-[#141414] block">
-                        DICAS DE ENGENHARIA:
+                        ENGINEERING PRO TIPS:
                       </span>
                       <ul className="space-y-1 text-[11px] text-[#141414]/85 list-disc list-inside">
                         {fixData.proTips.map((tip, idx) => (
@@ -640,7 +640,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                     <div className="p-3 border-2 border-[#141414] bg-white space-y-1.5 flex flex-col justify-between">
                       <div>
                         <span className="font-bold text-[10px] uppercase text-[#141414] block mb-1">
-                          MENSAGEM DE COMMIT SUGERIDA:
+                          SUGGESTED COMMIT MESSAGE:
                         </span>
                         <code className="text-[11px] bg-[#E4E3E0] p-1.5 border border-[#141414] block text-[#141414] break-all font-mono font-bold">
                           {fixData.suggestedCommitMessage}
@@ -652,7 +652,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                         onClick={() => handleCopy(fixData.suggestedCommitMessage, 'commit')}
                         className="mt-2 self-start flex items-center gap-1 text-[10px] font-bold uppercase underline cursor-pointer text-[#141414] hover:text-emerald-700"
                       >
-                        {copiedCommit ? 'Copiado para a área de transferência!' : 'Copiar mensagem de commit'}
+                        {copiedCommit ? 'Copied to clipboard!' : 'Copy commit message'}
                       </button>
                     </div>
                   )}
@@ -662,13 +662,13 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                 {customResponses.length > 0 && (
                   <div className="space-y-2 pt-2 border-t-2 border-[#141414]">
                     <span className="text-[10px] font-bold uppercase text-[#141414]">
-                      PERGUNTAS E RESPOSTAS ADICIONAIS:
+                      ADDITIONAL QUESTIONS & ANSWERS:
                     </span>
                     {customResponses.map((item, idx) => (
                       <div key={idx} className="p-3 border-2 border-[#141414] bg-[#F2F1ED] space-y-1.5 text-xs">
                         <div className="font-bold text-[#141414] flex items-center gap-1.5">
                           <HelpCircle className="h-3.5 w-3.5 text-blue-700" />
-                          <span>P: {item.q}</span>
+                          <span>Q: {item.q}</span>
                         </div>
                         <div className="text-[#141414]/90 whitespace-pre-wrap font-mono text-[11px] bg-white p-2 border border-[#141414]">
                           {item.a}
@@ -684,7 +684,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                   className="p-3 border-2 border-[#141414] bg-white shadow-[2px_2px_0px_#141414] space-y-2"
                 >
                   <label htmlFor="ai-fix-question" className="block text-[10px] font-black uppercase text-[#141414]">
-                    DÚVIDAS OU ADAPTAÇÃO PARA OUTRA FERRAMENTA? (PERGUNTE AO GEMINI):
+                    QUESTIONS OR ADAPTATION FOR ANOTHER TOOL? (ASK GEMINI):
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -692,7 +692,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                       type="text"
                       value={userQuery}
                       onChange={(e) => setUserQuery(e.target.value)}
-                      placeholder="Ex: Como aplico isso no Docker Compose? Ou no Caddyfile?"
+                      placeholder="e.g. How do I apply this in Docker Compose? Or Caddyfile?"
                       disabled={isAsking}
                       className="flex-1 bg-[#E4E3E0] border border-[#141414] px-3 py-1.5 text-xs font-mono text-[#141414] placeholder-[#141414]/50 focus:outline-none focus:bg-white"
                     />
@@ -706,7 +706,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                       ) : (
                         <Send className="h-3.5 w-3.5" />
                       )}
-                      <span>ENVIAR</span>
+                      <span>SEND</span>
                     </button>
                   </div>
                 </form>
@@ -715,7 +715,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
           </div>
 
           {/* Footer Action Bar */}
-          <div className="p-3 sm:p-4 bg-[#E4E3E0] border-t-2 border-[#141414] flex flex-wrap items-center justify-between gap-2 shrink-0">
+          <div className="p-3 sm:p-4 bg-[#E4E3E0] border-t-2 border-[#141414] flex flex-wrap items-center justify-between gap-2 shrink-0 text-xs">
             <div className="flex items-center gap-2">
               {fixData && (
                 <button
@@ -726,12 +726,12 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                   {copiedAll ? (
                     <>
                       <Check className="h-3.5 w-3.5 text-emerald-700" />
-                      <span className="text-emerald-700">GUIA COPIADO (MARKDOWN)!</span>
+                      <span className="text-emerald-700">GUIDE COPIED (MARKDOWN)!</span>
                     </>
                   ) : (
                     <>
                       <FileCode className="h-3.5 w-3.5" />
-                      <span>EXPORTAR GUIA COMPLETO (MD)</span>
+                      <span>EXPORT FULL GUIDE (MD)</span>
                     </>
                   )}
                 </button>
@@ -752,7 +752,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                   }`}
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  <span>{isCompleted ? 'ITEM RESOLVIDO' : 'MARCAR COMO CORRIGIDO'}</span>
+                  <span>{isCompleted ? 'ITEM RESOLVED' : 'MARK AS RESOLVED'}</span>
                 </button>
               )}
 
@@ -761,7 +761,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                 onClick={onClose}
                 className="px-4 py-1.5 bg-[#141414] text-white border-2 border-[#141414] text-xs font-bold uppercase hover:bg-[#333] transition-colors cursor-pointer"
               >
-                FECHAR
+                CLOSE
               </button>
             </div>
           </div>

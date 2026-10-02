@@ -101,13 +101,13 @@ git push -u origin main`;
             </div>
             <div>
               <h3 className="text-sm font-black text-[#141414] flex items-center gap-2 uppercase">
-                DEPLOY NO GITHUB PAGES
+                DEPLOY TO GITHUB PAGES
                 <span className="bg-[#E4E3E0] px-1.5 py-0.2 text-[9px] font-bold text-[#141414] border border-[#141414]">
-                  PRONTO
+                  READY
                 </span>
               </h3>
               <p className="text-[11px] text-[#141414]/70">
-                Guia de publicação estática e automação com GitHub Actions
+                Static hosting and automation guide with GitHub Actions
               </p>
             </div>
           </div>
@@ -128,10 +128,10 @@ git push -u origin main`;
               <span className="flex h-5 w-5 items-center justify-center bg-[#141414] text-[10px] font-bold text-white">
                 1
               </span>
-              ARQUITETURA HÍBRIDA & GITHUB PAGES
+              HYBRID ARCHITECTURE & GITHUB PAGES
             </h4>
             <p className="text-[11px] text-[#141414]/80 leading-relaxed">
-              O app suporta build estático puro com base paths relativos (<code className="bg-[#E4E3E0] px-1 border border-[#141414]">base: './'</code>). No GitHub Pages ele ativa autonomamente o <strong>motor client-side</strong> para analisar domínios e renderizar relatórios completos.
+              The app supports pure static builds with relative asset paths (<code className="bg-[#E4E3E0] px-1 border border-[#141414]">base: './'</code>). On GitHub Pages it autonomously activates the <strong>client-side engine</strong> to analyze domains and render comprehensive reports.
             </p>
           </div>
 
@@ -142,7 +142,7 @@ git push -u origin main`;
                 <span className="flex h-5 w-5 items-center justify-center bg-[#141414] text-[10px] font-bold text-white">
                   2
                 </span>
-                WORKFLOW ACTIONS (.github/workflows/deploy.yml)
+                ACTIONS WORKFLOW (.github/workflows/deploy.yml)
               </h4>
               <button
                 type="button"
@@ -150,7 +150,7 @@ git push -u origin main`;
                 className="flex items-center gap-1 text-[10px] font-bold uppercase text-[#141414] bg-white hover:bg-[#E4E3E0] px-2 py-1 border border-[#141414] transition-colors cursor-pointer"
               >
                 {copiedYaml ? <Check className="h-3 w-3 text-emerald-700" /> : <Copy className="h-3 w-3" />}
-                <span>{copiedYaml ? 'COPIADO' : 'COPIAR YAML'}</span>
+                <span>{copiedYaml ? 'COPIED' : 'COPY YAML'}</span>
               </button>
             </div>
             <div className="max-h-36 overflow-y-auto border border-[#141414] bg-[#141414] p-2.5 font-mono text-[11px] text-[#E4E3E0]">
@@ -165,7 +165,7 @@ git push -u origin main`;
                 <span className="flex h-5 w-5 items-center justify-center bg-[#141414] text-[10px] font-bold text-white">
                   3
                 </span>
-                COMANDOS DE INICIALIZAÇÃO GIT
+                GIT INITIALIZATION COMMANDS
               </h4>
               <button
                 type="button"
@@ -173,7 +173,7 @@ git push -u origin main`;
                 className="flex items-center gap-1 text-[10px] font-bold uppercase text-[#141414] bg-white hover:bg-[#E4E3E0] px-2 py-1 border border-[#141414] transition-colors cursor-pointer"
               >
                 {copiedCommands ? <Check className="h-3 w-3 text-emerald-700" /> : <Copy className="h-3 w-3" />}
-                <span>{copiedCommands ? 'COPIADO' : 'COPIAR COMANDOS'}</span>
+                <span>{copiedCommands ? 'COPIED' : 'COPY COMMANDS'}</span>
               </button>
             </div>
             <div className="border border-[#141414] bg-[#141414] p-2.5 font-mono text-[11px] text-[#E4E3E0]">
@@ -187,10 +187,10 @@ git push -u origin main`;
               <span className="flex h-5 w-5 items-center justify-center bg-[#141414] text-[10px] font-bold text-white">
                 4
               </span>
-              HABILITAR NO GITHUB
+              ENABLE IN GITHUB
             </h4>
             <p className="text-[11px] text-[#141414]/80 leading-relaxed">
-              No repositório, acesse <strong>Settings &gt; Pages &gt; Build and deployment</strong> e defina <strong>Source: GitHub Actions</strong>. O deploy é disparado a cada push em <code className="bg-[#E4E3E0] px-1 border border-[#141414]">main</code>.
+              In your repository, navigate to <strong>Settings &gt; Pages &gt; Build and deployment</strong> and choose <strong>Source: GitHub Actions</strong>. Deployment runs automatically on every push to <code className="bg-[#E4E3E0] px-1 border border-[#141414]">main</code>.
             </p>
           </div>
 
@@ -198,12 +198,12 @@ git push -u origin main`;
           <div className="border-2 border-[#141414] bg-amber-50 p-4 space-y-2 shadow-[2px_2px_0px_#141414]">
             <div className="flex items-center gap-2 text-amber-900 font-black text-xs uppercase">
               <span className="bg-amber-400 px-1 py-0.5 text-[9px] border border-[#141414] text-[#141414]">
-                CORREÇÃO PRONTA
+                FIX INCLUDED
               </span>
-              <span>RESOLUÇÃO DE ERRO: NODE 20 &amp; LOCK FILE</span>
+              <span>RESOLVED ERROR: NODE 22 &amp; RESILIENT LOCKFILE</span>
             </div>
             <p className="text-[11px] text-[#141414]/90 leading-relaxed">
-              Caso seu GitHub Actions tenha apresentado o erro <em>&quot;Dependencies lock file is not found&quot;</em> ou aviso <em>&quot;Node 20 is being deprecated&quot;</em>, atualizamos o workflow para <strong>Node 22 LTS</strong> e instalador resiliente. Para sincronizar o repositório, execute:
+              If your GitHub Actions run encountered <em>&quot;Dependencies lock file is not found&quot;</em> or warning <em>&quot;Node 20 is being deprecated&quot;</em>, the workflow is already upgraded to <strong>Node 22 LTS</strong> with a resilient dependency installer. To sync your repository:
             </p>
             <div className="border border-[#141414] bg-[#141414] p-2 font-mono text-[10px] text-amber-300 select-all">
               git add .github/workflows/deploy.yml package-lock.json &amp;&amp; git commit -m &quot;fix(ci): update to node 22 and resilient lockfile&quot; &amp;&amp; git push

@@ -61,13 +61,13 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
         });
 
         if (!res.ok) {
-          throw new Error(`Falha ao contactar servidor (${res.status})`);
+          throw new Error(`Failed to contact server (${res.status})`);
         }
 
         const data: ReportExecutiveSummaryResponse = await res.json();
         setSummaryData(data);
       } catch (err: any) {
-        console.warn('Erro ao chamar /api/gemini/summary:', err);
+        console.warn('Error fetching /api/gemini/summary, using fallback:', err);
         // Local deterministic fallback
         const fallback = generateClientFallback(report, selectedTone);
         setSummaryData(fallback);
@@ -95,38 +95,38 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
     const issuesText = summaryData.top3CriticalIssues
       .map(
         (iss) =>
-          `${iss.rank}. [${iss.urgency.toUpperCase()}] ${iss.title}\n   - Impacto: ${iss.businessImpact}\n   - Causa Técnica: ${iss.technicalRootCause}\n   - Ação Rápida: ${iss.suggestedQuickAction}`
+          `${iss.rank}. [${iss.urgency.toUpperCase()}] ${iss.title}\n   - Impact: ${iss.businessImpact}\n   - Root Cause: ${iss.technicalRootCause}\n   - Suggested Fix: ${iss.suggestedQuickAction}`
       )
       .join('\n\n');
 
     const roadmapText = summaryData.priorityRoadmap
       .map(
         (r) =>
-          `* ${r.phase} (${r.timeframe}) - Ganho Estimado: ${r.expectedScoreBoost}\n  ${r.actions.map((a) => `  - ${a}`).join('\n')}`
+          `* ${r.phase} (${r.timeframe}) - Expected Boost: ${r.expectedScoreBoost}\n  ${r.actions.map((a) => `  - ${a}`).join('\n')}`
       )
       .join('\n');
 
     const fullText = [
-      `=== SUMÁRIO EXECUTIVO DA AUDITORIA // WEBAUDIT PRO ===`,
+      `=== STRATEGIC AUDIT EXECUTIVE SUMMARY // WEBAUDIT PRO ===`,
       `Website: ${summaryData.targetUrl}`,
-      `Score Geral: ${summaryData.overallScore}/100 [Grade ${summaryData.overallGrade}]`,
-      `Veredito Estratégico: ${summaryData.strategicVerdict}`,
+      `Overall Score: ${summaryData.overallScore}/100 [Grade ${summaryData.overallGrade}]`,
+      `Strategic Verdict: ${summaryData.strategicVerdict}`,
       '',
-      `VISÃO GERAL:`,
+      `EXECUTIVE OVERVIEW:`,
       summaryData.executiveOverview,
       '',
-      `DESTAQUES C-LEVEL:`,
+      `C-LEVEL HIGHLIGHTS:`,
       summaryData.cLevelHighlights.map((h) => `• ${h}`).join('\n'),
       '',
-      `TOP 3 PROBLEMAS MAIS CRÍTICOS:`,
+      `TOP 3 CRITICAL ISSUES:`,
       issuesText,
       '',
-      `ORDEM DE PRIORIDADE DE REMEDIAÇÃO:`,
+      `PRIORITY REMEDIATION ROADMAP:`,
       roadmapText,
       '',
-      `ANÁLISE DE ROI & RISCO:`,
-      `• Conversão: ${summaryData.roiAndBusinessRiskAnalysis.conversionOpportunity}`,
-      `• Segurança: ${summaryData.roiAndBusinessRiskAnalysis.securityExposureRisk}`,
+      `ROI & RISK ANALYSIS:`,
+      `• Conversion: ${summaryData.roiAndBusinessRiskAnalysis.conversionOpportunity}`,
+      `• Security: ${summaryData.roiAndBusinessRiskAnalysis.securityExposureRisk}`,
       `• SEO: ${summaryData.roiAndBusinessRiskAnalysis.seoVisibilityImpact}`,
     ].join('\n');
 
@@ -162,7 +162,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-sm sm:text-base font-black uppercase tracking-tight text-[#141414]">
-                Sumário Executivo Estratégico
+                Strategic Executive Summary
               </h2>
               <span className="inline-flex items-center gap-1 bg-[#141414] text-amber-300 text-[10px] px-2 py-0.5 font-black border border-[#141414]">
                 GEMINI 3.8 FLASH
@@ -174,7 +174,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
               )}
             </div>
             <p className="text-[11px] text-[#141414]/70 mt-0.5">
-              Análise em linguagem natural com destaque para os Top 3 problemas críticos e ordem de remediação recomendada
+              Natural language analysis highlighting the Top 3 critical issues and recommended remediation roadmap
             </p>
           </div>
         </div>
@@ -203,7 +203,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                   : 'text-[#141414] hover:bg-neutral-100'
               }`}
             >
-              TÉCNICO
+              TECHNICAL
             </button>
           </div>
 
@@ -212,11 +212,11 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
             type="button"
             disabled={isLoading}
             onClick={() => fetchExecutiveSummary(tone)}
-            title="Regenerar sumário executivo com Gemini AI"
+            title="Regenerate executive summary with Gemini AI"
             className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-bold hover:bg-[#141414] hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">{isLoading ? 'GERANDO...' : 'REGENERAR'}</span>
+            <span className="hidden sm:inline">{isLoading ? 'GENERATING...' : 'REGENERATE'}</span>
           </button>
 
           {/* Copy Button */}
@@ -226,7 +226,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
             className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-bold hover:bg-[#141414] hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
           >
             {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-            <span className="hidden md:inline">{isCopied ? 'COPIADO!' : 'COPIAR'}</span>
+            <span className="hidden md:inline">{isCopied ? 'COPIED!' : 'COPY'}</span>
           </button>
 
           {/* Collapse/Expand Toggle */}
@@ -234,7 +234,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="border border-[#141414] p-1 bg-white hover:bg-neutral-200 cursor-pointer"
-            title={isCollapsed ? 'Expandir painel' : 'Recolher painel'}
+            title={isCollapsed ? 'Expand panel' : 'Collapse panel'}
           >
             {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
           </button>
@@ -249,7 +249,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
             <div className="py-12 text-center space-y-3">
               <Sparkles className="h-8 w-8 text-amber-500 animate-spin mx-auto" />
               <p className="text-xs font-bold text-[#141414]/80 uppercase">
-                O Gemini 3.8 Flash está sintetizando os dados da auditoria e calculando a priorização...
+                Gemini 3.8 Flash is synthesizing audit findings and computing priorities...
               </p>
             </div>
           )}
@@ -262,10 +262,10 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                 <div className="flex items-center justify-between border-b border-[#141414]/20 pb-2">
                   <span className="text-xs font-black uppercase flex items-center gap-1.5">
                     <FileText className="h-4 w-4 text-[#141414]" />
-                    Visão Geral do Diagnóstico Executivo ({tone === 'executive' ? 'Foco em Negócio & ROI' : 'Foco em Arquitetura & Infraestrutura'})
+                    Executive Diagnostic Overview ({tone === 'executive' ? 'Business & ROI Focus' : 'Architecture & Infra Focus'})
                   </span>
                   <span className="text-[10px] font-bold bg-[#141414] text-white px-2 py-0.5">
-                    SCORE GERAL: {summaryData.overallScore}/100 [{summaryData.overallGrade}]
+                    OVERALL SCORE: {summaryData.overallScore}/100 [{summaryData.overallGrade}]
                   </span>
                 </div>
 
@@ -280,7 +280,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                       key={idx}
                       className="border border-[#141414] bg-white p-2.5 text-[11px] font-bold text-[#141414] shadow-[1px_1px_0px_#141414]"
                     >
-                      <span className="text-amber-600 block mb-1">▪ PONTO-CHAVE {idx + 1}</span>
+                      <span className="text-amber-600 block mb-1">▪ KEY TAKEAWAY {idx + 1}</span>
                       <p className="font-mono text-[#141414]/80 leading-normal">{hl}</p>
                     </div>
                   ))}
@@ -293,11 +293,11 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-rose-600 stroke-[2.5]" />
                     <h3 className="text-sm font-black uppercase text-[#141414]">
-                      Top 3 Problemas Mais Críticos Identificados
+                      Top 3 Most Critical Issues Identified
                     </h3>
                   </div>
                   <span className="text-[10px] font-black bg-rose-100 text-rose-950 border border-rose-800 px-2 py-0.5">
-                    AÇÃO PRIORITÁRIA
+                    PRIORITY ACTION
                   </span>
                 </div>
 
@@ -310,23 +310,23 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                       {/* Top Rank Badge */}
                       <div className="flex items-center justify-between border-b border-[#141414]/20 pb-2">
                         <span className="inline-flex items-center gap-1 bg-[#141414] text-white px-2 py-0.5 text-[10px] font-black">
-                          #{issue.rank} MAIOR IMPACTO
+                          #{issue.rank} HIGHEST IMPACT
                         </span>
                         <span
                           className={`text-[9px] font-black px-1.5 py-0.2 border uppercase ${
-                            issue.urgency === 'Imediata'
+                            issue.urgency === 'Immediate' || issue.urgency === 'Imediata'
                               ? 'bg-rose-100 text-rose-950 border-rose-700'
                               : 'bg-amber-100 text-amber-950 border-amber-700'
                           }`}
                         >
-                          URGÊNCIA: {issue.urgency}
+                          URGENCY: {issue.urgency}
                         </span>
                       </div>
 
                       {/* Title & Category */}
                       <div>
                         <span className="text-[10px] font-bold text-[#141414]/60 uppercase block">
-                          PILAR: {issue.category.toUpperCase()}
+                          PILLAR: {issue.category.toUpperCase()}
                         </span>
                         <h4 className="font-black text-xs sm:text-sm text-[#141414] mt-0.5 leading-snug">
                           {issue.title}
@@ -337,7 +337,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                       <div className="border border-[#141414] bg-rose-50/60 p-2.5 text-[11px] space-y-1">
                         <strong className="text-rose-900 font-bold block text-[10px] uppercase flex items-center gap-1">
                           <Target className="h-3 w-3" />
-                          Impacto no Negócio / Risco:
+                          Business Impact & Risk:
                         </strong>
                         <p className="text-rose-950/90 leading-relaxed">
                           {issue.businessImpact}
@@ -348,7 +348,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                       <div className="border border-[#141414] bg-[#E4E3E0] p-2.5 text-[11px] space-y-1">
                         <strong className="text-[#141414] font-bold block text-[10px] uppercase flex items-center gap-1">
                           <Wrench className="h-3 w-3" />
-                          Causa Técnica Raiz:
+                          Technical Root Cause:
                         </strong>
                         <p className="text-[#141414]/80 leading-relaxed font-mono">
                           {issue.technicalRootCause}
@@ -358,7 +358,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                       {/* Suggested Quick Action & Fix Trigger */}
                       <div className="pt-2 border-t border-[#141414]/20 flex flex-col gap-2">
                         <div className="text-[10px] text-[#141414]/70">
-                          <strong>Solução sugerida:</strong> {issue.suggestedQuickAction}
+                          <strong>Suggested fix:</strong> {issue.suggestedQuickAction}
                         </div>
 
                         {onOpenAiFix && (
@@ -368,7 +368,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                             className="w-full flex items-center justify-center gap-1.5 border-2 border-[#141414] bg-amber-400 hover:bg-amber-300 py-1.5 font-black text-xs text-[#141414] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
                           >
                             <Sparkles className="h-3.5 w-3.5" />
-                            <span>VER GUIA DE CORREÇÃO COM IA</span>
+                            <span>VIEW AI FIX GUIDE</span>
                           </button>
                         )}
                       </div>
@@ -383,11 +383,11 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-emerald-700 stroke-[2.5]" />
                     <h3 className="text-sm font-black uppercase text-[#141414]">
-                      Ordem de Prioridade Recomendada para Correção
+                      Recommended Priority Remediation Roadmap
                     </h3>
                   </div>
                   <span className="text-[10px] font-bold bg-[#E4E3E0] px-2 py-0.5 border border-[#141414]">
-                    3 FASES DE IMPLEMENTAÇÃO
+                    3 IMPLEMENTATION PHASES
                   </span>
                 </div>
 
@@ -422,7 +422,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                       </div>
 
                       <div className="border-t border-[#141414]/20 pt-2 flex items-center justify-between text-[11px] font-bold">
-                        <span className="text-[#141414]/70">Ganho Estimado:</span>
+                        <span className="text-[#141414]/70">Expected Boost:</span>
                         <span className="text-emerald-800 bg-emerald-100 border border-emerald-700 px-2 py-0.5">
                           {phase.expectedScoreBoost}
                         </span>
@@ -436,7 +436,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
               <div className="border-2 border-[#141414] bg-white p-4 shadow-[2px_2px_0px_#141414] grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div className="border border-[#141414] p-3 bg-neutral-50 space-y-1">
                   <span className="font-bold text-[10px] uppercase text-emerald-800 block">
-                    1. Oportunidade de Conversão:
+                    1. Conversion Opportunity:
                   </span>
                   <p className="text-[11px] text-[#141414]/80 leading-relaxed">
                     {summaryData.roiAndBusinessRiskAnalysis.conversionOpportunity}
@@ -445,7 +445,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
 
                 <div className="border border-[#141414] p-3 bg-neutral-50 space-y-1">
                   <span className="font-bold text-[10px] uppercase text-rose-800 block">
-                    2. Risco de Exposição de Segurança:
+                    2. Security Exposure Risk:
                   </span>
                   <p className="text-[11px] text-[#141414]/80 leading-relaxed">
                     {summaryData.roiAndBusinessRiskAnalysis.securityExposureRisk}
@@ -454,7 +454,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
 
                 <div className="border border-[#141414] p-3 bg-neutral-50 space-y-1">
                   <span className="font-bold text-[10px] uppercase text-blue-800 block">
-                    3. Visibilidade Orgânica (SEO):
+                    3. Organic Search Visibility (SEO):
                   </span>
                   <p className="text-[11px] text-[#141414]/80 leading-relaxed">
                     {summaryData.roiAndBusinessRiskAnalysis.seoVisibilityImpact}
@@ -468,7 +468,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4 text-[#141414]" />
                     <span className="font-bold">
-                      Deseja acompanhar a resolução de todas as pendências em um checklist interativo?
+                      Want to track resolution of all issues in an interactive checklist?
                     </span>
                   </div>
                   <button
@@ -476,7 +476,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                     onClick={onOpenActionPlan}
                     className="flex items-center justify-center gap-1.5 border border-[#141414] bg-[#141414] text-white px-3 py-1 font-bold hover:bg-neutral-800 shadow-[2px_2px_0px_#888888] cursor-pointer shrink-0"
                   >
-                    <span>ABRIR CHECKLIST COMPLETO</span>
+                    <span>OPEN FULL CHECKLIST</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -520,10 +520,10 @@ function generateClientFallback(
     score: item.score,
     businessImpact:
       item.impact ||
-      'Pode causar vulnerabilidade cibernética, penalização no ranking do Google ou abandono de visitantes.',
-    technicalRootCause: item.summary || 'Diretiva recomendada não encontrada ou configurada de modo incompleto.',
-    urgency: idx === 0 ? 'Imediata' : idx === 1 ? 'Alta' : 'Média',
-    suggestedQuickAction: item.recommendedValue || 'Ajustar cabeçalhos de resposta ou meta tags recomendadas.',
+      'May introduce cybersecurity vulnerabilities, Google search ranking penalties, or visitor drop-off.',
+    technicalRootCause: item.summary || 'Recommended directive was missing or incompletely configured in headers/DOM.',
+    urgency: idx === 0 ? 'Immediate' : idx === 1 ? 'High' : 'Medium',
+    suggestedQuickAction: item.recommendedValue || 'Adjust response headers or recommended HTML meta tags.',
   }));
 
   return {
@@ -532,51 +532,51 @@ function generateClientFallback(
     overallScore: report.overallScore,
     overallGrade: report.overallGrade,
     strategicVerdict:
-      report.overallScore >= 80 ? 'Boa Postura com Ajustes Pontuais' : 'Ações Imediatas de Remediação Necessárias',
+      report.overallScore >= 80 ? 'Strong Baseline with Targeted Fixes' : 'Immediate Remediation Action Required',
     executiveOverview:
       tone === 'executive'
-        ? `A auditoria no domínio ${hostname} alcançou nota global de ${report.overallScore}/100 (Grade ${report.overallGrade}). A infraestrutura apresenta estabilidade consistente, mas detectamos vulnerabilidades de alto impacto em segurança e velocidade que comprometem as taxas de conversão e a reputação da marca. Seguir o roteiro prioritário abaixo permite atingir a faixa de excelência com poucas horas de esforço de desenvolvimento.`
-        : `O scan técnico no host ${hostname} consolidou pontuação de ${report.overallScore}/100. A latência TTFB aferida foi de ${report.rawData.responseTimeMs}ms. Os três ofensores mais críticos concentram-se em cabeçalhos ausentes e potenciais gargalos no DOM inicial. Recomendamos a execução em 3 etapas para blindagem de borda e liberação da thread principal.`,
+        ? `The technical audit on ${hostname} achieved an overall score of ${report.overallScore}/100 (Grade ${report.overallGrade}). The infrastructure demonstrates solid core responsiveness, but we identified high-impact vulnerabilities in security and performance that compromise conversion rates and brand reputation. Following the priority roadmap below allows reaching the excellence tier with few development hours.`
+        : `Technical probe on host ${hostname} recorded an overall score of ${report.overallScore}/100. Measured server response latency (TTFB) was ${report.rawData.responseTimeMs}ms. The primary technical offenders concentrate in missing security headers and potential initial DOM bottlenecks. We recommend a 3-phase execution for edge hardening and main thread liberation.`,
     cLevelHighlights: [
-      `Score consolidado em ${report.overallScore}/100 [Classificação ${report.overallGrade}].`,
-      `${criticalItems.length} problema(s) com severidade crítica necessitam intervenção.`,
-      `Potencial de melhoria de até +${Math.min(18, 100 - report.overallScore)} pontos no índice de qualidade.`,
-      `Tempo estimado de implementação das principais correções: menos de 2 horas.`,
+      `Consolidated score at ${report.overallScore}/100 [Grade ${report.overallGrade}].`,
+      `${criticalItems.length} critical severity issue(s) require intervention.`,
+      `Improvement potential of up to +${Math.min(18, 100 - report.overallScore)} points on overall quality index.`,
+      `Estimated implementation turnaround time: under 2 engineering hours.`,
     ],
     top3CriticalIssues,
     priorityRoadmap: [
       {
-        phase: 'Fase 1: Correções Imediatas',
-        title: 'Blindagem de Segurança e Headers',
-        timeframe: '0 a 24 horas',
-        actions: ['Configurar HSTS e Content-Security-Policy', 'Aplicar proteção contra clickjacking (X-Frame-Options)'],
-        expectedScoreBoost: '+8 a +12 pts',
-        estimatedEffort: '15 a 30 min',
+        phase: 'Phase 1: Immediate Fixes',
+        title: 'Edge Hardening & Security Headers',
+        timeframe: '0 to 24 hours',
+        actions: ['Configure HSTS and Content-Security-Policy', 'Apply clickjacking protection (X-Frame-Options)'],
+        expectedScoreBoost: '+8 to +12 pts',
+        estimatedEffort: '15 to 30 min',
       },
       {
-        phase: 'Fase 2: Otimização Estrutural',
-        title: 'SEO On-Page e Metadados',
-        timeframe: '1 a 3 dias',
-        actions: ['Adicionar dados estruturados JSON-LD', 'Otimizar title e meta description para CTR'],
-        expectedScoreBoost: '+5 a +8 pts',
-        estimatedEffort: '1 a 2 horas',
+        phase: 'Phase 2: Structural Optimization',
+        title: 'Search Visibility & Structured Data',
+        timeframe: '1 to 3 days',
+        actions: ['Add Schema.org JSON-LD structured data', 'Optimize title and meta description for SERP CTR'],
+        expectedScoreBoost: '+5 to +8 pts',
+        estimatedEffort: '1 to 2 hours',
       },
       {
-        phase: 'Fase 3: Refinamento Contínuo',
-        title: 'Performance e Monitoramento',
-        timeframe: '1 a 2 semanas',
-        actions: ['Converter imagens para WebP e aplicar lazy loading', 'Configurar webhooks de monitoramento contínuo'],
-        expectedScoreBoost: '+4 a +6 pts',
-        estimatedEffort: '2 a 4 horas',
+        phase: 'Phase 3: Continuous Refinement',
+        title: 'Performance & Monitoring',
+        timeframe: '1 to 2 weeks',
+        actions: ['Convert images to WebP and apply lazy loading', 'Configure continuous monitoring webhooks'],
+        expectedScoreBoost: '+4 to +6 pts',
+        estimatedEffort: '2 to 4 hours',
       },
     ],
     roiAndBusinessRiskAnalysis: {
       conversionOpportunity:
-        'A aceleração da resposta inicial da página reduz o abandono do usuário e impulsiona a conversão comercial.',
+        'Faster initial page rendering curbs visitor drop-off and boosts commercial conversion rates.',
       securityExposureRisk:
-        'A falta de cabeçalhos de segurança eleva a superfície de ataques automatizados contra o site.',
+        'Missing defensive headers widens the attack surface for automated web exploits and script injections.',
       seoVisibilityImpact:
-        'A correção de títulos e dados estruturados garante maior destaque visual nos resultados do Google.',
+        'Fixing meta tags and structured data secures richer presentation and higher click-through on Google.',
     },
   };
 }

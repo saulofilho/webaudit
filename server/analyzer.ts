@@ -154,7 +154,7 @@ function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean)
       value: lower['strict-transport-security'],
       recommended: 'max-age=63072000; includeSubDomains; preload',
       importance: 'critical',
-      description: 'Força navegadores a se comunicarem apenas via HTTPS, prevenindo ataques Man-in-the-Middle e SSL stripping.',
+      description: 'Forces browsers to communicate solely via HTTPS, preventing Man-in-the-Middle attacks and SSL stripping.',
       fixSnippet: 'add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;',
     },
     {
@@ -163,16 +163,16 @@ function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean)
       value: lower['content-security-policy'],
       recommended: "default-src 'self'; script-src 'self' 'unsafe-inline'; object-src 'none';",
       importance: 'critical',
-      description: 'Bloqueia injeção de scripts maliciosos (XSS), clickjacking e execução de recursos não autorizados.',
+      description: 'Mitigates Cross-Site Scripting (XSS), clickjacking, and unauthorized resource injection.',
       fixSnippet: "add_header Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;\" always;",
     },
     {
       header: 'X-Frame-Options',
       status: lower['x-frame-options'] ? 'present' : 'missing',
       value: lower['x-frame-options'],
-      recommended: 'DENY ou SAMEORIGIN',
+      recommended: 'DENY or SAMEORIGIN',
       importance: 'high',
-      description: 'Impede que o site seja embutido em iframes por páginas de terceiros, neutralizando ataques de Clickjacking.',
+      description: 'Prevents the page from being embedded in iframes on third-party sites, stopping clickjacking attacks.',
       fixSnippet: 'add_header X-Frame-Options "SAMEORIGIN" always;',
     },
     {
@@ -181,7 +181,7 @@ function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean)
       value: lower['x-content-type-options'],
       recommended: 'nosniff',
       importance: 'high',
-      description: 'Instrui o navegador a não adivinhar (MIME-sniffing) o tipo de conteúdo, prevenindo execução disfarçada de arquivos maliciosos.',
+      description: 'Instructs the browser not to MIME-sniff response content types, preventing disguised malicious script execution.',
       fixSnippet: 'add_header X-Content-Type-Options "nosniff" always;',
     },
     {
@@ -190,7 +190,7 @@ function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean)
       value: lower['referrer-policy'],
       recommended: 'strict-origin-when-cross-origin',
       importance: 'medium',
-      description: 'Controla a quantidade de informações de URL de referência (Referer) enviadas ao navegar para outros sites.',
+      description: 'Governs how much referrer metadata is transmitted when navigating to other destinations.',
       fixSnippet: 'add_header Referrer-Policy "strict-origin-when-cross-origin" always;',
     },
     {
@@ -199,7 +199,7 @@ function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean)
       value: lower['permissions-policy'],
       recommended: 'camera=(), microphone=(), geolocation=()',
       importance: 'medium',
-      description: 'Restringe quais APIs do navegador (câmera, microfone, geolocalização) podem ser utilizadas pela página ou por iframes.',
+      description: 'Restricts which browser hardware and privacy APIs (camera, microphone, geolocation) can be invoked.',
       fixSnippet: 'add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;',
     },
     {
@@ -208,7 +208,7 @@ function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean)
       value: lower['cross-origin-opener-policy'],
       recommended: 'same-origin',
       importance: 'medium',
-      description: 'Isola o contexto de navegação contra janelas cross-origin que possam tentar interagir via window.opener.',
+      description: 'Isolates browsing contexts to prevent cross-origin windows from interacting via window.opener.',
       fixSnippet: 'add_header Cross-Origin-Opener-Policy "same-origin" always;',
     },
   ];
@@ -240,7 +240,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 WebsiteAuditBot/2.0',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
     });
     clearTimeout(timeout);
@@ -256,7 +256,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
     html = await response.text();
   } catch (err: any) {
     // If fetch failed (e.g. SSL error or invalid domain), generate structured error report
-    throw new Error(`Não foi possível carregar a URL (${targetUrl}): ${err.message || 'Erro de conexão ou timeout'}`);
+    throw new Error(`Unable to fetch target URL (${targetUrl}): ${err.message || 'Connection failure or timeout'}`);
   }
 
   const responseTimeMs = Date.now() - startTime;
@@ -334,7 +334,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
     contentLengthBytes,
     contentType: allHeaders['content-type'] || 'text/html',
     serverHeader: allHeaders['server'],
-    tlsVersion: isHttps ? 'TLS 1.2 / TLS 1.3 (HTTPS)' : 'Inseguro (HTTP puro)',
+    tlsVersion: isHttps ? 'TLS 1.2 / TLS 1.3 (HTTPS)' : 'Insecure (Plain HTTP)',
     h1Count: h1Matches.length,
     h2Count: h2Matches.length,
     h3Count: h3Matches.length,
@@ -363,11 +363,11 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
     items.push({
       id: 'sec-https',
       category: 'security',
-      title: 'Criptografia HTTPS & TLS Ativa',
+      title: 'HTTPS & TLS Encryption Active',
       severity: 'good',
       score: 100,
-      summary: 'O website utiliza protocolo seguro HTTPS criptografado com certificado SSL/TLS.',
-      impact: 'Protege a privacidade dos dados em trânsito e assegura autenticidade contra interceptações.',
+      summary: 'The website utilizes secure HTTPS encryption with valid SSL/TLS certificates.',
+      impact: 'Guarantees confidentiality and data integrity against eavesdropping and interception.',
       currentValue: 'https://',
       recommendedValue: 'https://',
     });
@@ -375,19 +375,19 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
     items.push({
       id: 'sec-https',
       category: 'security',
-      title: 'Tráfego Inseguro em HTTP Puro',
+      title: 'Insecure Plain HTTP Traffic',
       severity: 'critical',
       score: 0,
-      summary: 'O website está trafegando em texto puro sem certificado SSL/TLS, permitindo que terceiros espionem ou adulterem o conteúdo.',
-      impact: 'Risco altíssimo de interceptação de dados, ataques Man-in-the-Middle e penalização severa no Google.',
+      summary: 'The website transmits traffic in unencrypted plaintext without SSL/TLS, leaving user sessions exposed to interception.',
+      impact: 'Extreme risk of Man-in-the-Middle exploits, data interception, and severe search ranking penalties.',
       currentValue: 'http://',
       recommendedValue: 'https://',
       codeSnippet: {
         language: 'nginx',
-        title: 'Redirecionamento Forçado para HTTPS (Nginx)',
+        title: 'Forced HTTPS Redirect (Nginx)',
         code: `server {
     listen 80;
-    server_name seu-dominio.com www.seu-dominio.com;
+    server_name your-domain.com www.your-domain.com;
     return 301 https://$host$request_uri;
 }`,
       },
@@ -400,10 +400,10 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
       items.push({
         id: `sec-header-${idx}`,
         category: 'security',
-        title: `Cabeçalho ${sh.header} Configurado`,
+        title: `Header ${sh.header} Configured`,
         severity: 'good',
         score: 100,
-        summary: `O cabeçalho de proteção ${sh.header} está ativo e transmitindo diretivas seguras.`,
+        summary: `The security response header ${sh.header} is active with strong directives.`,
         impact: sh.description,
         currentValue: sh.value,
         recommendedValue: sh.recommended,
@@ -413,16 +413,16 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
       items.push({
         id: `sec-header-${idx}`,
         category: 'security',
-        title: `Cabeçalho ${sh.header} Ausente`,
+        title: `Header ${sh.header} Missing`,
         severity: isCritical ? 'critical' : 'warning',
         score: isCritical ? 20 : 50,
-        summary: `O servidor não enviou o cabeçalho de segurança ${sh.header}.`,
+        summary: `The server did not return the ${sh.header} security header.`,
         impact: sh.description,
-        currentValue: 'Não configurado',
+        currentValue: 'Not configured',
         recommendedValue: sh.recommended,
         codeSnippet: sh.fixSnippet ? {
           language: 'nginx',
-          title: `Configurar no Nginx`,
+          title: `Configure in Nginx`,
           code: sh.fixSnippet,
         } : undefined,
       });
@@ -435,20 +435,20 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
     items.push({
       id: 'sec-server-leak',
       category: 'security',
-      title: 'Vazamento de Assinatura do Servidor (Server Banner)',
+      title: 'Server Banner & Technology Leakage',
       severity: 'warning',
       score: 60,
-      summary: `O servidor expõe tecnologias internas via cabeçalhos HTTP (${leak}).`,
-      impact: 'Facilita reconhecimento automatizado por scanners de vulnerabilidades que buscam exploits conhecidos para versões específicas.',
+      summary: `The server exposes internal technology signatures via HTTP headers (${leak}).`,
+      impact: 'Enables automated reconnaissance by exploit scanners targeting known version vulnerabilities.',
       currentValue: leak,
-      recommendedValue: 'Ocultar versão e banner do servidor',
+      recommendedValue: 'Hide server banner and version headers',
       codeSnippet: {
         language: 'nginx',
-        title: 'Ocultar versões no Nginx & Express',
-        code: `# No nginx.conf:
+        title: 'Hide Version Headers in Nginx & Express',
+        code: `# In nginx.conf:
 server_tokens off;
 
-# No Express.js:
+# In Express.js:
 app.disable('x-powered-by');`,
       },
     });
@@ -456,11 +456,11 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'sec-server-leak',
       category: 'security',
-      title: 'Cabeçalhos de Versão Ocultados',
+      title: 'Server Technology Headers Hidden',
       severity: 'good',
       score: 100,
-      summary: 'O servidor não expõe cabeçalhos indiscretos como X-Powered-By com versões expostas.',
-      impact: 'Dificulta reconhecimento automatizado de exploits por atacantes.',
+      summary: 'The server successfully obfuscates server identification banners like X-Powered-By.',
+      impact: 'Hardens security posture against automated vulnerability discovery.',
     });
   }
 
@@ -470,38 +470,38 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'seo-title',
       category: 'seo',
-      title: 'Tag <title> Ausente',
+      title: '<title> Tag Missing',
       severity: 'critical',
       score: 0,
-      summary: 'O documento HTML não possui tag <title>, o que prejudica drasticamente a indexação nos motores de busca.',
-      impact: 'Mecanismos de busca não conseguem indexar o título e a aba do navegador fica sem identificação.',
-      recommendedValue: '<title>Título do Site - Descrição Concisa (50-60 caracteres)</title>',
+      summary: 'The HTML document lacks a <title> tag, severely undermining search engine indexability and user tab navigation.',
+      impact: 'Search engines cannot identify document topic and browser tabs display raw URLs without headlines.',
+      recommendedValue: '<title>Site Title - Concise Topic (50-60 characters)</title>',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar no <head>',
-        code: '<title>Meu Website | Soluções e Serviços Especializados</title>',
+        title: 'Add in <head>',
+        code: '<title>My Website | Professional Services & Solutions</title>',
       },
     });
   } else if (metaTags.titleLength! < 20 || metaTags.titleLength! > 65) {
     items.push({
       id: 'seo-title',
       category: 'seo',
-      title: `Tamanho do <title> Fora do Ideal (${metaTags.titleLength} caracteres)`,
+      title: `<title> Length Suboptimal (${metaTags.titleLength} characters)`,
       severity: 'warning',
       score: 65,
-      summary: `O título possui ${metaTags.titleLength} caracteres. O ideal recomendado pelo Google é entre 45 e 60 caracteres.`,
-      impact: 'Títulos muito curtos perdem relevância de palavras-chave; títulos muito longos sofrem truncamento na página de resultados (SERP).',
+      summary: `Title length is ${metaTags.titleLength} characters. Recommended range for Google desktop/mobile SERPs is 45 to 60 characters.`,
+      impact: 'Short titles miss keyword relevance; overly long titles get truncated with ellipses in search results.',
       currentValue: metaTags.title,
-      recommendedValue: 'Entre 45 e 60 caracteres bem calibrados',
+      recommendedValue: 'Between 45 and 60 calibrated characters',
     });
   } else {
     items.push({
       id: 'seo-title',
       category: 'seo',
-      title: `Tag <title> Otimizada (${metaTags.titleLength} caracteres)`,
+      title: `Optimized <title> Tag (${metaTags.titleLength} characters)`,
       severity: 'good',
       score: 100,
-      summary: 'O título está com tamanho perfeito para exibição nos resultados de pesquisa.',
+      summary: 'Title is within the ideal character range for search engine snippets.',
       currentValue: metaTags.title,
     });
   }
@@ -511,37 +511,37 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'seo-desc',
       category: 'seo',
-      title: 'Meta Description Ausente',
+      title: 'Meta Description Missing',
       severity: 'critical',
       score: 10,
-      summary: 'Não foi encontrada uma meta tag de descrição na página.',
-      impact: 'O Google terá que gerar resumos automáticos com textos aleatórios da página, reduzindo taxa de cliques (CTR).',
-      recommendedValue: '<meta name="description" content="Resumo atrativo de 130 a 160 caracteres." />',
+      summary: 'No <meta name="description"> tag was found in document head.',
+      impact: 'Search engines will automatically extract arbitrary body text, drastically lowering click-through rates (CTR).',
+      recommendedValue: '<meta name="description" content="Engaging summary of 120 to 160 characters." />',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar no <head>',
-        code: '<meta name="description" content="Conheça nossos serviços de tecnologia com alto desempenho, segurança de ponta e suporte dedicado para sua empresa." />',
+        title: 'Add in <head>',
+        code: '<meta name="description" content="Discover our high-performance technology services, reliable security standards, and dedicated support for your team." />',
       },
     });
   } else if (metaTags.descriptionLength! < 70 || metaTags.descriptionLength! > 165) {
     items.push({
       id: 'seo-desc',
       category: 'seo',
-      title: `Meta Description com Tamanho Não Ideal (${metaTags.descriptionLength} caracteres)`,
+      title: `Meta Description Length Suboptimal (${metaTags.descriptionLength} characters)`,
       severity: 'warning',
       score: 70,
-      summary: `A descrição possui ${metaTags.descriptionLength} caracteres. O tamanho recomendado é entre 120 e 160 caracteres.`,
-      impact: 'Pode ser truncada com reticências no Google ou não fornecer contexto suficiente.',
+      summary: `Description length is ${metaTags.descriptionLength} characters. Recommended range is 120 to 160 characters.`,
+      impact: 'May be cut off on search result pages or provide insufficient context to compel searchers to click.',
       currentValue: metaTags.description,
     });
   } else {
     items.push({
       id: 'seo-desc',
       category: 'seo',
-      title: `Meta Description Otimizada (${metaTags.descriptionLength} caracteres)`,
+      title: `Optimized Meta Description (${metaTags.descriptionLength} characters)`,
       severity: 'good',
       score: 100,
-      summary: 'A meta descrição possui comprimento ideal e chamativo para a SERP.',
+      summary: 'Meta description length is calibrated for optimal SERP CTR.',
       currentValue: metaTags.description,
     });
   }
@@ -551,37 +551,37 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'seo-h1',
       category: 'seo',
-      title: 'Nenhum Cabeçalho <h1> Encontrado',
+      title: 'No <h1> Heading Found',
       severity: 'critical',
       score: 20,
-      summary: 'A página não define um título principal com a tag <h1>.',
-      impact: 'O H1 é o sinal semântico mais importante para o Google entender o tema central do documento.',
+      summary: 'The page does not specify a primary headline using the <h1> tag.',
+      impact: 'The <h1> element is the strongest semantic signal for search engines to identify the document primary topic.',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar tag <h1>',
-        code: '<h1>Título Principal da Página com Palavra-Chave</h1>',
+        title: 'Add <h1> tag',
+        code: '<h1>Main Page Headline with Primary Keyword</h1>',
       },
     });
   } else if (h1Matches.length > 1) {
     items.push({
       id: 'seo-h1',
       category: 'seo',
-      title: `Múltiplas Tags <h1> Detectadas (${h1Matches.length} H1s)`,
+      title: `Multiple <h1> Tags Detected (${h1Matches.length} H1s)`,
       severity: 'warning',
       score: 70,
-      summary: `Foram encontradas ${h1Matches.length} tags <h1> na mesma página.`,
-      impact: 'Embora permitido no HTML5, ter um único <h1> bem definido por página é a prática mais recomendada para clareza da árvore semântica.',
-      currentValue: `${h1Matches.length} tags <h1> encontradas`,
-      recommendedValue: '1 tag <h1> primária',
+      summary: `Found ${h1Matches.length} <h1> tags on the same page.`,
+      impact: 'Maintaining a single primary <h1> per document is standard best practice for semantic clarity and accessibility.',
+      currentValue: `${h1Matches.length} <h1> tags found`,
+      recommendedValue: '1 primary <h1> tag',
     });
   } else {
     items.push({
       id: 'seo-h1',
       category: 'seo',
-      title: 'Estrutura H1 Perfeita',
+      title: 'Optimal H1 Heading Structure',
       severity: 'good',
       score: 100,
-      summary: `Tag <h1> única identificada: "${h1Sample || ''}"`,
+      summary: `Single <h1> tag detected: "${h1Sample || ''}"`,
       currentValue: h1Sample,
     });
   }
@@ -592,27 +592,27 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'seo-og',
       category: 'seo',
-      title: 'Tags Open Graph Completas para Redes Sociais',
+      title: 'Complete Open Graph Social Tags',
       severity: 'good',
       score: 100,
-      summary: 'Tags og:title, og:description e og:image configuradas para compartilhamento no WhatsApp, LinkedIn e Facebook.',
+      summary: 'Tags og:title, og:description, and og:image are configured for rich sharing on WhatsApp, LinkedIn, X, and Facebook.',
     });
   } else {
     items.push({
       id: 'seo-og',
       category: 'seo',
-      title: 'Tags Open Graph / Social Media Incompletas',
+      title: 'Incomplete Open Graph / Social Media Cards',
       severity: 'warning',
       score: 45,
-      summary: 'Faltam tags Open Graph essenciais (como og:image ou og:description).',
-      impact: 'Ao compartilhar o link no WhatsApp, LinkedIn, Telegram ou Twitter, o card ficará genérico ou sem imagem de capa.',
+      summary: 'Essential Open Graph tags (such as og:image or og:description) are missing.',
+      impact: 'Shared URLs on messaging and social platforms will look unbranded or lack thumbnail banners.',
       codeSnippet: {
         language: 'html',
-        title: 'Metatags Open Graph & Twitter',
-        code: `<meta property="og:title" content="Título do Site" />
-<meta property="og:description" content="Descrição chamativa para redes sociais." />
-<meta property="og:image" content="https://seusite.com/assets/og-cover.jpg" />
-<meta property="og:url" content="https://seusite.com/" />
+        title: 'Open Graph & Twitter Meta Tags',
+        code: `<meta property="og:title" content="Website Title" />
+<meta property="og:description" content="Engaging social share summary." />
+<meta property="og:image" content="https://yourdomain.com/assets/og-cover.jpg" />
+<meta property="og:url" content="https://yourdomain.com/" />
 <meta name="twitter:card" content="summary_large_image" />`,
       },
     });
@@ -623,24 +623,24 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'seo-canonical',
       category: 'seo',
-      title: 'URL Canônica Declarada',
+      title: 'Canonical URL Declared',
       severity: 'good',
       score: 100,
-      summary: `Tag rel="canonical" configurada para ${metaTags.canonical}.`,
+      summary: `Tag rel="canonical" configured to ${metaTags.canonical}.`,
       currentValue: metaTags.canonical,
     });
   } else {
     items.push({
       id: 'seo-canonical',
       category: 'seo',
-      title: 'Tag Canonical Ausente',
+      title: 'Canonical Tag Missing',
       severity: 'warning',
       score: 60,
-      summary: 'A página não declara sua URL canônica através de <link rel="canonical">.',
-      impact: 'Risco de conteúdo duplicado se a página puder ser acessada por múltiplos parâmetros ou variações de protocolo/domínio.',
+      summary: 'Page does not declare its canonical URL via <link rel="canonical">.',
+      impact: 'Risk of duplicate content penalties when accessed via URL tracking parameters or domain aliases.',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar Canonical',
+        title: 'Add Canonical',
         code: `<link rel="canonical" href="${finalUrl}" />`,
       },
     });
@@ -651,31 +651,31 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'seo-schema',
       category: 'seo',
-      title: `Dados Estruturados Schema.org (${metaTags.structuredDataTypes.join(', ')})`,
+      title: `Schema.org Structured Data (${metaTags.structuredDataTypes.join(', ')})`,
       severity: 'good',
       score: 100,
-      summary: 'O site fornece marcação semântica JSON-LD para Rich Snippets nos resultados de busca.',
+      summary: 'Site provides semantic JSON-LD markup qualifying for Google Rich Results.',
       currentValue: metaTags.structuredDataTypes.join(', '),
     });
   } else {
     items.push({
       id: 'seo-schema',
       category: 'seo',
-      title: 'Nenhum Dado Estruturado JSON-LD Encontrado',
+      title: 'No JSON-LD Structured Data Found',
       severity: 'info',
       score: 75,
-      summary: 'Não foi identificada marcação Schema.org em JSON-LD.',
-      impact: 'Oportunidade perdida de obter Rich Snippets (estrelas de avaliação, perguntas frequentes, cards de organização).',
+      summary: 'No Schema.org JSON-LD scripts identified.',
+      impact: 'Missed opportunity for Google Rich Snippets (review stars, FAQs, corporate knowledge panel).',
       codeSnippet: {
         language: 'html',
-        title: 'Exemplo Schema.org Organization',
+        title: 'Example Schema.org Organization',
         code: `<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Nome da Empresa",
-  "url": "https://seusite.com",
-  "logo": "https://seusite.com/logo.png"
+  "name": "Company Name",
+  "url": "https://yourdomain.com",
+  "logo": "https://yourdomain.com/logo.png"
 }
 </script>`,
       },
@@ -688,24 +688,24 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'bp-viewport',
       category: 'best_practices',
-      title: 'Meta Viewport Responsivo Configurado',
+      title: 'Responsive Meta Viewport Configured',
       severity: 'good',
       score: 100,
-      summary: `Configuração: ${metaTags.viewport}`,
-      impact: 'Permite renderização responsiva adequada em smartphones e tablets.',
+      summary: `Configuration: ${metaTags.viewport}`,
+      impact: 'Ensures correct mobile responsiveness on smartphones and tablets.',
     });
   } else {
     items.push({
       id: 'bp-viewport',
       category: 'best_practices',
-      title: 'Meta Viewport Ausente (Página Não Responsiva)',
+      title: 'Meta Viewport Missing (Non-Responsive Page)',
       severity: 'critical',
       score: 10,
-      summary: 'Falta a meta tag viewport, fazendo com que dispositivos móveis exibam layout desktop miniaturizado.',
-      impact: 'Experiência desastrosa em dispositivos móveis e penalização imediata no ranking mobile-first.',
+      summary: 'Missing viewport meta tag, causing mobile browsers to render an unscaled desktop layout.',
+      impact: 'Poor mobile user experience and immediate ranking degradation on mobile-first search index.',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar Viewport',
+        title: 'Add Viewport',
         code: '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
       },
     });
@@ -716,25 +716,25 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'bp-lang',
       category: 'best_practices',
-      title: `Idioma do Documento Declarado (lang="${metaTags.language}")`,
+      title: `Document Language Declared (lang="${metaTags.language}")`,
       severity: 'good',
       score: 100,
-      summary: `O atributo lang="${metaTags.language}" está configurado na tag <html>.`,
-      impact: 'Ajuda leitores de tela a pronunciarem corretamente o conteúdo e auxilia na geolocalização de busca.',
+      summary: `Attribute lang="${metaTags.language}" is defined on the <html> tag.`,
+      impact: 'Enables screen readers to pronounce words correctly and assists search geolocation.',
     });
   } else {
     items.push({
       id: 'bp-lang',
       category: 'best_practices',
-      title: 'Atributo lang Ausente na Tag <html>',
+      title: 'Missing lang Attribute on <html> Tag',
       severity: 'warning',
       score: 50,
-      summary: 'A tag <html> não especifica o idioma principal da página.',
-      impact: 'Dificulta a acessibilidade para leitores de tela e tradutores automáticos.',
+      summary: 'The <html> root tag does not declare the primary language of the document.',
+      impact: 'Impairs screen reader accessibility and automatic translation accuracy.',
       codeSnippet: {
         language: 'html',
-        title: 'Corrigir tag HTML',
-        code: '<html lang="pt-BR">',
+        title: 'Update HTML tag',
+        code: '<html lang="en">',
       },
     });
   }
@@ -744,22 +744,22 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'bp-charset',
       category: 'best_practices',
-      title: `Codificação de Caracteres Declarada (${metaTags.charset})`,
+      title: `Character Encoding Declared (${metaTags.charset})`,
       severity: 'good',
       score: 100,
-      summary: 'O charset UTF-8 previne distorção de caracteres acentuados.',
+      summary: 'UTF-8 charset prevents character encoding garbling across browsers.',
     });
   } else {
     items.push({
       id: 'bp-charset',
       category: 'best_practices',
-      title: 'Tag Charset Ausente no <head>',
+      title: 'Charset Tag Missing in <head>',
       severity: 'warning',
       score: 60,
-      summary: 'A codificação de caracteres não está explicitamente declarada.',
+      summary: 'Character encoding is not explicitly declared in the document head.',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar Charset',
+        title: 'Add Charset',
         code: '<meta charset="UTF-8" />',
       },
     });
@@ -770,25 +770,25 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'bp-links-rel',
       category: 'best_practices',
-      title: `Links Externos Sem rel="noopener" (${externalLinksWithoutRel} links)`,
+      title: `External Links Missing rel="noopener" (${externalLinksWithoutRel} links)`,
       severity: 'warning',
       score: 60,
-      summary: `Existem ${externalLinksWithoutRel} links para sites externos sem atributos de proteção rel="noopener noreferrer".`,
-      impact: 'Permite ataques de reverse tabnabbing (a página aberta pode manipular a página de origem via window.opener).',
+      summary: `Found ${externalLinksWithoutRel} external link(s) without rel="noopener noreferrer" security attributes.`,
+      impact: 'Vulnerable to reverse tabnabbing (the opened tab can alter the source window location via window.opener).',
       codeSnippet: {
         language: 'html',
-        title: 'Exemplo Seguro de Link Externo',
-        code: '<a href="https://externo.com" target="_blank" rel="noopener noreferrer">Link</a>',
+        title: 'Secure External Link Pattern',
+        code: '<a href="https://external.com" target="_blank" rel="noopener noreferrer">Link</a>',
       },
     });
   } else {
     items.push({
       id: 'bp-links-rel',
       category: 'best_practices',
-      title: 'Links Externos Seguros',
+      title: 'External Links Secured',
       severity: 'good',
       score: 100,
-      summary: 'Links externos estão devidamente isolados com atributos de segurança.',
+      summary: 'External links are properly protected with isolation attributes.',
     });
   }
 
@@ -798,33 +798,33 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'perf-ttfb',
       category: 'performance_accessibility',
-      title: `Tempo de Resposta Rápido (TTFB: ${responseTimeMs}ms)`,
+      title: `Fast Response Time (TTFB: ${responseTimeMs}ms)`,
       severity: 'good',
       score: 100,
-      summary: 'O servidor entregou o primeiro byte de resposta em tempo exemplar (<400ms).',
+      summary: 'The server delivered the first byte of response in exemplary time (<400ms).',
       currentValue: `${responseTimeMs}ms`,
     });
   } else if (responseTimeMs < 1200) {
     items.push({
       id: 'perf-ttfb',
       category: 'performance_accessibility',
-      title: `Tempo de Resposta Médio (TTFB: ${responseTimeMs}ms)`,
+      title: `Moderate Response Time (TTFB: ${responseTimeMs}ms)`,
       severity: 'warning',
       score: 70,
-      summary: `O servidor levou ${responseTimeMs}ms para responder.`,
-      impact: 'Pode atrasar o início da renderização em redes móveis 4G/3G.',
+      summary: `The server took ${responseTimeMs}ms to respond.`,
+      impact: 'May delay initial paint on 4G/3G mobile connections.',
       currentValue: `${responseTimeMs}ms`,
-      recommendedValue: '< 400ms (usar CDN como Cloudflare ou caching)',
+      recommendedValue: '< 400ms (use a global CDN such as Cloudflare or edge caching)',
     });
   } else {
     items.push({
       id: 'perf-ttfb',
       category: 'performance_accessibility',
-      title: `Tempo de Resposta Lento (TTFB: ${responseTimeMs}ms)`,
+      title: `Slow Response Time (TTFB: ${responseTimeMs}ms)`,
       severity: 'critical',
       score: 35,
-      summary: `O servidor demorou ${responseTimeMs}ms para responder.`,
-      impact: 'Prejudica severamente o First Contentful Paint (FCP) e o Largest Contentful Paint (LCP) do Core Web Vitals.',
+      summary: `The server took ${responseTimeMs}ms to begin streaming response data.`,
+      impact: 'Directly degrades Core Web Vitals First Contentful Paint (FCP) and Largest Contentful Paint (LCP).',
       currentValue: `${responseTimeMs}ms`,
       recommendedValue: '< 300ms',
     });
@@ -835,27 +835,27 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'a11y-img-alt',
       category: 'performance_accessibility',
-      title: `Imagens Sem Atributo Alt (${imagesMissingAlt} de ${imgMatches.length} imagens)`,
+      title: `Images Missing Alt Attributes (${imagesMissingAlt} of ${imgMatches.length} images)`,
       severity: 'critical',
       score: Math.max(20, Math.round(100 - (imagesMissingAlt / Math.max(1, imgMatches.length)) * 100)),
-      summary: `Foram encontradas ${imagesMissingAlt} tags <img> sem descrição no atributo alt.`,
-      impact: 'Usuários com deficiência visual usando leitores de tela não conseguirão entender as imagens, além de perder relevância no Google Imagens.',
-      currentValue: `${imagesMissingAlt} imagens sem alt`,
-      recommendedValue: 'Todas as imagens com alt descritivo',
+      summary: `Found ${imagesMissingAlt} <img> tag(s) without descriptive alt attributes.`,
+      impact: 'Users with visual impairments relying on screen readers cannot understand image context, and image search rankings suffer.',
+      currentValue: `${imagesMissingAlt} images missing alt`,
+      recommendedValue: 'All images with descriptive alt text',
       codeSnippet: {
         language: 'html',
-        title: 'Adicionar descrição alt',
-        code: '<img src="/assets/grafico.png" alt="Gráfico de crescimento mensal de vendas em 2026" />',
+        title: 'Add alt description',
+        code: '<img src="/assets/chart.png" alt="Monthly sales performance growth chart for 2026" />',
       },
     });
   } else if (imgMatches.length > 0) {
     items.push({
       id: 'a11y-img-alt',
       category: 'performance_accessibility',
-      title: `Acessibilidade de Imagens 100% (${imgMatches.length} imagens com alt)`,
+      title: `Image Accessibility 100% (${imgMatches.length} images with alt)`,
       severity: 'good',
       score: 100,
-      summary: 'Todas as imagens contêm atributo alt preenchido.',
+      summary: 'All detected images have descriptive alt attributes.',
     });
   }
 
@@ -865,31 +865,31 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'perf-html-size',
       category: 'performance_accessibility',
-      title: `Documento HTML Muito Pesado (${sizeKb} KB)`,
+      title: `Heavy HTML Document Size (${sizeKb} KB)`,
       severity: 'warning',
       score: 60,
-      summary: `O HTML bruto possui ${sizeKb} KB, o que indica excesso de inline styles, scripts pesados ou DOM inflado.`,
-      impact: 'Aumenta consumo de dados móveis e tempo de parsing da árvore DOM.',
+      summary: `Raw HTML size is ${sizeKb} KB, suggesting excess inline styling, bulky embedded scripts, or DOM bloat.`,
+      impact: 'Increases cellular bandwidth consumption and slows initial DOM parsing.',
       currentValue: `${sizeKb} KB`,
-      recommendedValue: '< 150 KB para o HTML inicial',
+      recommendedValue: '< 150 KB for initial HTML payload',
     });
   } else {
     items.push({
       id: 'perf-html-size',
       category: 'performance_accessibility',
-      title: `Tamanho do HTML Otimizado (${sizeKb} KB)`,
+      title: `Optimized HTML Size (${sizeKb} KB)`,
       severity: 'good',
       score: 100,
-      summary: `O payload inicial de ${sizeKb} KB é leve e rápido para transferir.`,
+      summary: `Initial document payload of ${sizeKb} KB transfers swiftly.`,
     });
   }
 
   // Compute Category scores
   const categoriesList: Array<{ key: 'security' | 'seo' | 'best_practices' | 'performance_accessibility'; name: string; color: string }> = [
-    { key: 'security', name: 'Segurança', color: '#10b981' },
-    { key: 'seo', name: 'SEO & Visibilidade', color: '#3b82f6' },
-    { key: 'best_practices', name: 'Boas Práticas', color: '#8b5cf6' },
-    { key: 'performance_accessibility', name: 'Performance & Acessibilidade', color: '#f59e0b' },
+    { key: 'security', name: 'Security', color: '#10b981' },
+    { key: 'seo', name: 'SEO & Visibility', color: '#3b82f6' },
+    { key: 'best_practices', name: 'Best Practices', color: '#8b5cf6' },
+    { key: 'performance_accessibility', name: 'Performance & Accessibility', color: '#f59e0b' },
   ];
 
   const categories: Record<string, CategoryScore> = {};
@@ -916,7 +916,7 @@ app.disable('x-powered-by');`,
       warningCount: warnings,
       criticalCount: criticals,
       totalCount: total,
-      summary: `${passed} itens aprovados, ${warnings} alertas e ${criticals} falhas críticas.`,
+      summary: `${passed} checks passed, ${warnings} warnings, and ${criticals} critical issues.`,
     };
   }
 
@@ -924,32 +924,32 @@ app.disable('x-powered-by');`,
   const overallGrade = calculateGrade(overallScore);
 
   // AI Deep Analysis with Gemini
-  let aiExecutiveSummary = `Auditoria automatizada do website ${new URL(finalUrl).hostname}. O site obteve pontuação geral de ${overallScore}/100 (Nota ${overallGrade}).`;
+  let aiExecutiveSummary = `Automated website audit for ${new URL(finalUrl).hostname}. Global audit score: ${overallScore}/100 (Grade ${overallGrade}).`;
   let keyStrengths: string[] = [
-    isHttps ? 'Comunicação criptografada com HTTPS ativo' : 'Serviço web acessível',
-    metaTags.title ? 'Tag title indexável presente' : 'Acesso web funcional',
-    metaTags.viewport ? 'Design mobile-friendly configurado' : 'Estrutura HTML padrão',
+    isHttps ? 'Encrypted communications with active HTTPS' : 'Web service accessible online',
+    metaTags.title ? 'Indexable title tag present' : 'Functional web access',
+    metaTags.viewport ? 'Mobile-friendly viewport configured' : 'Standard HTML structure',
   ];
   let topPriorityFixes: string[] = [];
 
   const ai = getAiClient();
   if (ai) {
     try {
-      const prompt = `Analise este relatório de auditoria de website e forneça um diagnóstico técnico em português do Brasil:
+      const prompt = `Analyze this comprehensive website audit report and provide an expert technical diagnostic in English:
 URL: ${finalUrl}
-Score Geral: ${overallScore}/100 (Nota: ${overallGrade})
-Tempo de resposta (TTFB): ${responseTimeMs}ms
-Segurança: Score ${categories.security.score}/100. Cabeçalhos ausentes: ${securityHeaders.filter((s) => s.status !== 'present').map((s) => s.header).join(', ') || 'Nenhum'}
-SEO: Score ${categories.seo.score}/100. Title: "${metaTags.title || 'Ausente'}", Description: "${metaTags.description || 'Ausente'}", H1s: ${h1Matches.length}, Schema JSON-LD: ${metaTags.structuredDataTypes.join(', ') || 'Nenhum'}
-Boas Práticas: Lang="${metaTags.language || 'Ausente'}", Links sem rel="${externalLinksWithoutRel}"
-Performance & A11y: Imagens sem alt: ${imagesMissingAlt} de ${imgMatches.length}, Tamanho HTML: ${sizeKb}KB
-Tecnologias Detectadas: ${techStack.map((t) => t.name).join(', ') || 'Não identificadas'}
+Overall Score: ${overallScore}/100 (Grade: ${overallGrade})
+Response Time (TTFB): ${responseTimeMs}ms
+Security: Score ${categories.security.score}/100. Missing headers: ${securityHeaders.filter((s) => s.status !== 'present').map((s) => s.header).join(', ') || 'None'}
+SEO: Score ${categories.seo.score}/100. Title: "${metaTags.title || 'Missing'}", Description: "${metaTags.description || 'Missing'}", H1s: ${h1Matches.length}, Schema JSON-LD: ${metaTags.structuredDataTypes.join(', ') || 'None'}
+Best Practices: Lang="${metaTags.language || 'Missing'}", Links missing rel="${externalLinksWithoutRel}"
+Performance & A11y: Images missing alt: ${imagesMissingAlt} of ${imgMatches.length}, HTML Payload: ${sizeKb}KB
+Detected Technologies: ${techStack.map((t) => t.name).join(', ') || 'None identified'}
 
-Responda em formato JSON com:
-1. "executiveSummary": Um parágrafo executivo conciso (2 a 3 frases) avaliando a saúde geral do site, principais riscos de segurança e potencial de crescimento em SEO.
-2. "keyStrengths": Array com 3 pontos fortes ou acertos da arquitetura do site.
-3. "topPriorityFixes": Array com 3 a 5 ações de correção mais urgentes, com alto impacto prático.
-4. "additionalActionableAdvice": Array com até 2 sugestões extras de inovação ou modernização técnica (ex: PWA, Web Vitals, Edge caching).`;
+Respond in JSON format with:
+1. "executiveSummary": A concise executive summary paragraph (2 to 3 sentences) assessing overall site health, primary security exposure, and organic SEO growth upside.
+2. "keyStrengths": Array of 3 architectural highlights or validated best practices.
+3. "topPriorityFixes": Array of 3 to 5 highest-priority remediation items with direct practical impact.
+4. "additionalActionableAdvice": Array with up to 2 forward-looking technical recommendations (e.g., PWA, Core Web Vitals, Edge caching).`;
 
       const aiResponse = await ai.models.generateContent({
         model: 'gemini-3.7-flash',
@@ -981,11 +981,11 @@ Responda em formato JSON com:
             items.push({
               id: `ai-advice-${i}`,
               category: 'best_practices',
-              title: `Recomendação de Otimização Inteligente`,
+              title: `Smart Optimization Recommendation`,
               severity: 'info',
               score: 85,
               summary: adv,
-              impact: 'Acelera a performance, eleva a segurança e melhora os índices de conversão.',
+              impact: 'Accelerates performance, hardens security posture, and boosts conversion rates.',
             });
           });
         }
@@ -1002,7 +1002,7 @@ Responda em formato JSON com:
       .slice(0, 4)
       .map((i) => `${i.title}: ${i.summary}`);
     if (topPriorityFixes.length === 0) {
-      topPriorityFixes = ['Excelente estado: Mantenha as diretivas de segurança e monitore periodicamente.'];
+      topPriorityFixes = ['Excellent condition: Maintain security directives and monitor performance periodically.'];
     }
   }
 

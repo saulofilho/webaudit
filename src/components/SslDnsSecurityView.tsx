@@ -68,27 +68,27 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
     return {
       isHttps,
       daysRemaining,
-      expirationFormatted: expirationDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+      expirationFormatted: expirationDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }),
       sslStatus,
-      tlsVersion: report.rawData.tlsVersion || (isHttps ? 'TLS 1.3' : 'Nenhum (HTTP Desprotegido)'),
+      tlsVersion: report.rawData.tlsVersion || (isHttps ? 'TLS 1.3' : 'None (Insecure HTTP)'),
       supportsHttp2,
       supportsHttp3,
       altSvcHeader: altSvc,
       spf: {
         status: isHttps ? 'present' : 'missing',
         record: spfRecord,
-        description: 'Define quais servidores IP estão autorizados a enviar mensagens em nome do domínio.',
+        description: 'Defines which IP servers are authorized to send email on behalf of your domain.',
       },
       dkim: {
         status: isHttps ? 'present' : 'missing',
         selector: 'default._domainkey',
-        description: 'Assinatura criptográfica que atesta que o e-mail não foi adulterado no trânsito.',
+        description: 'Cryptographic signature validating that emails have not been tampered with in transit.',
       },
       dmarc: {
         status: isHttps ? 'present' : 'warning',
         policy: dmarcPolicy,
         record: dmarcRecord,
-        description: 'Instrui provedores receptores (Gmail, Outlook) a rejeitar e-mails que falhem em SPF/DKIM.',
+        description: 'Instructs recipient mail systems (Gmail, Outlook) to reject emails failing SPF/DKIM validation.',
       },
     };
   }, [report.targetUrl, hostname, report.rawData]);
@@ -110,17 +110,17 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
-                Auditoria de SSL/TLS, DNS & Segurança de E-mail
+                SSL/TLS, DNS & Email Security Audit
               </h2>
               <p className="text-xs text-[#141414]/70">
-                Integridade criptográfica do certificado, prevenção contra spoofing e verificação de protocolos modernos
+                Cryptographic certificate health, anti-spoofing compliance, and modern protocol verification
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
             <span className="border border-[#141414] bg-[#E4E3E0] px-3 py-1 font-bold">
-              DOMÍNIO: <strong>{hostname}</strong>
+              DOMAIN: <strong>{hostname}</strong>
             </span>
           </div>
         </div>
@@ -131,7 +131,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#141414] pb-3">
           <div className="flex items-center gap-2">
             <Lock className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-sm font-black uppercase">Certificado SSL/TLS & Criptografia em Trânsito</h3>
+            <h3 className="text-sm font-black uppercase">SSL/TLS Certificate & Encryption in Transit</h3>
           </div>
           <span
             className={`font-mono text-xs font-black px-2.5 py-0.5 border ${
@@ -143,46 +143,46 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
             }`}
           >
             {securityData.sslStatus === 'healthy'
-              ? 'CERTIFICADO VÁLIDO E SEGURO'
+              ? 'VALID & SECURE CERTIFICATE'
               : securityData.sslStatus === 'warning'
-              ? 'EXPIRAÇÃO EM BREVE (<30 DIAS)'
-              : 'INSEGURO // SEM HTTPS'}
+              ? 'EXPIRING SOON (<30 DAYS)'
+              : 'INSECURE // NO HTTPS'}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 font-mono text-xs">
           {/* Days Left */}
           <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-            <span className="text-[10px] text-[#141414]/70 block font-bold">DIAS ATÉ EXPIRAÇÃO:</span>
+            <span className="text-[10px] text-[#141414]/70 block font-bold">DAYS UNTIL EXPIRATION:</span>
             <div className="text-2xl font-black mt-0.5 flex items-baseline gap-1">
               <span className={securityData.daysRemaining > 30 ? 'text-emerald-800' : 'text-amber-800'}>
-                {securityData.daysRemaining} dias
+                {securityData.daysRemaining} days
               </span>
             </div>
             <span className="text-[10px] text-[#141414]/70 mt-1 block">
-              Válido até: <strong>{securityData.expirationFormatted}</strong>
+              Valid until: <strong>{securityData.expirationFormatted}</strong>
             </span>
           </div>
 
           {/* TLS Protocol */}
           <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-            <span className="text-[10px] text-[#141414]/70 block font-bold">PROTOCOLO TLS ATIVO:</span>
+            <span className="text-[10px] text-[#141414]/70 block font-bold">ACTIVE TLS PROTOCOL:</span>
             <div className="text-2xl font-black mt-0.5 text-[#141414]">
               {securityData.tlsVersion}
             </div>
             <span className="text-[10px] text-emerald-800 font-bold mt-1 block">
-              ✓ Cifra moderna recomendada
+              ✓ Recommended modern cipher
             </span>
           </div>
 
           {/* HTTP/2 */}
           <div className="border border-[#141414] bg-[#E4E3E0] p-3">
-            <span className="text-[10px] text-[#141414]/70 block font-bold">SUPORTE A HTTP/2:</span>
+            <span className="text-[10px] text-[#141414]/70 block font-bold">HTTP/2 SUPPORT:</span>
             <div className="text-2xl font-black mt-0.5 text-emerald-800">
-              ATIVO
+              ACTIVE
             </div>
             <span className="text-[10px] text-[#141414]/70 mt-1 block">
-              Multiplexação de conexões TCP
+              TCP connection multiplexing
             </span>
           </div>
 
@@ -191,13 +191,13 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
             <span className="text-[10px] text-[#141414]/70 block font-bold">HTTP/3 (QUIC / UDP):</span>
             <div className="text-2xl font-black mt-0.5 text-[#141414]">
               {securityData.supportsHttp3 ? (
-                <span className="text-emerald-800">SUPORTADO</span>
+                <span className="text-emerald-800">SUPPORTED</span>
               ) : (
-                <span className="text-amber-800 text-lg">DISPONÍVEL EM CDN</span>
+                <span className="text-amber-800 text-lg">AVAILABLE VIA CDN</span>
               )}
             </div>
             <span className="text-[10px] text-[#141414]/70 mt-1 block">
-              {securityData.supportsHttp3 ? 'Header alt-svc presente' : 'Opcional para zero-RTT'}
+              {securityData.supportsHttp3 ? 'alt-svc header present' : 'Optional for zero-RTT'}
             </span>
           </div>
         </div>
@@ -208,7 +208,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#141414] pb-3">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-sm font-black uppercase">Segurança de Domínio & Prevenção de Spoofing de E-mail</h3>
+            <h3 className="text-sm font-black uppercase">Domain Security & Email Spoofing Prevention</h3>
           </div>
           <span className="text-xs bg-[#E4E3E0] px-2.5 py-0.5 border border-[#141414] font-mono font-bold">
             SPF • DKIM • DMARC
@@ -216,7 +216,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
         </div>
 
         <p className="text-xs font-mono text-[#141414]/80">
-          Provedores de e-mail como Google Workspace e Yahoo Mail exigem que domínios possuam registros DNS válidos para evitar que cibercriminosos enviem e-mails falsos fingindo ser a sua empresa (phishing).
+          Email providers including Google Workspace and Yahoo Mail require valid DNS records to stop spoofing and phishing attempts using your domain name.
         </p>
 
         <div className="space-y-3 font-mono text-xs">
@@ -228,7 +228,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
                 <span className="font-bold text-sm">SPF (Sender Policy Framework)</span>
               </div>
               <span className="bg-emerald-100 text-emerald-950 border border-emerald-700 px-2 py-0.5 text-[10px] font-bold">
-                REGISTRO DNS TXT CONFIGURADO
+                DNS TXT RECORD CONFIGURED
               </span>
             </div>
             <p className="text-[11px] text-[#141414]/70">
@@ -240,7 +240,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
                 type="button"
                 onClick={() => copySnippet(securityData.spf.record, 'spf')}
                 className="text-neutral-400 hover:text-white p-1 cursor-pointer"
-                title="Copiar registro SPF"
+                title="Copy SPF record"
               >
                 {copiedTxt === 'spf' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
@@ -255,14 +255,14 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
                 <span className="font-bold text-sm">DKIM (DomainKeys Identified Mail)</span>
               </div>
               <span className="bg-emerald-100 text-emerald-950 border border-emerald-700 px-2 py-0.5 text-[10px] font-bold">
-                CHAVE CRIPTOGRÁFICA ATIVA
+                CRYPTOGRAPHIC SIGNATURE ACTIVE
               </span>
             </div>
             <p className="text-[11px] text-[#141414]/70">
               {securityData.dkim.description}
             </p>
             <div className="bg-[#E4E3E0] p-2 text-[11px] text-[#141414]/80 border border-[#141414]/30">
-              Seletor ativo: <code>{securityData.dkim.selector}</code> (Garante assinatura de cabeçalho RSA-SHA256)
+              Active Selector: <code>{securityData.dkim.selector}</code> (Enforces RSA-SHA256 header signature)
             </div>
           </div>
 
@@ -274,7 +274,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
                 <span className="font-bold text-sm">DMARC Policy Enforcement</span>
               </div>
               <span className="bg-emerald-100 text-emerald-950 border border-emerald-700 px-2 py-0.5 text-[10px] font-bold">
-                POLÍTICA {securityData.dmarc.policy.toUpperCase()}
+                POLICY {securityData.dmarc.policy.toUpperCase()}
               </span>
             </div>
             <p className="text-[11px] text-[#141414]/70">
@@ -286,7 +286,7 @@ export const SslDnsSecurityView: React.FC<SslDnsSecurityViewProps> = ({ report }
                 type="button"
                 onClick={() => copySnippet(securityData.dmarc.record, 'dmarc')}
                 className="text-neutral-400 hover:text-white p-1 cursor-pointer shrink-0 ml-2"
-                title="Copiar registro DMARC"
+                title="Copy DMARC record"
               >
                 {copiedTxt === 'dmarc' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
               </button>

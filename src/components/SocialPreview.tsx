@@ -12,8 +12,8 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ meta, url }) => {
   const [socialTab, setSocialTab] = useState<'google' | 'facebook' | 'twitter'>('google');
 
   const hostname = new URL(url).hostname;
-  const title = meta.title || meta.openGraph.title || `${hostname} - Sem título definido`;
-  const description = meta.description || meta.openGraph.description || 'Nenhuma meta descrição definida para esta página.';
+  const title = meta.title || meta.openGraph.title || `${hostname} - No title set`;
+  const description = meta.description || meta.openGraph.description || 'No meta description set for this page.';
   const image = meta.openGraph.image || meta.twitter.image || meta.favicon;
 
   const titleLength = title.length;
@@ -26,10 +26,10 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ meta, url }) => {
         <div>
           <h3 className="text-xs sm:text-sm font-black text-[#141414] flex items-center gap-2 uppercase">
             <Share2 className="h-4 w-4 text-[#141414]" />
-            SIMULADOR DE METADADOS & REDES SOCIAIS
+            METADATA & SOCIAL SHARING PREVIEW
           </h3>
           <p className="text-[11px] text-[#141414]/70 mt-0.5">
-            Inspeção visual e contagem de caracteres para Google SERP, Open Graph e Twitter Card.
+            Visual inspection and character counts for Google SERP, Open Graph, and Twitter Cards.
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ meta, url }) => {
       {socialTab === 'google' && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-[#141414]">SNIPPET DE BUSCA NO GOOGLE:</span>
+            <span className="text-xs font-bold uppercase text-[#141414]">GOOGLE SEARCH SNIPPET:</span>
             <div className="flex items-center gap-1 bg-[#E4E3E0] p-0.5 border border-[#141414] text-xs">
               <button
                 type="button"
@@ -165,7 +165,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ meta, url }) => {
 
       {socialTab === 'facebook' && (
         <div className="space-y-3">
-          <span className="text-xs font-bold uppercase text-[#141414]">CARD OPEN GRAPH (WHATSAPP, FACEBOOK, LINKEDIN):</span>
+          <span className="text-xs font-bold uppercase text-[#141414]">OPEN GRAPH CARD (WHATSAPP, FACEBOOK, LINKEDIN):</span>
           <div className="max-w-md mx-auto border-2 border-[#141414] bg-[#18191a] shadow-[4px_4px_0px_#141414] overflow-hidden">
             {image ? (
               <div className="h-48 w-full bg-slate-800 relative overflow-hidden flex items-center justify-center border-b border-[#333]">
@@ -182,7 +182,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ meta, url }) => {
             ) : (
               <div className="h-36 w-full bg-[#242526] flex flex-col items-center justify-center text-slate-400 gap-1 border-b border-[#333]">
                 <ImageIcon className="h-8 w-8 text-slate-500" />
-                <span className="text-xs font-mono">NENHUMA OG:IMAGE ENCONTRADA</span>
+                <span className="text-xs font-mono">NO OG:IMAGE FOUND</span>
               </div>
             )}
 
@@ -220,7 +220,7 @@ export const SocialPreview: React.FC<SocialPreviewProps> = ({ meta, url }) => {
             ) : (
               <div className="h-32 w-full bg-neutral-900 flex flex-col items-center justify-center text-slate-500 gap-1 border-b border-slate-800">
                 <ImageIcon className="h-7 w-7" />
-                <span className="text-xs font-mono">SEM TWITTER:IMAGE</span>
+                <span className="text-xs font-mono">NO TWITTER:IMAGE FOUND</span>
               </div>
             )}
 

@@ -60,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="btn-gh-pages"
             onClick={onOpenGitHubPages}
-            title="Instruções para GitHub Pages"
+            title="GitHub Pages Deployment Guide"
             className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
           >
             <Github className="h-3.5 w-3.5" />
@@ -74,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="relative flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
           >
             <History className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">HISTÓRICO</span>
+            <span className="hidden md:inline">HISTORY</span>
             {historyCount > 0 && (
               <span className="flex h-4 min-w-4 px-1 items-center justify-center bg-[#141414] text-[9px] font-mono font-bold text-white">
                 {historyCount}
@@ -87,11 +87,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-nav-action-plan"
               onClick={onOpenActionPlan}
-              title="Abrir Plano de Ação e Checklist de Remediação"
+              title="Open Action Plan & Remediation Checklist"
               className="relative flex items-center gap-1.5 border border-[#141414] bg-amber-400 px-2.5 py-1 text-xs font-mono font-black text-[#141414] hover:bg-amber-300 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <ListTodo className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span className="hidden sm:inline">PLANO DE AÇÃO</span>
+              <span className="hidden sm:inline">ACTION PLAN</span>
               {pendingActionCount > 0 && (
                 <span className="flex h-4 min-w-4 px-1 items-center justify-center bg-[#141414] text-[9px] font-mono font-black text-amber-300">
                   {pendingActionCount}
@@ -105,11 +105,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-nav-seo-checklist"
               onClick={onOpenSeoChecklist}
-              title="Abrir SEO Quick-Start Checklist"
+              title="Open SEO Quick-Start Checklist"
               className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-blue-600 hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <SearchCheck className="h-3.5 w-3.5 text-blue-600 group-hover:text-white" />
-              <span className="hidden md:inline">CHECKLIST SEO</span>
+              <span className="hidden md:inline">SEO CHECKLIST</span>
             </button>
           )}
 
@@ -118,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-nav-webhooks"
               onClick={onOpenWebhooks}
-              title="Configurar Alertas Webhook (Slack / Discord)"
+              title="Configure Webhook Alerts (Slack / Discord)"
               className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <Bell className="h-3.5 w-3.5" />
@@ -131,11 +131,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-nav-whitelabel-pdf"
               onClick={onOpenWhiteLabelPdf}
-              title="Gerar Relatório White-Label Personalizado em PDF"
+              title="Generate Custom White-Label PDF Report"
               className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span className="hidden lg:inline">PDF WHITE-LABEL</span>
+              <span className="hidden lg:inline">WHITE-LABEL PDF</span>
             </button>
           )}
 
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-1.5 border border-[#141414] bg-[#141414] px-3 py-1 text-xs font-mono font-bold text-[#E4E3E0] hover:bg-black transition-all shadow-[2px_2px_0px_#888888] cursor-pointer"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>EXPORTAR</span>
+              <span>EXPORT</span>
             </button>
           )}
 
@@ -159,7 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-1.5 border border-[#141414] bg-white px-3 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <RefreshCw className="h-3 w-3" />
-              <span className="hidden sm:inline">NOVA ANÁLISE</span>
+              <span className="hidden sm:inline">NEW AUDIT</span>
             </button>
           )}
         </div>

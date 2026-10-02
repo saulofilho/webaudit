@@ -91,17 +91,17 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
-                Auditoria de Acessibilidade WCAG 2.1 & Conformidade ADA
+                WCAG 2.1 Accessibility & ADA Compliance Audit
               </h2>
               <p className="text-xs text-[#141414]/70">
-                Padrões internacionais de inclusão digital, navegação assistiva e proteção contra litígios ADA
+                International digital accessibility standards, assistive navigation, and ADA risk mitigation
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs">
             <span className="border border-[#141414] bg-[#E4E3E0] px-3 py-1 font-bold">
-              PADRÃO-ALVO: <strong>WCAG 2.1 NÍVEL AA</strong>
+              TARGET STANDARD: <strong>WCAG 2.1 LEVEL AA</strong>
             </span>
           </div>
         </div>
@@ -112,7 +112,7 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
         <div className="flex items-center justify-between border-b-2 border-[#141414] pb-3">
           <div className="flex items-center gap-2">
             <Sliders className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-sm font-black uppercase">Validador de Contraste de Cores em Tempo Real</h3>
+            <h3 className="text-sm font-black uppercase">Real-Time Color Contrast Validator</h3>
           </div>
           <span className="font-mono text-xs bg-purple-100 text-purple-950 border border-purple-800 px-2 py-0.5 font-bold">
             RATIO: {contrastRatio}:1
@@ -123,7 +123,7 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
           {/* Controls */}
           <div className="lg:col-span-5 space-y-3 text-xs">
             <div>
-              <label className="font-bold block mb-1">Cor do Texto (Primeiro Plano):</label>
+              <label className="font-bold block mb-1">Text Color (Foreground):</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -142,7 +142,7 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
             </div>
 
             <div>
-              <label className="font-bold block mb-1">Cor de Fundo (Plano de Fundo):</label>
+              <label className="font-bold block mb-1">Background Color:</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -168,21 +168,21 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
                 onClick={() => { setFgColor('#141414'); setBgColor('#FFFFFF'); }}
                 className="border border-[#141414] px-1.5 py-0.5 bg-neutral-100 hover:bg-white cursor-pointer"
               >
-                Preto / Branco
+                Black / White
               </button>
               <button
                 type="button"
                 onClick={() => { setFgColor('#FFFFFF'); setBgColor('#047857'); }}
                 className="border border-[#141414] px-1.5 py-0.5 bg-neutral-100 hover:bg-white cursor-pointer"
               >
-                Branco / Verde
+                White / Green
               </button>
               <button
                 type="button"
                 onClick={() => { setFgColor('#71717A'); setBgColor('#FFFFFF'); }}
                 className="border border-[#141414] px-1.5 py-0.5 bg-neutral-100 hover:bg-white cursor-pointer"
               >
-                Cinza Claro (Alerta)
+                Light Gray (Warning)
               </button>
             </div>
           </div>
@@ -194,10 +194,10 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
               style={{ backgroundColor: bgColor, color: fgColor }}
             >
               <p className="font-bold text-sm">
-                Texto de Exemplo em Destaque
+                Sample Typography In Focus
               </p>
               <p className="text-xs mt-1 leading-relaxed opacity-90">
-                O contraste adequado garante que pessoas com baixa visão ou sob luz solar intensa possam ler perfeitamente.
+                Appropriate contrast ensures people with low vision or working under direct sunlight can read content effortlessly.
               </p>
             </div>
           </div>
@@ -207,21 +207,21 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
             <div className="flex items-center justify-between border border-[#141414] p-1.5 bg-[#E4E3E0]">
               <span className="text-[11px] font-bold">WCAG AA Normal:</span>
               <span className={`px-1.5 py-0.2 text-[10px] font-black border ${wcagAaNormal ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-rose-100 text-rose-950 border-rose-700'}`}>
-                {wcagAaNormal ? 'PASSOU (≥4.5)' : 'FALHOU'}
+                {wcagAaNormal ? 'PASSED (≥4.5)' : 'FAILED'}
               </span>
             </div>
 
             <div className="flex items-center justify-between border border-[#141414] p-1.5 bg-[#E4E3E0]">
-              <span className="text-[11px] font-bold">WCAG AA Grande:</span>
+              <span className="text-[11px] font-bold">WCAG AA Large:</span>
               <span className={`px-1.5 py-0.2 text-[10px] font-black border ${wcagAaLarge ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-rose-100 text-rose-950 border-rose-700'}`}>
-                {wcagAaLarge ? 'PASSOU (≥3.0)' : 'FALHOU'}
+                {wcagAaLarge ? 'PASSED (≥3.0)' : 'FAILED'}
               </span>
             </div>
 
             <div className="flex items-center justify-between border border-[#141414] p-1.5 bg-[#E4E3E0]">
-              <span className="text-[11px] font-bold">WCAG AAA Rigoroso:</span>
+              <span className="text-[11px] font-bold">WCAG AAA Strict:</span>
               <span className={`px-1.5 py-0.2 text-[10px] font-black border ${wcagAaaNormal ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-rose-100 text-rose-950 border-rose-700'}`}>
-                {wcagAaaNormal ? 'PASSOU (≥7.0)' : 'FALHOU'}
+                {wcagAaaNormal ? 'PASSED (≥7.0)' : 'FAILED'}
               </span>
             </div>
           </div>
@@ -235,14 +235,14 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
           <div className="flex items-center justify-between">
             <span className="font-bold uppercase flex items-center gap-1.5">
               <FileCheck2 className="h-4 w-4" />
-              Texto Alternativo em Imagens (Alt Text)
+              Image Alternative Text (Alt Attributes)
             </span>
             <span className={`px-2 py-0.5 border font-bold text-[10px] ${altComplianceRate >= 90 ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-rose-100 text-rose-950 border-rose-700'}`}>
-              {altComplianceRate}% CONFORME
+              {altComplianceRate}% COMPLIANT
             </span>
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            {imagesTotal} imagens auditadas. {imagesMissingAlt > 0 ? `${imagesMissingAlt} imagem(ns) não possuem o atributo alt, impedindo a compreensão por deficientes visuais.` : 'Todas as imagens possuem atributo alt correspondente.'}
+            {imagesTotal} images audited. {imagesMissingAlt > 0 ? `${imagesMissingAlt} image(s) lack an alt attribute, hindering screen reader navigation.` : 'All detected images provide corresponding alt attributes.'}
           </p>
         </div>
 
@@ -251,14 +251,14 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
           <div className="flex items-center justify-between">
             <span className="font-bold uppercase flex items-center gap-1.5">
               <Type className="h-4 w-4" />
-              Hierarquia de Títulos (H1 / H2 / H3)
+              Heading Hierarchy (H1 / H2 / H3)
             </span>
             <span className={`px-2 py-0.5 border font-bold text-[10px] ${h1Count === 1 ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-amber-100 text-amber-950 border-amber-700'}`}>
-              {h1Count === 1 ? 'H1 ÚNICO (EXCELENTE)' : `${h1Count} TAGS H1`}
+              {h1Count === 1 ? 'SINGLE H1 (EXCELLENT)' : `${h1Count} H1 TAGS`}
             </span>
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            H1: {h1Count} | H2: {h2Count} | H3: {report.rawData.h3Count}. A estrutura semântica permite navegação rápida via leitor de tela por tópicos.
+            H1: {h1Count} | H2: {h2Count} | H3: {report.rawData.h3Count}. Semantic structure enables rapid assistive navigation across major document sections.
           </p>
         </div>
 
@@ -267,14 +267,14 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
           <div className="flex items-center justify-between">
             <span className="font-bold uppercase flex items-center gap-1.5">
               <MousePointer className="h-4 w-4" />
-              Navegação por Teclado & Foco Visível
+              Keyboard Navigation & Visible Focus
             </span>
             <span className="px-2 py-0.5 border font-bold text-[10px] bg-emerald-100 text-emerald-950 border-emerald-700">
-              RECOMENDADO
+              RECOMMENDED
             </span>
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            Certifique-se de nunca utilizar <code>outline: none</code> sem substituir por um anel de foco visível com <code>:focus-visible</code> para usuários que navegam via tecla Tab.
+            Ensure you never remove focus rings with <code>outline: none</code> without supplying a high-contrast replacement using <code>:focus-visible</code> for keyboard/Tab users.
           </p>
         </div>
 
@@ -283,14 +283,14 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
           <div className="flex items-center justify-between">
             <span className="font-bold uppercase flex items-center gap-1.5">
               <Layout className="h-4 w-4" />
-              Formulários & Rótulos Acessíveis (Labels)
+              Forms & Accessible Labels
             </span>
             <span className={`px-2 py-0.5 border font-bold text-[10px] ${formsWithoutHttps === 0 ? 'bg-emerald-100 text-emerald-950 border-emerald-700' : 'bg-rose-100 text-rose-950 border-rose-700'}`}>
-              {formsCount} FORMULÁRIOS
+              {formsCount} FORMS
             </span>
           </div>
           <p className="text-[11px] text-[#141414]/70">
-            Todos os campos de entrada (input, select, textarea) devem conter <code>&lt;label for="..."&gt;</code> ou <code>aria-label</code> correspondente para leitura automática.
+            All input controls (input, select, textarea) must be explicitly associated with <code>&lt;label for="..."&gt;</code> or provide an <code>aria-label</code> attribute.
           </p>
         </div>
       </div>

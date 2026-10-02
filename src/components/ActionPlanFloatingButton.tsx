@@ -41,14 +41,14 @@ export const ActionPlanFloatingButton: React.FC<ActionPlanFloatingButtonProps> =
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.85, opacity: 0, y: 20 }}
       transition={{ duration: 0.25 }}
-      aria-label="Plano de Ação Flutuante"
+      aria-label="Floating Action Plan"
       className="fixed bottom-5 right-4 sm:right-6 z-40 font-mono"
     >
       <button
         type="button"
         id="btn-floating-action-plan"
         onClick={onClick}
-        aria-label={`Abrir Plano de Ação. ${pendingCount} pendências restantes.`}
+        aria-label={`Open Action Plan. ${pendingCount} pending items remaining.`}
         className="group flex items-center gap-2.5 sm:gap-3 bg-[#141414] text-white p-2.5 sm:px-4 sm:py-3 border-2 border-[#141414] shadow-[4px_4px_0px_#888888] hover:shadow-[6px_6px_0px_#141414] hover:-translate-y-0.5 transition-all cursor-pointer select-none"
       >
         {/* Icon & Mini Progress Ring */}
@@ -67,7 +67,7 @@ export const ActionPlanFloatingButton: React.FC<ActionPlanFloatingButtonProps> =
         <div className="text-left">
           <div className="flex items-center gap-2">
             <span className="text-xs sm:text-sm font-black uppercase tracking-wide text-white">
-              PLANO DE AÇÃO
+              ACTION PLAN
             </span>
             <span className="text-[10px] font-bold text-amber-300 bg-white/10 px-1.5 py-0.2 border border-white/20">
               {progressPercent}%
@@ -77,14 +77,14 @@ export const ActionPlanFloatingButton: React.FC<ActionPlanFloatingButtonProps> =
           <div className="flex items-center gap-1.5 mt-0.5 text-[10px] sm:text-[11px] font-bold">
             {pendingCount === 0 ? (
               <span className="text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" /> TUDO RESOLVIDO!
+                <CheckCircle2 className="h-3 w-3" /> ALL RESOLVED!
               </span>
             ) : (
               <>
                 {pendingCriticalCount > 0 && (
                   <span className="text-rose-400 flex items-center gap-0.5">
                     <AlertCircle className="h-3 w-3" />
-                    {pendingCriticalCount} {pendingCriticalCount === 1 ? 'crítico' : 'críticos'}
+                    {pendingCriticalCount} {pendingCriticalCount === 1 ? 'critical' : 'critical'}
                   </span>
                 )}
                 {pendingCriticalCount > 0 && pendingWarningCount > 0 && (
@@ -93,7 +93,7 @@ export const ActionPlanFloatingButton: React.FC<ActionPlanFloatingButtonProps> =
                 {pendingWarningCount > 0 && (
                   <span className="text-amber-300 flex items-center gap-0.5">
                     <AlertTriangle className="h-3 w-3" />
-                    {pendingWarningCount} {pendingWarningCount === 1 ? 'alerta' : 'alertas'}
+                    {pendingWarningCount} {pendingWarningCount === 1 ? 'warning' : 'warnings'}
                   </span>
                 )}
               </>
