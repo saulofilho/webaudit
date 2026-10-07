@@ -166,7 +166,18 @@ export type NavigationTab =
   | 'social'
   | 'tech'
   | 'comparator'
-  | 'trends';
+  | 'trends'
+  | 'js-miner'
+  | 'nikto'
+  | 'dast'
+  | 'waf'
+  | 'ssrf'
+  | 'jwt'
+  | 'compliance'
+  | 'llm-sec'
+  | 'stride'
+  | 'soar'
+  | 'threat-intel';
 
 export interface LinkAuditItem {
   url: string;

@@ -6,6 +6,11 @@ import { analyzeWebsite } from './server/analyzer';
 import { generateAIFix } from './server/geminiFix';
 import { generateExecutiveSummary } from './server/geminiSummary';
 import { checkPageLinks, crawlSitemapAndPages } from './server/extendedAudits';
+import { handleJsMiner } from './server/secscan/jsMinerHandler';
+import { handleNiktoScan } from './server/secscan/niktoHandler';
+import { handleWafScan } from './server/secscan/wafHandler';
+import { handleDastFuzz } from './server/secscan/dastHandler';
+import { handleThreatIntel } from './server/secscan/threatIntelHandler';
 
 async function startServer() {
   const app = express();
@@ -117,6 +122,13 @@ async function startServer() {
       });
     }
   });
+
+  // SecScan DevSecOps & Active Pentest Suite Routes
+  app.post('/api/secscan/js-miner', handleJsMiner);
+  app.post('/api/secscan/nikto', handleNiktoScan);
+  app.post('/api/secscan/waf', handleWafScan);
+  app.post('/api/secscan/dast', handleDastFuzz);
+  app.get('/api/secscan/threat-intel', handleThreatIntel);
 
   // Vite Middleware or Static Production Serving
   if (process.env.NODE_ENV !== 'production') {

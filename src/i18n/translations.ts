@@ -37,6 +37,17 @@ export interface TranslationDictionary {
     tech: string;
     comparator: string;
     trends: string;
+    jsMiner: string;
+    nikto: string;
+    dast: string;
+    waf: string;
+    ssrf: string;
+    jwt: string;
+    compliance: string;
+    llmSec: string;
+    stride: string;
+    soar: string;
+    threatIntel: string;
   };
   severity: {
     all: string;
@@ -89,6 +100,17 @@ export const translations: Record<Language, TranslationDictionary> = {
       tech: 'TECNOLOGIAS',
       comparator: 'COMPARAR SITES',
       trends: 'TENDÊNCIAS',
+      jsMiner: 'JS MINER & SEGREDOS',
+      nikto: 'NIKTO WEB SCANNER',
+      dast: 'DAST FUZZER',
+      waf: 'WAF & FIREWALL',
+      ssrf: 'SSRF VALIDATOR',
+      jwt: 'JWT INSPECTOR',
+      compliance: 'COMPLIANCE (LGPD/ISO)',
+      llmSec: 'SEGURANÇA IA & LLM',
+      stride: 'STRIDE THREAT MODEL',
+      soar: 'PLAYBOOKS SOAR',
+      threatIntel: 'THREAT INTEL & KEV',
     },
     severity: {
       all: 'TODOS',
@@ -139,6 +161,17 @@ export const translations: Record<Language, TranslationDictionary> = {
       tech: 'TECH STACK',
       comparator: 'SITE COMPARATOR',
       trends: 'HISTORICAL TRENDS',
+      jsMiner: 'JS MINER & SECRETS',
+      nikto: 'NIKTO WEB SCANNER',
+      dast: 'DAST FUZZER',
+      waf: 'WAF & FIREWALL',
+      ssrf: 'SSRF VALIDATOR',
+      jwt: 'JWT INSPECTOR',
+      compliance: 'COMPLIANCE (LGPD/ISO)',
+      llmSec: 'LLM & AI SECURITY',
+      stride: 'STRIDE THREAT MODEL',
+      soar: 'SOAR PLAYBOOKS',
+      threatIntel: 'THREAT INTEL & KEV',
     },
     severity: {
       all: 'ALL',

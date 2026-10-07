@@ -31,6 +31,12 @@ import {
   AlignLeft,
   Leaf,
   Briefcase,
+  FileCode,
+  Server,
+  Key,
+  Bot,
+  Workflow,
+  Radio,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -78,6 +84,18 @@ import { WebhookAlertModal } from './components/WebhookAlertModal';
 import { SeoQuickStartModal } from './components/SeoQuickStartModal';
 import { ReportSummaryPanel } from './components/ReportSummaryPanel';
 import { analyzeWebsiteClient } from './services/clientAnalyzer';
+import { JsMinerView } from './components/secscan/JsMinerView';
+import { NiktoWebScannerView } from './components/secscan/NiktoWebScannerView';
+import { DastFuzzerView } from './components/secscan/DastFuzzerView';
+import { WafSuiteView } from './components/secscan/WafSuiteView';
+import { SsrfValidatorView } from './components/secscan/SsrfValidatorView';
+import { JwtTokenInspectorView } from './components/secscan/JwtTokenInspectorView';
+import { ComplianceAuditView } from './components/secscan/ComplianceAuditView';
+import { LlmSecurityView } from './components/secscan/LlmSecurityView';
+import { ThreatModelingView } from './components/secscan/ThreatModelingView';
+import { VisualSoarPlaybookView } from './components/secscan/VisualSoarPlaybookView';
+import { CyberThreatIntelHubView } from './components/secscan/CyberThreatIntelHubView';
+import { CommandPaletteModal } from './components/secscan/CommandPaletteModal';
 
 const STORAGE_KEY = 'webaudit_history_v1';
 const ACTION_PLAN_STORAGE_PREFIX = 'webaudit_actionplan_v1_';
@@ -123,7 +141,20 @@ export default function App() {
   const [isSeoChecklistOpen, setIsSeoChecklistOpen] = useState<boolean>(false);
   const [isProposalOpen, setIsProposalOpen] = useState<boolean>(false);
   const [isMonitorOpen, setIsMonitorOpen] = useState<boolean>(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
+
+  // Keyboard shortcut listener for Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Saved Audits History
   const [savedAudits, setSavedAudits] = useState<SavedAuditSummary[]>([]);
@@ -417,17 +448,124 @@ export default function App() {
         historyCount={savedAudits.length}
         language={language}
         onToggleLanguage={handleToggleLanguage}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       {/* Main Container */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* If no report yet, show Hero search */}
-        {!currentReport && (
-          <UrlInputSection
-            onAnalyze={handleAnalyze}
-            isLoading={isLoading}
-            error={error}
-          />
+        {/* If no report yet, show Hero search or direct standalone tool */}
+        {!currentReport && activeTab !== 'all' && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setActiveTab('all')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-[#141414] text-xs font-black uppercase shadow-[2px_2px_0px_#141414] hover:bg-[#141414] hover:text-white transition-all cursor-pointer"
+            >
+              ← Voltar à Análise Geral de Website
+            </button>
+
+            {activeTab === 'js-miner' && (
+              <JsMinerView onRunAIFix={(item) => setSelectedAiFixItem(item)} />
+            )}
+            {activeTab === 'nikto' && (
+              <NiktoWebScannerView onRunAIFix={(item) => setSelectedAiFixItem(item)} />
+            )}
+            {activeTab === 'dast' && (
+              <DastFuzzerView onRunAIFix={(item) => setSelectedAiFixItem(item)} />
+            )}
+            {activeTab === 'waf' && (
+              <WafSuiteView onRunAIFix={(item) => setSelectedAiFixItem(item)} />
+            )}
+            {activeTab === 'ssrf' && (
+              <SsrfValidatorView />
+            )}
+            {activeTab === 'jwt' && (
+              <JwtTokenInspectorView />
+            )}
+            {activeTab === 'compliance' && (
+              <ComplianceAuditView />
+            )}
+            {activeTab === 'llm-sec' && (
+              <LlmSecurityView />
+            )}
+            {activeTab === 'stride' && (
+              <ThreatModelingView />
+            )}
+            {activeTab === 'soar' && (
+              <VisualSoarPlaybookView />
+            )}
+            {activeTab === 'threat-intel' && (
+              <CyberThreatIntelHubView />
+            )}
+          </div>
+        )}
+
+        {!currentReport && activeTab === 'all' && (
+          <div className="space-y-6">
+            <UrlInputSection
+              onAnalyze={handleAnalyze}
+              isLoading={isLoading}
+              error={error}
+            />
+
+            {/* SecScan Pro Quick Toolkit Launch Bar */}
+            <div className="border-2 border-[#141414] bg-white p-5 shadow-[4px_4px_0px_#141414] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#141414] pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 bg-[#141414] text-white">
+                    <Shield className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono font-black text-sm uppercase tracking-tight text-[#141414]">
+                      SecScan DevSecOps & Hardcore Pentest Suite
+                    </h3>
+                    <p className="text-[11px] text-[#141414]/70">
+                      Módulos independentes e ativos de auditoria de segurança cibernética
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsCommandPaletteOpen(true)}
+                  className="px-2.5 py-1 text-xs font-mono font-bold border border-[#141414] bg-indigo-50 hover:bg-indigo-100 text-indigo-900 flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Terminal className="h-3.5 w-3.5" />
+                  <span>Paleta de Ferramentas (⌘K)</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+                {[
+                  { tab: 'js-miner' as NavigationTab, name: 'JS MINER', icon: FileCode, desc: 'Segredos & Buckets', color: 'hover:bg-indigo-50 border-indigo-300' },
+                  { tab: 'nikto' as NavigationTab, name: 'NIKTO SCANNER', icon: Server, desc: 'Pastas & Métodos', color: 'hover:bg-rose-50 border-rose-300' },
+                  { tab: 'dast' as NavigationTab, name: 'DAST FUZZER', icon: Flame, desc: 'XSS, SQLi & LFI', color: 'hover:bg-amber-50 border-amber-300' },
+                  { tab: 'waf' as NavigationTab, name: 'WAF SUITE', icon: Shield, desc: 'Detecção de Firewall', color: 'hover:bg-blue-50 border-blue-300' },
+                  { tab: 'ssrf' as NavigationTab, name: 'SSRF DEFENSE', icon: Globe, desc: 'Metadata & Loopback', color: 'hover:bg-purple-50 border-purple-300' },
+                  { tab: 'jwt' as NavigationTab, name: 'JWT INSPECTOR', icon: Key, desc: 'Decode & Alg None', color: 'hover:bg-teal-50 border-teal-300' },
+                  { tab: 'compliance' as NavigationTab, name: 'COMPLIANCE', icon: FileCheck2, desc: 'LGPD, ISO & PCI', color: 'hover:bg-emerald-50 border-emerald-300' },
+                  { tab: 'llm-sec' as NavigationTab, name: 'LLM SECURITY', icon: Bot, desc: 'OWASP Top 10 AI', color: 'hover:bg-violet-50 border-violet-300' },
+                  { tab: 'stride' as NavigationTab, name: 'STRIDE MODEL', icon: Layers, desc: 'Threat Modeling', color: 'hover:bg-red-50 border-red-300' },
+                  { tab: 'soar' as NavigationTab, name: 'SOAR PLAYBOOKS', icon: Workflow, desc: 'Resposta a Incidentes', color: 'hover:bg-sky-50 border-sky-300' },
+                  { tab: 'threat-intel' as NavigationTab, name: 'THREAT INTEL', icon: Radio, desc: 'CISA KEV & CVEs', color: 'hover:bg-rose-50 border-rose-300' },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.tab}
+                      onClick={() => setActiveTab(item.tab)}
+                      className={`text-left p-2.5 border-2 border-[#141414] bg-white transition-all cursor-pointer shadow-[2px_2px_0px_#141414] hover:translate-x-[1px] hover:translate-y-[1px] ${item.color}`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <Icon className="h-4 w-4" />
+                        <span className="text-[9px] font-bold uppercase opacity-60">ABRIR</span>
+                      </div>
+                      <div className="font-mono font-bold text-xs truncate text-[#141414]">{item.name}</div>
+                      <div className="text-[10px] text-[#141414]/70 truncate">{item.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* If report is ready, show comprehensive dashboard */}
@@ -811,6 +949,174 @@ export default function App() {
                   <Activity className="h-3.5 w-3.5 text-emerald-600" />
                   <span>TRENDS & HISTORY</span>
                 </button>
+
+                {/* SECSCAN SUITE DIVIDER */}
+                <div className="h-6 w-0.5 bg-[#141414] mx-1 self-center" />
+
+                {/* SecScan: JS Miner */}
+                <button
+                  type="button"
+                  id="tab-js-miner"
+                  onClick={() => setActiveTab('js-miner')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'js-miner'
+                      ? 'bg-indigo-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-indigo-50 text-indigo-900 hover:bg-indigo-100'
+                  }`}
+                >
+                  <FileCode className="h-3.5 w-3.5" />
+                  <span>{t.tabs.jsMiner}</span>
+                </button>
+
+                {/* SecScan: Nikto Scanner */}
+                <button
+                  type="button"
+                  id="tab-nikto"
+                  onClick={() => setActiveTab('nikto')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'nikto'
+                      ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-rose-50 text-rose-900 hover:bg-rose-100'
+                  }`}
+                >
+                  <Server className="h-3.5 w-3.5" />
+                  <span>{t.tabs.nikto}</span>
+                </button>
+
+                {/* SecScan: DAST Fuzzer */}
+                <button
+                  type="button"
+                  id="tab-dast"
+                  onClick={() => setActiveTab('dast')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'dast'
+                      ? 'bg-amber-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-amber-50 text-amber-900 hover:bg-amber-100'
+                  }`}
+                >
+                  <Flame className="h-3.5 w-3.5" />
+                  <span>{t.tabs.dast}</span>
+                </button>
+
+                {/* SecScan: WAF Suite */}
+                <button
+                  type="button"
+                  id="tab-waf"
+                  onClick={() => setActiveTab('waf')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'waf'
+                      ? 'bg-blue-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-blue-50 text-blue-900 hover:bg-blue-100'
+                  }`}
+                >
+                  <Shield className="h-3.5 w-3.5" />
+                  <span>{t.tabs.waf}</span>
+                </button>
+
+                {/* SecScan: SSRF Validator */}
+                <button
+                  type="button"
+                  id="tab-ssrf"
+                  onClick={() => setActiveTab('ssrf')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'ssrf'
+                      ? 'bg-purple-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-purple-50 text-purple-900 hover:bg-purple-100'
+                  }`}
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  <span>{t.tabs.ssrf}</span>
+                </button>
+
+                {/* SecScan: JWT Inspector */}
+                <button
+                  type="button"
+                  id="tab-jwt"
+                  onClick={() => setActiveTab('jwt')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'jwt'
+                      ? 'bg-teal-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-teal-50 text-teal-900 hover:bg-teal-100'
+                  }`}
+                >
+                  <Key className="h-3.5 w-3.5" />
+                  <span>{t.tabs.jwt}</span>
+                </button>
+
+                {/* SecScan: Compliance Hub */}
+                <button
+                  type="button"
+                  id="tab-compliance"
+                  onClick={() => setActiveTab('compliance')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'compliance'
+                      ? 'bg-emerald-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
+                  }`}
+                >
+                  <FileCheck2 className="h-3.5 w-3.5" />
+                  <span>{t.tabs.compliance}</span>
+                </button>
+
+                {/* SecScan: LLM Security */}
+                <button
+                  type="button"
+                  id="tab-llm-sec"
+                  onClick={() => setActiveTab('llm-sec')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'llm-sec'
+                      ? 'bg-violet-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-violet-50 text-violet-900 hover:bg-violet-100'
+                  }`}
+                >
+                  <Bot className="h-3.5 w-3.5" />
+                  <span>{t.tabs.llmSec}</span>
+                </button>
+
+                {/* SecScan: STRIDE Threat Model */}
+                <button
+                  type="button"
+                  id="tab-stride"
+                  onClick={() => setActiveTab('stride')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'stride'
+                      ? 'bg-rose-700 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-rose-50 text-rose-950 hover:bg-rose-100'
+                  }`}
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>{t.tabs.stride}</span>
+                </button>
+
+                {/* SecScan: SOAR Playbooks */}
+                <button
+                  type="button"
+                  id="tab-soar"
+                  onClick={() => setActiveTab('soar')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'soar'
+                      ? 'bg-sky-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-sky-50 text-sky-900 hover:bg-sky-100'
+                  }`}
+                >
+                  <Workflow className="h-3.5 w-3.5" />
+                  <span>{t.tabs.soar}</span>
+                </button>
+
+                {/* SecScan: Threat Intel & KEV */}
+                <button
+                  type="button"
+                  id="tab-threat-intel"
+                  onClick={() => setActiveTab('threat-intel')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'threat-intel'
+                      ? 'bg-red-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-red-50 text-red-900 hover:bg-red-100'
+                  }`}
+                >
+                  <Radio className="h-3.5 w-3.5" />
+                  <span>{t.tabs.threatIntel}</span>
+                </button>
               </div>
             </div>
 
@@ -911,6 +1217,63 @@ export default function App() {
 
             {activeTab === 'mobile' && (
               <MobileSimulatorView report={currentReport} />
+            )}
+
+            {/* SecScan Views */}
+            {activeTab === 'js-miner' && (
+              <JsMinerView
+                targetUrl={currentReport?.targetUrl}
+                onRunAIFix={(item) => setSelectedAiFixItem(item)}
+              />
+            )}
+
+            {activeTab === 'nikto' && (
+              <NiktoWebScannerView
+                targetUrl={currentReport?.targetUrl}
+                onRunAIFix={(item) => setSelectedAiFixItem(item)}
+              />
+            )}
+
+            {activeTab === 'dast' && (
+              <DastFuzzerView
+                targetUrl={currentReport?.targetUrl}
+                onRunAIFix={(item) => setSelectedAiFixItem(item)}
+              />
+            )}
+
+            {activeTab === 'waf' && (
+              <WafSuiteView
+                targetUrl={currentReport?.targetUrl}
+                onRunAIFix={(item) => setSelectedAiFixItem(item)}
+              />
+            )}
+
+            {activeTab === 'ssrf' && (
+              <SsrfValidatorView />
+            )}
+
+            {activeTab === 'jwt' && (
+              <JwtTokenInspectorView />
+            )}
+
+            {activeTab === 'compliance' && (
+              <ComplianceAuditView report={currentReport} />
+            )}
+
+            {activeTab === 'llm-sec' && (
+              <LlmSecurityView />
+            )}
+
+            {activeTab === 'stride' && (
+              <ThreatModelingView />
+            )}
+
+            {activeTab === 'soar' && (
+              <VisualSoarPlaybookView />
+            )}
+
+            {activeTab === 'threat-intel' && (
+              <CyberThreatIntelHubView />
             )}
 
             {/* Main Items View (All or filtered categories) */}
@@ -1169,6 +1532,15 @@ export default function App() {
           onToggleCompleted={toggleFixCompleted}
         />
       )}
+
+      {/* Global Command Palette Modal (Cmd+K / Ctrl+K) */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+        }}
+      />
     </div>
   );
 }

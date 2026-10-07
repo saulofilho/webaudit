@@ -34,6 +34,7 @@ interface NavbarProps {
   pendingActionCount?: number;
   language: Language;
   onToggleLanguage: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -53,6 +54,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   pendingActionCount = 0,
   language,
   onToggleLanguage,
+  onOpenCommandPalette,
 }) => {
   const t = translations[language];
 
@@ -82,6 +84,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Command Palette Trigger */}
+          {onOpenCommandPalette && (
+            <button
+              onClick={onOpenCommandPalette}
+              title="Paleta de Comandos (Cmd+K / Ctrl+K)"
+              className="flex items-center gap-1 border-2 border-[#141414] bg-indigo-500 text-white px-2 py-1 text-xs font-mono font-bold hover:bg-indigo-600 transition-all shadow-[2px_2px_0px_#141414] cursor-pointer"
+            >
+              <Terminal className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">CMD</span>
+              <kbd className="bg-black/30 px-1 py-0.2 rounded text-[9px] font-mono">⌘K</kbd>
+            </button>
+          )}
+
           {/* Language Toggle */}
           <button
             onClick={onToggleLanguage}
