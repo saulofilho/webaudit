@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { analyzeWebsite } from './server/analyzer';
 import { generateAIFix } from './server/geminiFix';
 import { generateExecutiveSummary } from './server/geminiSummary';
+import { checkPageLinks, crawlSitemapAndPages } from './server/extendedAudits';
 
 async function startServer() {
   const app = express();
@@ -47,6 +48,38 @@ async function startServer() {
       console.error('Audit error:', err);
       return res.status(500).json({
         error: err.message || 'Internal failure while analyzing the provided website.',
+      });
+    }
+  });
+
+  app.post('/api/check-links', async (req, res) => {
+    try {
+      const { url, maxLinks } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'A valid URL is required to inspect page links.' });
+      }
+      const data = await checkPageLinks(url, typeof maxLinks === 'number' ? maxLinks : 35);
+      return res.json(data);
+    } catch (err: any) {
+      console.error('Check links error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to check links for the specified website.',
+      });
+    }
+  });
+
+  app.post('/api/crawl-sitemap', async (req, res) => {
+    try {
+      const { url, maxPages } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'A valid URL is required to crawl the sitemap.' });
+      }
+      const data = await crawlSitemapAndPages(url, typeof maxPages === 'number' ? maxPages : 10);
+      return res.json(data);
+    } catch (err: any) {
+      console.error('Crawl sitemap error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to crawl sitemap and discovered pages.',
       });
     }
   });

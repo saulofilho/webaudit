@@ -151,6 +151,11 @@ export type NavigationTab =
   | AuditCategory
   | 'all'
   | 'heatmap'
+  | 'serp-simulator'
+  | 'content-semantics'
+  | 'broken-links'
+  | 'sitemap'
+  | 'eco-scripts'
   | 'vitals'
   | 'config-gen'
   | 'ssl-dns'
@@ -162,6 +167,70 @@ export type NavigationTab =
   | 'tech'
   | 'comparator'
   | 'trends';
+
+export interface LinkAuditItem {
+  url: string;
+  text: string;
+  isInternal: boolean;
+  status: number;
+  statusText: string;
+  responseTimeMs: number;
+  redirectUrl?: string;
+  isBroken: boolean;
+  isInsecure: boolean;
+  missingNoopener: boolean;
+  error?: string;
+}
+
+export interface LinkCheckData {
+  targetUrl: string;
+  totalFound: number;
+  totalChecked: number;
+  internalCount: number;
+  externalCount: number;
+  brokenCount: number;
+  redirectsCount: number;
+  insecureCount: number;
+  missingNoopenerCount: number;
+  healthScore: number;
+  links: LinkAuditItem[];
+}
+
+export interface CrawledPageItem {
+  url: string;
+  statusCode: number;
+  responseTimeMs: number;
+  title?: string;
+  titleLength: number;
+  metaDescription?: string;
+  metaDescLength: number;
+  h1?: string;
+  h1Count: number;
+  canonical?: string;
+  isIndexable: boolean;
+  issues: string[];
+}
+
+export interface SitemapCrawlData {
+  targetUrl: string;
+  sitemapFound: boolean;
+  sitemapUrl?: string;
+  totalPagesDiscovered: number;
+  totalPagesCrawled: number;
+  averageResponseTimeMs: number;
+  healthScore: number;
+  issuesSummary: {
+    duplicateTitles: number;
+    missingTitles: number;
+    missingMetaDescriptions: number;
+    missingH1: number;
+    multipleH1: number;
+    httpErrors: number;
+    slowPages: number;
+  };
+  duplicateTitleGroups: { title: string; urls: string[] }[];
+  pages: CrawledPageItem[];
+}
 
 export interface WhiteLabelSettings {
   agencyName: string;

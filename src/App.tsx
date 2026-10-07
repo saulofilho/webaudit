@@ -26,6 +26,11 @@ import {
   Printer,
   Bell,
   Flame,
+  Link2,
+  Compass,
+  AlignLeft,
+  Leaf,
+  Briefcase,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -36,6 +41,7 @@ import {
   AuditItem,
   NavigationTab,
 } from './types';
+import { Language, translations } from './i18n/translations';
 import { Navbar } from './components/Navbar';
 import { UrlInputSection } from './components/UrlInputSection';
 import { AuditSummaryHero } from './components/AuditSummaryHero';
@@ -60,6 +66,13 @@ import { AccessibilityWcagView } from './components/AccessibilityWcagView';
 import { PrivacyComplianceView } from './components/PrivacyComplianceView';
 import { MobileSimulatorView } from './components/MobileSimulatorView';
 import { SeoHeatmapView } from './components/SeoHeatmapView';
+import { BrokenLinksView } from './components/BrokenLinksView';
+import { SitemapCrawlerView } from './components/SitemapCrawlerView';
+import { SerpSimulatorView } from './components/SerpSimulatorView';
+import { ContentSemanticsView } from './components/ContentSemanticsView';
+import { EcoAndScriptsView } from './components/EcoAndScriptsView';
+import { CommercialProposalModal } from './components/CommercialProposalModal';
+import { ScheduledMonitorModal } from './components/ScheduledMonitorModal';
 import { WhiteLabelPdfModal } from './components/WhiteLabelPdfModal';
 import { WebhookAlertModal } from './components/WebhookAlertModal';
 import { SeoQuickStartModal } from './components/SeoQuickStartModal';
@@ -77,6 +90,28 @@ export default function App() {
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [completedFixIds, setCompletedFixIds] = useState<Record<string, boolean>>({});
+  const [isQuickWinsOnly, setIsQuickWinsOnly] = useState<boolean>(false);
+
+  // Internationalization language state
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      return (localStorage.getItem('webaudit_lang_v1') as Language) || 'pt';
+    } catch {
+      return 'pt';
+    }
+  });
+
+  const handleToggleLanguage = () => {
+    const next: Language = language === 'pt' ? 'en' : 'pt';
+    setLanguage(next);
+    try {
+      localStorage.setItem('webaudit_lang_v1', next);
+    } catch {
+      // ignore
+    }
+  };
+
+  const t = translations[language];
 
   // Modals & Panels
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
@@ -86,6 +121,8 @@ export default function App() {
   const [isWhiteLabelOpen, setIsWhiteLabelOpen] = useState<boolean>(false);
   const [isWebhooksOpen, setIsWebhooksOpen] = useState<boolean>(false);
   const [isSeoChecklistOpen, setIsSeoChecklistOpen] = useState<boolean>(false);
+  const [isProposalOpen, setIsProposalOpen] = useState<boolean>(false);
+  const [isMonitorOpen, setIsMonitorOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
 
   // Saved Audits History
@@ -259,6 +296,11 @@ export default function App() {
     if (
       activeTab !== 'all' &&
       activeTab !== 'heatmap' &&
+      activeTab !== 'serp-simulator' &&
+      activeTab !== 'content-semantics' &&
+      activeTab !== 'broken-links' &&
+      activeTab !== 'sitemap' &&
+      activeTab !== 'eco-scripts' &&
       activeTab !== 'headers' &&
       activeTab !== 'social' &&
       activeTab !== 'tech' &&
@@ -275,6 +317,15 @@ export default function App() {
     }
     // Severity filter
     if (severityFilter !== 'all' && item.severity !== severityFilter) return false;
+
+    // Quick wins filter (High impact, ready code snippet or direct fix)
+    if (isQuickWinsOnly) {
+      const isHighImpact = item.severity === 'critical' || item.severity === 'warning';
+      const isQuickFix =
+        !!item.codeSnippet ||
+        ['seo-title', 'seo-viewport', 'seo-h1', 'seo-images-alt', 'sec-hsts', 'sec-x-frame', 'sec-x-content-type', 'bp-viewport', 'bp-compression', 'bp-charset', 'perf-gzip', 'perf-minify'].includes(item.id);
+      if (!isHighImpact || !isQuickFix) return false;
+    }
     // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -354,6 +405,8 @@ export default function App() {
         onOpenWhiteLabelPdf={() => setIsWhiteLabelOpen(true)}
         onOpenWebhooks={() => setIsWebhooksOpen(true)}
         onOpenSeoChecklist={() => setIsSeoChecklistOpen(true)}
+        onOpenProposal={() => setIsProposalOpen(true)}
+        onOpenMonitor={() => setIsMonitorOpen(true)}
         pendingActionCount={pendingActionCount}
         onNewAudit={() => {
           setCurrentReport(null);
@@ -362,6 +415,8 @@ export default function App() {
         hasReport={!!currentReport}
         isBackendActive={isBackendActive}
         historyCount={savedAudits.length}
+        language={language}
+        onToggleLanguage={handleToggleLanguage}
       />
 
       {/* Main Container */}
@@ -491,7 +546,82 @@ export default function App() {
                   }`}
                 >
                   <Flame className="h-3.5 w-3.5 text-amber-500" />
-                  <span>SEO HEATMAP</span>
+                  <span>{t.tabs.heatmap}</span>
+                </button>
+
+                {/* Feature: Google SERP Simulator */}
+                <button
+                  type="button"
+                  id="tab-serp-sim"
+                  onClick={() => setActiveTab('serp-simulator')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'serp-simulator'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Search className="h-3.5 w-3.5 text-blue-500" />
+                  <span>{t.tabs.serpSimulator}</span>
+                </button>
+
+                {/* Feature: Content Semantics & TF-IDF */}
+                <button
+                  type="button"
+                  id="tab-content-semantics"
+                  onClick={() => setActiveTab('content-semantics')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'content-semantics'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <AlignLeft className="h-3.5 w-3.5 text-purple-500" />
+                  <span>{t.tabs.contentSemantics}</span>
+                </button>
+
+                {/* Feature: Broken Links Checker */}
+                <button
+                  type="button"
+                  id="tab-broken-links"
+                  onClick={() => setActiveTab('broken-links')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'broken-links'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Link2 className="h-3.5 w-3.5 text-amber-500" />
+                  <span>{t.tabs.brokenLinks}</span>
+                </button>
+
+                {/* Feature: Multi-Page Sitemap Crawler */}
+                <button
+                  type="button"
+                  id="tab-sitemap"
+                  onClick={() => setActiveTab('sitemap')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'sitemap'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Compass className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>{t.tabs.sitemapCrawler}</span>
+                </button>
+
+                {/* Feature: Eco-Index & 3rd-Party Scripts */}
+                <button
+                  type="button"
+                  id="tab-eco-scripts"
+                  onClick={() => setActiveTab('eco-scripts')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'eco-scripts'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <Leaf className="h-3.5 w-3.5 text-teal-600" />
+                  <span>{t.tabs.ecoScripts}</span>
                 </button>
 
                 <button
@@ -739,6 +869,26 @@ export default function App() {
               />
             )}
 
+            {activeTab === 'serp-simulator' && (
+              <SerpSimulatorView report={currentReport} />
+            )}
+
+            {activeTab === 'content-semantics' && (
+              <ContentSemanticsView report={currentReport} />
+            )}
+
+            {activeTab === 'broken-links' && (
+              <BrokenLinksView report={currentReport} />
+            )}
+
+            {activeTab === 'sitemap' && (
+              <SitemapCrawlerView report={currentReport} />
+            )}
+
+            {activeTab === 'eco-scripts' && (
+              <EcoAndScriptsView report={currentReport} />
+            )}
+
             {activeTab === 'vitals' && (
               <CoreWebVitalsView report={currentReport} onOpenActionPlan={() => setIsActionPlanOpen(true)} />
             )}
@@ -830,6 +980,20 @@ export default function App() {
                     >
                       <span>PASSED</span>
                       <span className="bg-white/80 px-1 text-[10px] text-emerald-900 border border-emerald-900">{scopeGoodCount}</span>
+                    </button>
+
+                    {/* Quick Wins Filter Button */}
+                    <button
+                      type="button"
+                      onClick={() => setIsQuickWinsOnly(!isQuickWinsOnly)}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                        isQuickWinsOnly
+                          ? 'bg-amber-400 text-[#141414] shadow-[2px_2px_0px_#141414]'
+                          : 'bg-white text-[#141414] hover:bg-amber-100'
+                      }`}
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-amber-700" />
+                      <span>{t.quickWinsFilter}</span>
                     </button>
                   </div>
 
@@ -961,6 +1125,20 @@ export default function App() {
           onClose={() => setIsSeoChecklistOpen(false)}
         />
       )}
+
+      {currentReport && (
+        <CommercialProposalModal
+          report={currentReport}
+          isOpen={isProposalOpen}
+          onClose={() => setIsProposalOpen(false)}
+        />
+      )}
+
+      <ScheduledMonitorModal
+        isOpen={isMonitorOpen}
+        onClose={() => setIsMonitorOpen(false)}
+        currentReport={currentReport}
+      />
 
       <GitHubPagesModal
         isOpen={isGitHubPagesOpen}

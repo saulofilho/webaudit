@@ -1,5 +1,21 @@
 import React from 'react';
-import { ShieldCheck, History, Download, Github, Sparkles, RefreshCw, Activity, Terminal, ListTodo, Printer, Bell, SearchCheck } from 'lucide-react';
+import {
+  ShieldCheck,
+  History,
+  Download,
+  Github,
+  Sparkles,
+  RefreshCw,
+  Activity,
+  Terminal,
+  ListTodo,
+  Printer,
+  Bell,
+  SearchCheck,
+  Briefcase,
+  Languages,
+} from 'lucide-react';
+import { Language, translations } from '../i18n/translations';
 
 interface NavbarProps {
   onOpenHistory: () => void;
@@ -9,11 +25,15 @@ interface NavbarProps {
   onOpenWhiteLabelPdf?: () => void;
   onOpenWebhooks?: () => void;
   onOpenSeoChecklist?: () => void;
+  onOpenProposal?: () => void;
+  onOpenMonitor?: () => void;
   onNewAudit: () => void;
   hasReport: boolean;
   isBackendActive: boolean;
   historyCount: number;
   pendingActionCount?: number;
+  language: Language;
+  onToggleLanguage: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -24,12 +44,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenWhiteLabelPdf,
   onOpenWebhooks,
   onOpenSeoChecklist,
+  onOpenProposal,
+  onOpenMonitor,
   onNewAudit,
   hasReport,
   isBackendActive,
   historyCount,
   pendingActionCount = 0,
+  language,
+  onToggleLanguage,
 }) => {
+  const t = translations[language];
+
   return (
     <header className="sticky top-0 z-40 w-full border-b-2 border-[#141414] bg-[#E4E3E0] text-[#141414]">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-6">
@@ -45,27 +71,50 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
               <span className="hidden sm:inline-flex items-center gap-1 bg-white px-1.5 py-0.5 text-[10px] font-mono font-bold text-[#141414] border border-[#141414]">
                 <Activity className="h-3 w-3 text-emerald-600 animate-pulse" />
-                V3.7-DIAGNOSTIC
+                V4.0-ENTERPRISE
               </span>
             </div>
             <p className="hidden md:block text-[10px] font-mono uppercase tracking-wider text-[#141414]/70">
-              SEC • SEO • BEST_PRACTICES • SPEED
+              {t.tagline}
             </p>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* GitHub Pages Modal trigger */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Language Toggle */}
           <button
-            id="btn-gh-pages"
-            onClick={onOpenGitHubPages}
-            title="GitHub Pages Deployment Guide"
-            className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+            onClick={onToggleLanguage}
+            title={language === 'pt' ? 'Mudar para Inglês (EN)' : 'Switch to Portuguese (PT)'}
+            className="flex items-center gap-1 border-2 border-[#141414] bg-white px-2 py-1 text-xs font-mono font-black text-[#141414] hover:bg-[#141414] hover:text-white transition-all shadow-[2px_2px_0px_#141414] cursor-pointer"
           >
-            <Github className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">GH-PAGES</span>
+            <Languages className="h-3.5 w-3.5" />
+            <span>{language.toUpperCase()}</span>
           </button>
+
+          {/* Scheduled Monitor */}
+          {onOpenMonitor && (
+            <button
+              onClick={onOpenMonitor}
+              title={language === 'pt' ? 'Monitoramento Periódico & Alertas' : 'Scheduled Monitoring'}
+              className="hidden lg:flex items-center gap-1 border border-[#141414] bg-white px-2 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-white transition-all shadow-[2px_2px_0px_#141414] cursor-pointer"
+            >
+              <Bell className="h-3.5 w-3.5" />
+              <span>{t.scheduledMonitor}</span>
+            </button>
+          )}
+
+          {/* Commercial Proposal Trigger */}
+          {hasReport && onOpenProposal && (
+            <button
+              onClick={onOpenProposal}
+              title={language === 'pt' ? 'Gerar Proposta Comercial para Cliente' : 'Generate Client Commercial Proposal'}
+              className="flex items-center gap-1 border-2 border-[#141414] bg-emerald-300 px-2.5 py-1 text-xs font-mono font-black text-[#141414] hover:bg-emerald-400 transition-all shadow-[2px_2px_0px_#141414] cursor-pointer"
+            >
+              <Briefcase className="h-3.5 w-3.5 text-emerald-950" />
+              <span className="hidden sm:inline">{t.commercialProposal}</span>
+            </button>
+          )}
 
           {/* History */}
           <button
@@ -74,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="relative flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
           >
             <History className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">HISTORY</span>
+            <span className="hidden md:inline">{t.history}</span>
             {historyCount > 0 && (
               <span className="flex h-4 min-w-4 px-1 items-center justify-center bg-[#141414] text-[9px] font-mono font-bold text-white">
                 {historyCount}
@@ -91,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="relative flex items-center gap-1.5 border border-[#141414] bg-amber-400 px-2.5 py-1 text-xs font-mono font-black text-[#141414] hover:bg-amber-300 shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <ListTodo className="h-3.5 w-3.5 stroke-[2.5]" />
-              <span className="hidden sm:inline">ACTION PLAN</span>
+              <span className="hidden sm:inline">{t.actionPlan}</span>
               {pendingActionCount > 0 && (
                 <span className="flex h-4 min-w-4 px-1 items-center justify-center bg-[#141414] text-[9px] font-mono font-black text-amber-300">
                   {pendingActionCount}
@@ -106,23 +155,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="btn-nav-seo-checklist"
               onClick={onOpenSeoChecklist}
               title="Open SEO Quick-Start Checklist"
-              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-blue-600 hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+              className="hidden xl:flex items-center gap-1.5 border border-[#141414] bg-white px-2 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-blue-600 hover:text-white shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
-              <SearchCheck className="h-3.5 w-3.5 text-blue-600 group-hover:text-white" />
-              <span className="hidden md:inline">SEO CHECKLIST</span>
-            </button>
-          )}
-
-          {/* Webhooks Alert Trigger */}
-          {hasReport && onOpenWebhooks && (
-            <button
-              id="btn-nav-webhooks"
-              onClick={onOpenWebhooks}
-              title="Configure Webhook Alerts (Slack / Discord)"
-              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
-            >
-              <Bell className="h-3.5 w-3.5" />
-              <span className="hidden lg:inline">WEBHOOKS</span>
+              <SearchCheck className="h-3.5 w-3.5 text-blue-600" />
+              <span>SEO CHECKLIST</span>
             </button>
           )}
 
@@ -132,10 +168,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="btn-nav-whitelabel-pdf"
               onClick={onOpenWhiteLabelPdf}
               title="Generate Custom White-Label PDF Report"
-              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+              className="hidden lg:flex items-center gap-1.5 border border-[#141414] bg-white px-2 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <Printer className="h-3.5 w-3.5" />
-              <span className="hidden lg:inline">WHITE-LABEL PDF</span>
+              <span>PDF</span>
             </button>
           )}
 
@@ -147,7 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex items-center gap-1.5 border border-[#141414] bg-[#141414] px-3 py-1 text-xs font-mono font-bold text-[#E4E3E0] hover:bg-black transition-all shadow-[2px_2px_0px_#888888] cursor-pointer"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>EXPORT</span>
+              <span>{t.export}</span>
             </button>
           )}
 
@@ -156,10 +192,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-new-audit-nav"
               onClick={onNewAudit}
-              className="flex items-center gap-1.5 border border-[#141414] bg-white px-3 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 border border-[#141414] bg-white px-2.5 py-1 text-xs font-mono font-bold text-[#141414] hover:bg-[#141414] hover:text-[#E4E3E0] shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
             >
               <RefreshCw className="h-3 w-3" />
-              <span className="hidden sm:inline">NEW AUDIT</span>
+              <span className="hidden sm:inline">{t.newAudit}</span>
             </button>
           )}
         </div>
