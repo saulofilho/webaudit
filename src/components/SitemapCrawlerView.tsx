@@ -15,6 +15,7 @@ import {
   ArrowRight,
   ShieldCheck,
   TrendingUp,
+  GitMerge,
 } from 'lucide-react';
 import { AuditReport, SitemapCrawlData, CrawledPageItem } from '../types';
 import { PageRankSimulator } from './PageRankSimulator';
@@ -267,6 +268,15 @@ export const SitemapCrawlerView: React.FC<SitemapCrawlerViewProps> = ({ report }
                 </div>
               </div>
             ))}
+            <div className="bg-amber-100/80 border border-amber-400 p-2.5 text-xs text-amber-950 flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 font-bold">
+                <GitMerge className="h-3.5 w-3.5 text-amber-800" />
+                These duplicate titles cause severe keyword cannibalization in search rankings.
+              </span>
+              <span className="text-[11px] font-mono text-neutral-700">
+                Switch to <strong>Keyword Cannibalization</strong> tab to resolve.
+              </span>
+            </div>
           </div>
         </div>
       )}

@@ -25,6 +25,7 @@ export interface TranslationDictionary {
     contentSemantics: string;
     brokenLinks: string;
     sitemapCrawler: string;
+    cannibalization: string;
     ecoScripts: string;
     vitals: string;
     configGen: string;
@@ -88,6 +89,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       contentSemantics: 'CONTEÚDO & TF-IDF',
       brokenLinks: 'LINKS QUEBRADOS',
       sitemapCrawler: 'CRAWLER SITEMAP',
+      cannibalization: 'CANIBALIZAÇÃO SEO',
       ecoScripts: 'ECO-INDEX & SCRIPTS',
       vitals: 'CORE WEB VITALS',
       configGen: 'GERADOR CONFIG',
@@ -149,6 +151,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       contentSemantics: 'CONTENT & TF-IDF',
       brokenLinks: 'BROKEN LINKS',
       sitemapCrawler: 'SITEMAP CRAWLER',
+      cannibalization: 'KEYWORD CANNIBALIZATION',
       ecoScripts: 'ECO & 3RD-PARTY',
       vitals: 'CORE WEB VITALS',
       configGen: '1-CLICK CONFIGS',

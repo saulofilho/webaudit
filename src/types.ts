@@ -176,6 +176,7 @@ export type NavigationTab =
   | 'content-semantics'
   | 'broken-links'
   | 'sitemap'
+  | 'cannibalization'
   | 'eco-scripts'
   | 'vitals'
   | 'config-gen'
@@ -321,6 +322,76 @@ export interface SitemapCrawlData {
   pages: CrawledPageItem[];
   backlinkAudit?: BacklinkAuditSummary;
   pageRankSimulation?: PageRankSimulationData;
+  cannibalizationAudit?: CannibalizationAuditData;
+}
+
+export interface CannibalizingPageInfo {
+  url: string;
+  title: string;
+  titleLength: number;
+  h1?: string;
+  canonical?: string;
+  hasCanonicalTag: boolean;
+  isSelfCanonical: boolean;
+  inboundInternalLinksCount: number;
+  inboundAnchorTexts: string[];
+  estimatedEquityShare: number; // percentage
+  isMasterCandidate: boolean;
+  masterReason?: string;
+}
+
+export interface CanonicalizationFixPlan {
+  strategy: 'canonical_tag_consolidation' | '301_permanent_redirect' | 'de_optimize_and_differentiate' | 'noindex_parameter_variant';
+  title: string;
+  explanation: string;
+  masterCanonicalUrl: string;
+  recommendedCanonicalTag: string; // e.g. <link rel="canonical" href="..." />
+  redirectRuleSnippet?: string;
+  suggestedDifferentiatedTitle?: string;
+  suggestedActionSteps: string[];
+  equityGainProjected: string;
+}
+
+export interface CannibalizationCluster {
+  id: string;
+  focusKeyword: string;
+  secondaryKeywords: string[];
+  severity: SeverityLevel;
+  riskScore: number; // 0-100
+  similarityScore: number; // 0-100%
+  conflictType:
+    | 'exact_title_duplicate'
+    | 'title_keyword_overlap'
+    | 'anchor_text_collision'
+    | 'missing_cross_canonical'
+    | 'intent_mismatch';
+  conflictingPages: CannibalizingPageInfo[];
+  primaryMasterUrl: string;
+  conflictingAnchorTexts: { anchor: string; occurrences: number; targetUrls: string[] }[];
+  impactAnalysis: string;
+  canonicalizationFix: CanonicalizationFixPlan;
+}
+
+export interface CannibalizationAuditData {
+  targetUrl: string;
+  analyzedAt: string;
+  pagesScannedCount: number;
+  internalLinksScannedCount: number;
+  cannibalizationRiskScore: number; // 0-100 (0 = pristine, 100 = severe risk)
+  canonicalHygieneScore: number; // 0-100 (100 = optimal)
+  totalClustersDetected: number;
+  highRiskCount: number;
+  moderateRiskCount: number;
+  lowRiskCount: number;
+  uniqueKeywordsCannibalized: number;
+  potentialEquityReclaimPercent: number;
+  clusters: CannibalizationCluster[];
+  summaryInsights: string[];
+  bestPracticesChecklist: {
+    rule: string;
+    status: 'pass' | 'fail' | 'warning';
+    detail: string;
+  }[];
 }
 
 export interface WhiteLabelSettings {
@@ -378,4 +449,79 @@ export interface ReportExecutiveSummaryResponse {
     seoVisibilityImpact: string;
   };
 }
+
+export interface CompetitorContentProfile {
+  id: string;
+  url: string;
+  domain: string;
+  serpRank: number; // 1, 2, or 3
+  title: string;
+  description: string;
+  wordCount: number;
+  readingTimeMin: number;
+  headingCounts: {
+    h1: number;
+    h2: number;
+    h3: number;
+  };
+  imageCount: number;
+  domainAuthority: number;
+  topKeywords: string[];
+}
+
+export interface KeywordGapItem {
+  id: string;
+  keyword: string;
+  searchVolume: number;
+  difficulty: number; // 0-100%
+  intent: 'Informational' | 'Commercial' | 'Transactional' | 'Navigational';
+  relevanceScore: number; // 0-100
+  targetFrequency: number;
+  competitorFrequencies: [number, number, number]; // comp 1, 2, 3
+  competitorAverageFrequency: number;
+  status: 'missing' | 'weak' | 'shared';
+  priority: 'Critical' | 'High' | 'Medium' | 'Low';
+  recommendedPlacement: 'H2 Heading' | 'Intro Paragraph' | 'Body Copy' | 'FAQ Section';
+}
+
+export interface ContentGapAnalysisData {
+  targetUrl: string;
+  analyzedAt: string;
+  primaryNicheQuery: string;
+  targetProfile: {
+    url: string;
+    domain: string;
+    title: string;
+    wordCount: number;
+    readingTimeMin: number;
+    headingCounts: {
+      h1: number;
+      h2: number;
+      h3: number;
+    };
+    imageCount: number;
+  };
+  competitors: CompetitorContentProfile[];
+  benchmarkStats: {
+    competitorAverageWordCount: number;
+    wordCountGap: number; // negative if deficit
+    wordCountGapPercent: number;
+    competitorAverageH2Count: number;
+    competitorAverageImages: number;
+    totalKeywordsAnalyzed: number;
+    missingKeywordsCount: number;
+    weakKeywordsCount: number;
+    sharedKeywordsCount: number;
+    contentScore: number; // 0-100
+    competitorAverageContentScore: number;
+  };
+  keywordGaps: KeywordGapItem[];
+  actionPlan: {
+    recommendedWordAddition: number;
+    topMissingKeywordsToInclude: string[];
+    suggestedHeadings: string[];
+    quickWins: string[];
+  };
+}
+
 

@@ -37,6 +37,9 @@ import {
   Bot,
   Workflow,
   Radio,
+  GitMerge,
+  ArrowRight,
+  Target,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -75,6 +78,8 @@ import { SeoHeatmapView } from './components/SeoHeatmapView';
 import { BrokenLinksView } from './components/BrokenLinksView';
 import { SitemapCrawlerView } from './components/SitemapCrawlerView';
 import { PageRankSimulator } from './components/PageRankSimulator';
+import { KeywordCannibalizationView } from './components/KeywordCannibalizationView';
+import { ContentGapAnalysisView } from './components/ContentGapAnalysisView';
 import { SerpSimulatorView } from './components/SerpSimulatorView';
 import { ContentSemanticsView } from './components/ContentSemanticsView';
 import { EcoAndScriptsView } from './components/EcoAndScriptsView';
@@ -748,6 +753,21 @@ export default function App() {
                   <span>{t.tabs.sitemapCrawler}</span>
                 </button>
 
+                {/* Feature: Keyword Cannibalization & Canonical Audit */}
+                <button
+                  type="button"
+                  id="tab-cannibalization"
+                  onClick={() => setActiveTab('cannibalization')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'cannibalization'
+                      ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                      : 'bg-white text-[#141414] hover:bg-[#E4E3E0]'
+                  }`}
+                >
+                  <GitMerge className="h-3.5 w-3.5 text-amber-500" />
+                  <span>{t.tabs.cannibalization}</span>
+                </button>
+
                 {/* Feature: Eco-Index & 3rd-Party Scripts */}
                 <button
                   type="button"
@@ -1196,6 +1216,10 @@ export default function App() {
               <SitemapCrawlerView report={currentReport} />
             )}
 
+            {activeTab === 'cannibalization' && currentReport && (
+              <KeywordCannibalizationView report={currentReport} />
+            )}
+
             {activeTab === 'eco-scripts' && (
               <EcoAndScriptsView report={currentReport} />
             )}
@@ -1284,10 +1308,40 @@ export default function App() {
             {/* Main Items View (All or filtered categories) */}
             {(activeTab === 'all' || activeTab === 'security' || activeTab === 'seo' || activeTab === 'best_practices' || activeTab === 'performance_accessibility') && (
               <div className="space-y-4">
-                {/* Mock SEO Page Rank Simulator inside SEO Tab */}
+                {/* Advanced SEO Tooling: Content Gap Analysis, Page Rank Simulator, and Cannibalization */}
                 {activeTab === 'seo' && currentReport && (
-                  <div className="mb-4">
+                  <div className="mb-4 space-y-4">
+                    {/* Content Gap Analysis: Target URL vs Top 3 Competitors in Search Results */}
+                    <ContentGapAnalysisView report={currentReport} targetUrl={currentReport.targetUrl} />
+
+                    {/* PageRank Simulator */}
                     <PageRankSimulator auditReport={currentReport} targetUrl={currentReport.targetUrl} />
+
+                    <div className="border-2 border-[#141414] bg-white p-4 sm:p-5 shadow-[3px_3px_0px_#141414] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-amber-400 text-[#141414] px-2 py-0.5 text-xs font-black uppercase border border-[#141414] flex items-center gap-1">
+                            <GitMerge className="h-3 w-3" />
+                            NEW MODULE
+                          </span>
+                          <h4 className="font-black text-sm uppercase text-[#141414]">
+                            Keyword Cannibalization & Canonicalization Audit
+                          </h4>
+                        </div>
+                        <p className="text-xs text-neutral-600 font-sans">
+                          Scan internal links and page titles to detect competing pages targeting duplicate keywords, and resolve indexing conflicts with 301 redirects and master canonical tags.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('cannibalization')}
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase bg-[#141414] text-white hover:bg-neutral-800 transition-all cursor-pointer whitespace-nowrap border-2 border-[#141414] shadow-[2px_2px_0px_#888888]"
+                      >
+                        <span>Open Cannibalization Audit</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                 )}
 

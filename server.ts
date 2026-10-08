@@ -6,6 +6,8 @@ import { analyzeWebsite } from './server/analyzer';
 import { generateAIFix } from './server/geminiFix';
 import { generateExecutiveSummary } from './server/geminiSummary';
 import { checkPageLinks, crawlSitemapAndPages } from './server/extendedAudits';
+import { auditKeywordCannibalization } from './server/cannibalizationAudit';
+import { auditContentGap } from './server/contentGapAudit';
 import { handleJsMiner } from './server/secscan/jsMinerHandler';
 import { handleNiktoScan } from './server/secscan/niktoHandler';
 import { handleWafScan } from './server/secscan/wafHandler';
@@ -85,6 +87,38 @@ async function startServer() {
       console.error('Crawl sitemap error:', err);
       return res.status(500).json({
         error: err.message || 'Failed to crawl sitemap and discovered pages.',
+      });
+    }
+  });
+
+  app.post('/api/cannibalization-audit', async (req, res) => {
+    try {
+      const { url, maxPages } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'A valid URL is required to audit keyword cannibalization.' });
+      }
+      const data = await auditKeywordCannibalization(url, typeof maxPages === 'number' ? maxPages : 15);
+      return res.json(data);
+    } catch (err: any) {
+      console.error('Cannibalization audit error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to audit keyword cannibalization.',
+      });
+    }
+  });
+
+  app.post('/api/content-gap-analysis', async (req, res) => {
+    try {
+      const { url, competitorUrls, primaryQuery } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'A valid URL is required to analyze content gap.' });
+      }
+      const data = await auditContentGap(url, { competitorUrls, primaryQuery });
+      return res.json(data);
+    } catch (err: any) {
+      console.error('Content gap analysis error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to analyze content gap against top competitors.',
       });
     }
   });

@@ -751,6 +751,51 @@ app.disable('x-powered-by');`,
     });
   }
 
+  // Keyword Cannibalization & Canonical Signal Audit
+  const hasSelfCanonical = metaTags.canonical && (metaTags.canonical === finalUrl || `${metaTags.canonical}/` === finalUrl || metaTags.canonical === `${finalUrl}/`);
+  if (!metaTags.canonical) {
+    items.push({
+      id: 'seo-cannibalization',
+      category: 'seo',
+      title: 'High Cannibalization Risk: Missing Canonical Declaration',
+      severity: 'warning',
+      score: 55,
+      summary: 'Page lacks a canonical URL tag, making it vulnerable to keyword cannibalization and URL alias competition.',
+      impact: 'Without an explicit canonical tag, search bots may index tracking parameters, alternate protocols, or duplicate internal paths as competing documents.',
+      recommendedValue: `<link rel="canonical" href="${finalUrl}" />`,
+      codeSnippet: {
+        language: 'html',
+        title: 'Define Canonical Tag',
+        code: `<link rel="canonical" href="${finalUrl}" />`,
+      },
+      references: [
+        { title: 'Google Search Essentials: Consolidating Duplicate URLs', url: 'https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls' },
+      ],
+    });
+  } else if (!hasSelfCanonical) {
+    items.push({
+      id: 'seo-cannibalization',
+      category: 'seo',
+      title: 'Cross-Page Canonical Signal Configured',
+      severity: 'info',
+      score: 90,
+      summary: `Canonical URL points away from this document to ${metaTags.canonical}, consolidating keyword equity.`,
+      impact: 'Instructs search engines to attribute ranking power and keyword indexation to the specified target page.',
+      currentValue: metaTags.canonical,
+    });
+  } else {
+    items.push({
+      id: 'seo-cannibalization',
+      category: 'seo',
+      title: 'Optimal Canonical Hierarchy & Intent Protection',
+      severity: 'good',
+      score: 100,
+      summary: 'Explicit self-referential canonical protects page against keyword splitting and tracking duplicate loops.',
+      impact: 'Protects primary landing page keyword equity in Google SERPs.',
+      currentValue: metaTags.canonical,
+    });
+  }
+
   // Structured Data (JSON-LD)
   if (metaTags.structuredDataTypes.length > 0) {
     items.push({
