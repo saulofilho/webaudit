@@ -14,8 +14,10 @@ import {
   Compass,
   ArrowRight,
   ShieldCheck,
+  TrendingUp,
 } from 'lucide-react';
 import { AuditReport, SitemapCrawlData, CrawledPageItem } from '../types';
+import { PageRankSimulator } from './PageRankSimulator';
 
 interface SitemapCrawlerViewProps {
   report: AuditReport;
@@ -231,6 +233,11 @@ export const SitemapCrawlerView: React.FC<SitemapCrawlerViewProps> = ({ report }
           </div>
           <p className="text-xs font-mono mt-1">{error}</p>
         </div>
+      )}
+
+      {/* PageRank & Domain Authority Simulator Section */}
+      {data && (
+        <PageRankSimulator sitemapData={data} onRefreshCrawl={fetchCrawl} />
       )}
 
       {/* Duplicate Titles Section */}

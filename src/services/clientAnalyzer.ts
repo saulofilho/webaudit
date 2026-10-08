@@ -1,4 +1,105 @@
-import { AuditItem, AuditReport, CategoryScore, MetaTagsData, RawAuditData, SecurityHeaderCheck, TechStackItem } from '../types';
+import {
+  AuditItem,
+  AuditReport,
+  CategoryScore,
+  MetaTagsData,
+  RawAuditData,
+  SecurityHeaderCheck,
+  SocialFootprintProfile,
+  SocialFootprintSummary,
+  TechStackItem,
+} from '../types';
+
+export function extractSocialFootprintClient(html: string): SocialFootprintSummary {
+  const patterns: { platform: string; regex: RegExp; icon: string }[] = [
+    { platform: 'Twitter / X', regex: /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]{1,30})/gi, icon: 'Twitter' },
+    { platform: 'LinkedIn', regex: /https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in|school)\/([a-zA-Z0-9_\-%]+)/gi, icon: 'Linkedin' },
+    { platform: 'GitHub', regex: /https?:\/\/(?:www\.)?github\.com\/([a-zA-Z0-9_\-]+)(?:\/[a-zA-Z0-9_\-]+)?/gi, icon: 'Github' },
+    { platform: 'Facebook', regex: /https?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9.\-_]+)/gi, icon: 'Facebook' },
+    { platform: 'Instagram', regex: /https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/gi, icon: 'Instagram' },
+    { platform: 'YouTube', regex: /https?:\/\/(?:www\.)?youtube\.com\/(?:@|channel\/|user\/|c\/)?([a-zA-Z0-9_\-]+)/gi, icon: 'Youtube' },
+    { platform: 'TikTok', regex: /https?:\/\/(?:www\.)?tiktok\.com\/@([a-zA-Z0-9_.]+)/gi, icon: 'Video' },
+    { platform: 'Discord', regex: /https?:\/\/(?:www\.)?(?:discord\.gg|discord\.com\/invite)\/([a-zA-Z0-9_\-]+)/gi, icon: 'MessageSquare' },
+    { platform: 'Reddit', regex: /https?:\/\/(?:www\.)?reddit\.com\/(?:r|user)\/([a-zA-Z0-9_]+)/gi, icon: 'Globe' },
+    { platform: 'Telegram', regex: /https?:\/\/(?:t\.me|telegram\.me)\/([a-zA-Z0-9_]+)/gi, icon: 'Send' },
+    { platform: 'Threads', regex: /https?:\/\/(?:www\.)?threads\.net\/@([a-zA-Z0-9_.]+)/gi, icon: 'AtSign' },
+    { platform: 'Pinterest', regex: /https?:\/\/(?:www\.)?pinterest\.com\/([a-zA-Z0-9_]+)/gi, icon: 'Pin' },
+    { platform: 'Medium', regex: /https?:\/\/(?:[a-zA-Z0-9_\-]+\.)?medium\.com\/(?:@([a-zA-Z0-9_]+))?/gi, icon: 'FileText' },
+    { platform: 'Substack', regex: /https?:\/\/([a-zA-Z0-9_\-]+)\.substack\.com/gi, icon: 'Mail' },
+    { platform: 'Mastodon / Fediverse', regex: /https?:\/\/(?:mastodon\.social|fosstodon\.org|mstdn\.social)\/@([a-zA-Z0-9_]+)/gi, icon: 'Share2' },
+  ];
+
+  const profilesMap = new Map<string, SocialFootprintProfile>();
+  const linkRegex = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+  let linkMatch;
+
+  while ((linkMatch = linkRegex.exec(html)) !== null) {
+    const attrs = linkMatch[1] || '';
+    const hrefMatch = attrs.match(/\bhref\s*=\s*["']([^"']*)["']/i);
+    if (!hrefMatch || !hrefMatch[1]) continue;
+
+    const href = hrefMatch[1].trim();
+    if (!href.startsWith('http://') && !href.startsWith('https://')) continue;
+
+    const isSecure = href.startsWith('https://');
+    const hasRelMe = /\brel\s*=\s*["'][^"']*\bme\b[^"']*["']/i.test(attrs);
+    const hasNoopener = /\brel\s*=\s*["'][^"']*\bnoopener\b[^"']*["']/i.test(attrs);
+
+    for (const pat of patterns) {
+      pat.regex.lastIndex = 0;
+      const m = pat.regex.exec(href);
+      if (m) {
+        const ignoredPaths = ['sharer', 'intent', 'share', 'login', 'signup', 'privacy', 'terms', 'policies', 'about', 'features', 'pricing'];
+        const handle = m[1] ? m[1].replace(/\/$/, '') : undefined;
+        if (handle && ignoredPaths.includes(handle.toLowerCase())) continue;
+
+        const normalizedKey = `${pat.platform}:${href.toLowerCase().replace(/\/$/, '')}`;
+        if (!profilesMap.has(normalizedKey)) {
+          profilesMap.set(normalizedKey, {
+            platform: pat.platform,
+            url: href,
+            handle: handle ? `@${handle.replace(/^@/, '')}` : undefined,
+            icon: pat.icon,
+            isSecureHttps: isSecure,
+            hasRelMeOrNoopener: hasRelMe || hasNoopener,
+            status: !isSecure ? 'unsecured' : (hasRelMe || hasNoopener ? 'verified' : 'detected'),
+          });
+        }
+      }
+    }
+  }
+
+  const profiles = Array.from(profilesMap.values());
+  const platformsList = Array.from(new Set(profiles.map((p) => p.platform)));
+  const totalProfiles = profiles.length;
+  const platformsCount = platformsList.length;
+
+  let socialReachGrade: 'High' | 'Moderate' | 'Limited' | 'None' = 'None';
+  let score = 0;
+  if (platformsCount >= 4) {
+    socialReachGrade = 'High';
+    score = 100;
+  } else if (platformsCount >= 2) {
+    socialReachGrade = 'Moderate';
+    score = 80;
+  } else if (platformsCount === 1) {
+    socialReachGrade = 'Limited';
+    score = 55;
+  } else {
+    socialReachGrade = 'None';
+    score = 25;
+  }
+
+  return {
+    totalProfilesFound: totalProfiles,
+    platformsDetectedCount: platformsCount,
+    profiles,
+    platformsList,
+    hasMajorSocialPresence: platformsCount >= 2,
+    socialReachGrade,
+    socialFootprintScore: score,
+  };
+}
 
 function calculateGrade(score: number): string {
   if (score >= 95) return 'A+';
@@ -157,6 +258,7 @@ export async function analyzeWebsiteClient(rawUrl: string): Promise<AuditReport>
 
   const metaTags = parseMetaClient(html);
   const techStack = detectTechnologiesClient(allHeaders, html);
+  const socialFootprint = extractSocialFootprintClient(html);
 
   const h1Matches = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/gi) || [];
   const imgMatches = [...html.matchAll(/<img\b([^>]*)>/gi)];
@@ -341,6 +443,7 @@ export async function analyzeWebsiteClient(rawUrl: string): Promise<AuditReport>
     securityHeaders,
     allHeaders,
     techStack,
+    socialFootprint,
   };
 
   return {

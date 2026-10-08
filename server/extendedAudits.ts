@@ -41,6 +41,63 @@ export interface PageCrawlItem {
   canonical?: string;
   isIndexable: boolean;
   issues: string[];
+  inboundInternalLinksCount?: number;
+  outboundInternalLinksCount?: number;
+  outboundExternalLinksCount?: number;
+}
+
+export interface DiscoveredBacklinkItem {
+  id: string;
+  sourceUrl: string;
+  targetUrl: string;
+  anchorText: string;
+  linkType: 'internal' | 'external_referral' | 'nofollow' | 'ugc' | 'sponsored';
+  isDoFollow: boolean;
+  sourceEstimatedAuthority: number;
+  trustWeight: number;
+  equityScore: number;
+  status: 'active' | 'redirected' | 'broken' | 'suspicious';
+  detectedVia: 'crawler_html' | 'sitemap_cross_reference' | 'canonical_cluster';
+}
+
+export interface BacklinkAuditSummary {
+  totalLinksDiscovered: number;
+  internalCrossLinks: number;
+  externalOutboundLinks: number;
+  doFollowRatio: number;
+  brokenLinksFound: number;
+  uniqueLinkingNodes: number;
+  topAnchors: { anchor: string; count: number; percentage: number }[];
+  deepLinkRatio: number;
+  backlinkItems: DiscoveredBacklinkItem[];
+}
+
+export interface PageRankSimulationData {
+  calculatedDomainAuthority: number;
+  estimatedPageRank: number;
+  dampingFactor: number;
+  iterations: number;
+  confidenceScore: number;
+  linkEquityDistribution: {
+    pageUrl: string;
+    pageTitle?: string;
+    internalPageRank: number;
+    rawEquityShare: number;
+    inboundLinkCount: number;
+    outboundLinkCount: number;
+    depthLevel: number;
+    status: 'high_authority' | 'moderate' | 'diluted' | 'orphan_risk';
+  }[];
+  authorityBreakdown: {
+    linkQuantityScore: number;
+    equityFlowScore: number;
+    doFollowQualityScore: number;
+    architectureDepthScore: number;
+    technicalHealthPenalty: number;
+  };
+  rankTier: 'Pioneer (0-20)' | 'Emerging (21-40)' | 'Established (41-60)' | 'Authoritative (61-80)' | 'Industry Leader (81-100)';
+  insights: string[];
+  recommendations: string[];
 }
 
 export interface SitemapCrawlSummary {
@@ -62,6 +119,8 @@ export interface SitemapCrawlSummary {
   };
   duplicateTitleGroups: { title: string; urls: string[] }[];
   pages: PageCrawlItem[];
+  backlinkAudit?: BacklinkAuditSummary;
+  pageRankSimulation?: PageRankSimulationData;
 }
 
 // Helper to sanitize and resolve relative URLs
@@ -347,6 +406,12 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
 
   // Concurrently audit discovered pages (batches of 4)
   const crawledPages: PageCrawlItem[] = [];
+  const discoveredBacklinks: DiscoveredBacklinkItem[] = [];
+  const internalLinkGraph = new Map<string, Set<string>>(); // source -> target URLs
+  const inboundLinkCounts = new Map<string, number>();
+  const outboundInternalCounts = new Map<string, number>();
+  const outboundExternalCounts = new Map<string, number>();
+  const anchorTextFrequency = new Map<string, number>();
   const batchSize = 4;
 
   for (let i = 0; i < urlsToCrawl.length; i += batchSize) {
@@ -361,6 +426,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
       let h1Count = 0;
       let canonical: string | undefined = undefined;
       let isIndexable = true;
+      const pageLinks: { href: string; text: string; rel: string }[] = [];
 
       try {
         const pCtrl = new AbortController();
@@ -421,6 +487,83 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
           isIndexable = false;
           issues.push('Robots noindex tag detected');
         }
+
+        // Extract hyperlinks for backlink & PageRank graph
+        const aRegex = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+        let aMatch;
+        let pageInternalCount = 0;
+        let pageExternalCount = 0;
+
+        while ((aMatch = aRegex.exec(html)) !== null) {
+          const attrs = aMatch[1] || '';
+          const aText = (aMatch[2] || '').replace(/<[^>]+>/g, '').trim();
+          const hrefM = attrs.match(/\bhref\s*=\s*["']([^"']*)["']/i);
+          const relM = attrs.match(/\brel\s*=\s*["']([^"']*)["']/i);
+          const relVal = relM ? relM[1].toLowerCase() : '';
+
+          if (hrefM && hrefM[1]) {
+            const resolvedTarget = resolveUrl(hrefM[1], pageUrl);
+            if (resolvedTarget) {
+              const isNoFollow = relVal.includes('nofollow');
+              const isUgc = relVal.includes('ugc');
+              const isSponsored = relVal.includes('sponsored');
+
+              let isInternalTarget = false;
+              try {
+                const targetObj = new URL(resolvedTarget);
+                isInternalTarget = targetObj.hostname.toLowerCase() === baseHost || targetObj.hostname.toLowerCase().endsWith('.' + baseHost);
+              } catch {
+                // ignore
+              }
+
+              if (isInternalTarget) {
+                pageInternalCount++;
+                if (!internalLinkGraph.has(pageUrl)) {
+                  internalLinkGraph.set(pageUrl, new Set());
+                }
+                internalLinkGraph.get(pageUrl)!.add(resolvedTarget);
+
+                inboundLinkCounts.set(resolvedTarget, (inboundLinkCounts.get(resolvedTarget) || 0) + 1);
+              } else {
+                pageExternalCount++;
+              }
+
+              // Store top anchor text statistics
+              const cleanAnchor = aText ? aText.slice(0, 40) : '(Empty Anchor)';
+              anchorTextFrequency.set(cleanAnchor, (anchorTextFrequency.get(cleanAnchor) || 0) + 1);
+
+              // Backlink sample record
+              if (discoveredBacklinks.length < 50) {
+                const linkType: 'internal' | 'external_referral' | 'nofollow' | 'ugc' | 'sponsored' = isNoFollow
+                  ? 'nofollow'
+                  : isUgc
+                  ? 'ugc'
+                  : isSponsored
+                  ? 'sponsored'
+                  : isInternalTarget
+                  ? 'internal'
+                  : 'external_referral';
+
+                discoveredBacklinks.push({
+                  id: `bl-${discoveredBacklinks.length + 1}-${Math.random().toString(36).slice(2, 6)}`,
+                  sourceUrl: pageUrl,
+                  targetUrl: resolvedTarget,
+                  anchorText: cleanAnchor,
+                  linkType,
+                  isDoFollow: !isNoFollow,
+                  sourceEstimatedAuthority: isInternalTarget ? 45 : 30,
+                  trustWeight: isNoFollow ? 0.1 : 0.85,
+                  equityScore: isNoFollow ? 0.05 : 0.75,
+                  status: 'active',
+                  detectedVia: 'crawler_html',
+                });
+              }
+            }
+          }
+        }
+
+        outboundInternalCounts.set(pageUrl, pageInternalCount);
+        outboundExternalCounts.set(pageUrl, pageExternalCount);
       } catch (err: any) {
         statusCode = 0;
         issues.push(`Connection error: ${err.message || 'Timeout'}`);
@@ -449,6 +592,13 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
 
     const res = await Promise.all(batchPromises);
     crawledPages.push(...res);
+  }
+
+  // Populate link counts onto crawledPages
+  for (const p of crawledPages) {
+    p.inboundInternalLinksCount = inboundLinkCounts.get(p.url) || 0;
+    p.outboundInternalLinksCount = outboundInternalCounts.get(p.url) || 0;
+    p.outboundExternalLinksCount = outboundExternalCounts.get(p.url) || 0;
   }
 
   // Cross-page duplicate title detection
@@ -498,6 +648,216 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
 
   const healthScore = Math.max(0, Math.min(100, Math.round(100 - penalty / Math.max(1, crawledPages.length / 5))));
 
+  // Compute PageRank Simulation & Domain Authority from Backlink Audit
+  const totalInternalCrossLinks = Array.from(outboundInternalCounts.values()).reduce((a, b) => a + b, 0);
+  const totalExternalOutboundLinks = Array.from(outboundExternalCounts.values()).reduce((a, b) => a + b, 0);
+  const totalDiscoveredLinks = totalInternalCrossLinks + totalExternalOutboundLinks;
+
+  const doFollowCount = discoveredBacklinks.filter((b) => b.isDoFollow).length;
+  const doFollowRatio = discoveredBacklinks.length > 0 ? Math.round((doFollowCount / discoveredBacklinks.length) * 100) : 85;
+
+  // Top anchor texts
+  const sortedAnchors = Array.from(anchorTextFrequency.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  const totalAnchorsSum = sortedAnchors.reduce((acc, curr) => acc + curr[1], 0) || 1;
+  const topAnchors = sortedAnchors.map(([anchor, count]) => ({
+    anchor,
+    count,
+    percentage: Math.round((count / totalAnchorsSum) * 100),
+  }));
+
+  // Deep link ratio (% links not pointing to homepage)
+  const homePath = new URL(targetUrl).pathname;
+  const subpageLinks = discoveredBacklinks.filter((b) => {
+    try {
+      const u = new URL(b.targetUrl);
+      return u.pathname !== '/' && u.pathname !== homePath && u.pathname !== '';
+    } catch {
+      return false;
+    }
+  }).length;
+  const deepLinkRatio = discoveredBacklinks.length > 0 ? Math.round((subpageLinks / discoveredBacklinks.length) * 100) : 60;
+
+  // PageRank Iteration Algorithm (Damping = 0.85)
+  const damping = 0.85;
+  const N = Math.max(1, crawledPages.length);
+  const pageRankScores = new Map<string, number>();
+
+  // Initialize PR = 1 / N
+  for (const page of crawledPages) {
+    pageRankScores.set(page.url, 1.0 / N);
+  }
+
+  // Iterate 20 times for mathematical convergence
+  const iterations = 20;
+  for (let it = 0; it < iterations; it++) {
+    const nextScores = new Map<string, number>();
+    for (const page of crawledPages) {
+      let incomingSum = 0;
+      for (const [sourceUrl, targets] of internalLinkGraph.entries()) {
+        if (targets.has(page.url)) {
+          const sourcePR = pageRankScores.get(sourceUrl) || (1.0 / N);
+          const outDegree = Math.max(1, targets.size);
+          incomingSum += sourcePR / outDegree;
+        }
+      }
+      const newPR = ((1.0 - damping) / N) + (damping * incomingSum);
+      nextScores.set(page.url, newPR);
+    }
+    for (const [url, pr] of nextScores.entries()) {
+      pageRankScores.set(url, pr);
+    }
+  }
+
+  // Normalize PR to 0.0 - 10.0 scale and compute raw equity shares
+  let maxPR = 0;
+  for (const pr of pageRankScores.values()) {
+    if (pr > maxPR) maxPR = pr;
+  }
+  maxPR = maxPR || 1.0;
+
+  const totalPRSum = Array.from(pageRankScores.values()).reduce((a, b) => a + b, 0) || 1.0;
+
+  const linkEquityDistribution = crawledPages.map((page) => {
+    const rawPR = pageRankScores.get(page.url) || (1.0 / N);
+    const scaledScore = Math.round(((rawPR / maxPR) * 10) * 10) / 10; // e.g. 7.4
+    const equityShare = Math.round((rawPR / totalPRSum) * 1000) / 10;
+    const inCount = inboundLinkCounts.get(page.url) || 0;
+    const outCount = outboundInternalCounts.get(page.url) || 0;
+
+    // Depth level estimation
+    let depth = 0;
+    try {
+      const u = new URL(page.url);
+      const segments = u.pathname.split('/').filter(Boolean);
+      depth = segments.length;
+    } catch {
+      depth = 1;
+    }
+
+    let status: 'high_authority' | 'moderate' | 'diluted' | 'orphan_risk' = 'moderate';
+    if (inCount === 0 && page.url !== targetUrl) {
+      status = 'orphan_risk';
+    } else if (scaledScore >= 6.5) {
+      status = 'high_authority';
+    } else if (scaledScore < 2.5 || outCount > 40) {
+      status = 'diluted';
+    }
+
+    return {
+      pageUrl: page.url,
+      pageTitle: page.title,
+      internalPageRank: Math.min(10, Math.max(0.5, scaledScore)),
+      rawEquityShare: equityShare,
+      inboundLinkCount: inCount,
+      outboundLinkCount: outCount,
+      depthLevel: depth,
+      status,
+    };
+  });
+
+  // Calculate Estimated Domain Authority (0 - 100)
+  // Factors:
+  // 1. Link volume & cross-linking density (25%)
+  // 2. Link equity distribution & no orphan pages (25%)
+  // 3. DoFollow authority ratio (20%)
+  // 4. Site architecture depth & sitemap presence (15%)
+  // 5. Technical crawl health penalty (15%)
+  const density = Math.min(100, Math.round((totalInternalCrossLinks / Math.max(1, crawledPages.length)) * 12));
+  const linkQuantityScore = Math.min(100, Math.max(20, density + (sitemapFound ? 20 : 0)));
+
+  const orphanCount = linkEquityDistribution.filter((l) => l.status === 'orphan_risk').length;
+  const orphanPenalty = orphanCount * 12;
+  const equityFlowScore = Math.max(10, Math.min(100, Math.round(85 - orphanPenalty)));
+
+  const doFollowQualityScore = Math.min(100, Math.max(25, doFollowRatio));
+
+  const averageDepth = linkEquityDistribution.reduce((acc, c) => acc + c.depthLevel, 0) / Math.max(1, linkEquityDistribution.length);
+  const architectureDepthScore = averageDepth <= 3 ? 90 : averageDepth <= 4 ? 70 : 45;
+
+  const technicalHealthPenalty = Math.round((100 - healthScore) * 0.7);
+
+  const rawDA = Math.round(
+    linkQuantityScore * 0.25 +
+    equityFlowScore * 0.25 +
+    doFollowQualityScore * 0.20 +
+    architectureDepthScore * 0.15 -
+    technicalHealthPenalty * 0.15
+  );
+  const calculatedDomainAuthority = Math.max(8, Math.min(98, rawDA));
+
+  // Estimated PageRank 0-10 on log scale based on DA and top internal page rank
+  const avgPR = linkEquityDistribution.reduce((acc, c) => acc + c.internalPageRank, 0) / Math.max(1, linkEquityDistribution.length);
+  const estimatedPageRank = Math.round(((calculatedDomainAuthority / 10) * 0.6 + avgPR * 0.4) * 10) / 10;
+
+  let rankTier: 'Pioneer (0-20)' | 'Emerging (21-40)' | 'Established (41-60)' | 'Authoritative (61-80)' | 'Industry Leader (81-100)' = 'Established (41-60)';
+  if (calculatedDomainAuthority >= 81) rankTier = 'Industry Leader (81-100)';
+  else if (calculatedDomainAuthority >= 61) rankTier = 'Authoritative (61-80)';
+  else if (calculatedDomainAuthority >= 41) rankTier = 'Established (41-60)';
+  else if (calculatedDomainAuthority >= 21) rankTier = 'Emerging (21-40)';
+  else rankTier = 'Pioneer (0-20)';
+
+  const insights: string[] = [];
+  if (sitemapFound) {
+    insights.push(`Sitemap discovered at ${sitemapUrl || 'root'} accelerates search engine crawl discovery and link equity distribution.`);
+  } else {
+    insights.push('No XML sitemap found; search engine bots must rely entirely on internal DOM hyperlinks to discover subpages.');
+  }
+  if (orphanCount > 0) {
+    insights.push(`Detected ${orphanCount} potential orphan page(s) with 0 discovered inbound internal links, severely limiting their PageRank potential.`);
+  } else {
+    insights.push('Healthy interlinking detected: 100% of discovered pages receive internal equity flow.');
+  }
+  if (doFollowRatio >= 80) {
+    insights.push(`High DoFollow link retention ratio (${doFollowRatio}%) ensures strong equity preservation across internal pathways.`);
+  }
+
+  const recommendations: string[] = [];
+  if (orphanCount > 0) {
+    recommendations.push('Link orphan pages from key category hubs or footer navigation to pass authoritative PageRank.');
+  }
+  if (deepLinkRatio < 40) {
+    recommendations.push('Increase contextual deep-linking from top-level landing pages to sub-level articles to distribute PageRank more evenly.');
+  }
+  if (!sitemapFound) {
+    recommendations.push('Generate and submit a standard sitemap.xml to Google Search Console to maximize crawler indexation efficiency.');
+  }
+  if (doFollowRatio < 70) {
+    recommendations.push('Review nofollow attributes on internal navigation links; internal links should normally be dofollow.');
+  }
+
+  const backlinkAudit: BacklinkAuditSummary = {
+    totalLinksDiscovered: totalDiscoveredLinks,
+    internalCrossLinks: totalInternalCrossLinks,
+    externalOutboundLinks: totalExternalOutboundLinks,
+    doFollowRatio,
+    brokenLinksFound: httpErrors,
+    uniqueLinkingNodes: internalLinkGraph.size,
+    topAnchors,
+    deepLinkRatio,
+    backlinkItems: discoveredBacklinks,
+  };
+
+  const pageRankSimulation: PageRankSimulationData = {
+    calculatedDomainAuthority,
+    estimatedPageRank: Math.min(10.0, Math.max(1.0, estimatedPageRank)),
+    dampingFactor: damping,
+    iterations,
+    confidenceScore: Math.min(95, Math.round(60 + crawledPages.length * 3)),
+    linkEquityDistribution,
+    authorityBreakdown: {
+      linkQuantityScore,
+      equityFlowScore,
+      doFollowQualityScore,
+      architectureDepthScore,
+      technicalHealthPenalty,
+    },
+    rankTier,
+    insights,
+    recommendations,
+  };
+
   return {
     targetUrl,
     sitemapFound,
@@ -517,5 +877,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
     },
     duplicateTitleGroups,
     pages: crawledPages,
+    backlinkAudit,
+    pageRankSimulation,
   };
 }

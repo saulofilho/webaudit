@@ -74,6 +74,7 @@ import { MobileSimulatorView } from './components/MobileSimulatorView';
 import { SeoHeatmapView } from './components/SeoHeatmapView';
 import { BrokenLinksView } from './components/BrokenLinksView';
 import { SitemapCrawlerView } from './components/SitemapCrawlerView';
+import { PageRankSimulator } from './components/PageRankSimulator';
 import { SerpSimulatorView } from './components/SerpSimulatorView';
 import { ContentSemanticsView } from './components/ContentSemanticsView';
 import { EcoAndScriptsView } from './components/EcoAndScriptsView';
@@ -1134,7 +1135,11 @@ export default function App() {
             )}
 
             {activeTab === 'social' && (
-              <SocialPreview meta={currentReport.rawData.metaTags} url={currentReport.targetUrl} />
+              <SocialPreview
+                meta={currentReport.rawData.metaTags}
+                url={currentReport.targetUrl}
+                socialFootprint={currentReport.rawData.socialFootprint}
+              />
             )}
 
             {activeTab === 'headers' && (
@@ -1279,6 +1284,13 @@ export default function App() {
             {/* Main Items View (All or filtered categories) */}
             {(activeTab === 'all' || activeTab === 'security' || activeTab === 'seo' || activeTab === 'best_practices' || activeTab === 'performance_accessibility') && (
               <div className="space-y-4">
+                {/* Mock SEO Page Rank Simulator inside SEO Tab */}
+                {activeTab === 'seo' && currentReport && (
+                  <div className="mb-4">
+                    <PageRankSimulator auditReport={currentReport} targetUrl={currentReport.targetUrl} />
+                  </div>
+                )}
+
                 {/* Horizontal Severity Distribution Bar Chart */}
                 <SeverityDistributionBar
                   criticalCount={scopeCriticalCount}

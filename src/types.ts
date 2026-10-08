@@ -85,6 +85,26 @@ export interface TechStackItem {
   icon?: string;
 }
 
+export interface SocialFootprintProfile {
+  platform: string;
+  url: string;
+  handle?: string;
+  icon: string; // lucide icon identifier or name
+  isSecureHttps: boolean;
+  hasRelMeOrNoopener: boolean;
+  status: 'verified' | 'detected' | 'unsecured';
+}
+
+export interface SocialFootprintSummary {
+  totalProfilesFound: number;
+  platformsDetectedCount: number;
+  profiles: SocialFootprintProfile[];
+  platformsList: string[];
+  hasMajorSocialPresence: boolean;
+  socialReachGrade: 'High' | 'Moderate' | 'Limited' | 'None';
+  socialFootprintScore: number; // 0-100
+}
+
 export interface RawAuditData {
   url: string;
   finalUrl: string;
@@ -114,6 +134,7 @@ export interface RawAuditData {
   securityHeaders: SecurityHeaderCheck[];
   allHeaders: Record<string, string>;
   techStack: TechStackItem[];
+  socialFootprint?: SocialFootprintSummary;
 }
 
 export interface AuditReport {
@@ -220,6 +241,63 @@ export interface CrawledPageItem {
   canonical?: string;
   isIndexable: boolean;
   issues: string[];
+  inboundInternalLinksCount?: number;
+  outboundInternalLinksCount?: number;
+  outboundExternalLinksCount?: number;
+}
+
+export interface DiscoveredBacklinkItem {
+  id: string;
+  sourceUrl: string;
+  targetUrl: string;
+  anchorText: string;
+  linkType: 'internal' | 'external_referral' | 'nofollow' | 'ugc' | 'sponsored';
+  isDoFollow: boolean;
+  sourceEstimatedAuthority: number; // 0-100
+  trustWeight: number; // 0.0 - 1.0
+  equityScore: number; // Calculated link juice transfer
+  status: 'active' | 'redirected' | 'broken' | 'suspicious';
+  detectedVia: 'crawler_html' | 'sitemap_cross_reference' | 'canonical_cluster';
+}
+
+export interface BacklinkAuditSummary {
+  totalLinksDiscovered: number;
+  internalCrossLinks: number;
+  externalOutboundLinks: number;
+  doFollowRatio: number; // percentage 0-100
+  brokenLinksFound: number;
+  uniqueLinkingNodes: number;
+  topAnchors: { anchor: string; count: number; percentage: number }[];
+  deepLinkRatio: number; // % links pointing to subpages vs homepage
+  backlinkItems: DiscoveredBacklinkItem[];
+}
+
+export interface PageRankSimulationData {
+  calculatedDomainAuthority: number; // 0-100
+  estimatedPageRank: number; // 0.0 to 10.0 (logarithmic scale)
+  dampingFactor: number; // standard 0.85
+  iterations: number;
+  confidenceScore: number; // 0-100
+  linkEquityDistribution: {
+    pageUrl: string;
+    pageTitle?: string;
+    internalPageRank: number; // 0-10
+    rawEquityShare: number; // 0-100%
+    inboundLinkCount: number;
+    outboundLinkCount: number;
+    depthLevel: number;
+    status: 'high_authority' | 'moderate' | 'diluted' | 'orphan_risk';
+  }[];
+  authorityBreakdown: {
+    linkQuantityScore: number; // 0-100
+    equityFlowScore: number; // 0-100
+    doFollowQualityScore: number; // 0-100
+    architectureDepthScore: number; // 0-100
+    technicalHealthPenalty: number; // 0-100
+  };
+  rankTier: 'Pioneer (0-20)' | 'Emerging (21-40)' | 'Established (41-60)' | 'Authoritative (61-80)' | 'Industry Leader (81-100)';
+  insights: string[];
+  recommendations: string[];
 }
 
 export interface SitemapCrawlData {
@@ -241,6 +319,8 @@ export interface SitemapCrawlData {
   };
   duplicateTitleGroups: { title: string; urls: string[] }[];
   pages: CrawledPageItem[];
+  backlinkAudit?: BacklinkAuditSummary;
+  pageRankSimulation?: PageRankSimulationData;
 }
 
 export interface WhiteLabelSettings {

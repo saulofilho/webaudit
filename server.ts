@@ -19,7 +19,7 @@ async function startServer() {
     portArgIndex !== -1 && process.argv[portArgIndex + 1]
       ? parseInt(process.argv[portArgIndex + 1], 10)
       : null;
-  const PORT = Number(process.env.PORT) || portFromArg || 3000;
+  const PORT = portFromArg || (process.env.NODE_ENV === 'production' && process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
 
   // Middleware for API routes
   app.use('/api', express.json({ limit: '10mb' }));

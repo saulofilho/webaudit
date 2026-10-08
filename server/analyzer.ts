@@ -1,6 +1,109 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { AuditItem, AuditReport, CategoryScore, MetaTagsData, RawAuditData, SecurityHeaderCheck } from '../src/types';
+import {
+  AuditItem,
+  AuditReport,
+  CategoryScore,
+  MetaTagsData,
+  RawAuditData,
+  SecurityHeaderCheck,
+  SocialFootprintProfile,
+  SocialFootprintSummary,
+} from '../src/types';
 import { detectTechnologies } from './techDetector';
+
+export function extractSocialFootprint(html: string): SocialFootprintSummary {
+  const patterns: { platform: string; regex: RegExp; icon: string }[] = [
+    { platform: 'Twitter / X', regex: /https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/([a-zA-Z0-9_]{1,30})/gi, icon: 'Twitter' },
+    { platform: 'LinkedIn', regex: /https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in|school)\/([a-zA-Z0-9_\-%]+)/gi, icon: 'Linkedin' },
+    { platform: 'GitHub', regex: /https?:\/\/(?:www\.)?github\.com\/([a-zA-Z0-9_\-]+)(?:\/[a-zA-Z0-9_\-]+)?/gi, icon: 'Github' },
+    { platform: 'Facebook', regex: /https?:\/\/(?:www\.)?facebook\.com\/([a-zA-Z0-9.\-_]+)/gi, icon: 'Facebook' },
+    { platform: 'Instagram', regex: /https?:\/\/(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/gi, icon: 'Instagram' },
+    { platform: 'YouTube', regex: /https?:\/\/(?:www\.)?youtube\.com\/(?:@|channel\/|user\/|c\/)?([a-zA-Z0-9_\-]+)/gi, icon: 'Youtube' },
+    { platform: 'TikTok', regex: /https?:\/\/(?:www\.)?tiktok\.com\/@([a-zA-Z0-9_.]+)/gi, icon: 'Video' },
+    { platform: 'Discord', regex: /https?:\/\/(?:www\.)?(?:discord\.gg|discord\.com\/invite)\/([a-zA-Z0-9_\-]+)/gi, icon: 'MessageSquare' },
+    { platform: 'Reddit', regex: /https?:\/\/(?:www\.)?reddit\.com\/(?:r|user)\/([a-zA-Z0-9_]+)/gi, icon: 'Globe' },
+    { platform: 'Telegram', regex: /https?:\/\/(?:t\.me|telegram\.me)\/([a-zA-Z0-9_]+)/gi, icon: 'Send' },
+    { platform: 'Threads', regex: /https?:\/\/(?:www\.)?threads\.net\/@([a-zA-Z0-9_.]+)/gi, icon: 'AtSign' },
+    { platform: 'Pinterest', regex: /https?:\/\/(?:www\.)?pinterest\.com\/([a-zA-Z0-9_]+)/gi, icon: 'Pin' },
+    { platform: 'Medium', regex: /https?:\/\/(?:[a-zA-Z0-9_\-]+\.)?medium\.com\/(?:@([a-zA-Z0-9_]+))?/gi, icon: 'FileText' },
+    { platform: 'Substack', regex: /https?:\/\/([a-zA-Z0-9_\-]+)\.substack\.com/gi, icon: 'Mail' },
+    { platform: 'Mastodon / Fediverse', regex: /https?:\/\/(?:mastodon\.social|fosstodon\.org|mstdn\.social)\/@([a-zA-Z0-9_]+)/gi, icon: 'Share2' },
+  ];
+
+  const profilesMap = new Map<string, SocialFootprintProfile>();
+  const linkRegex = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+  let linkMatch;
+
+  while ((linkMatch = linkRegex.exec(html)) !== null) {
+    const attrs = linkMatch[1] || '';
+    const hrefMatch = attrs.match(/\bhref\s*=\s*["']([^"']*)["']/i);
+    if (!hrefMatch || !hrefMatch[1]) continue;
+
+    const href = hrefMatch[1].trim();
+    if (!href.startsWith('http://') && !href.startsWith('https://')) continue;
+
+    const isSecure = href.startsWith('https://');
+    const hasRelMe = /\brel\s*=\s*["'][^"']*\bme\b[^"']*["']/i.test(attrs);
+    const hasNoopener = /\brel\s*=\s*["'][^"']*\bnoopener\b[^"']*["']/i.test(attrs);
+
+    for (const pat of patterns) {
+      pat.regex.lastIndex = 0;
+      const m = pat.regex.exec(href);
+      if (m) {
+        // Exclude generic root share links or non-profile destinations (e.g. facebook.com/sharer, twitter.com/intent, github.com/features)
+        const ignoredPaths = ['sharer', 'intent', 'share', 'login', 'signup', 'privacy', 'terms', 'policies', 'about', 'features', 'pricing'];
+        const handle = m[1] ? m[1].replace(/\/$/, '') : undefined;
+        if (handle && ignoredPaths.includes(handle.toLowerCase())) {
+          continue;
+        }
+
+        const normalizedKey = `${pat.platform}:${href.toLowerCase().replace(/\/$/, '')}`;
+        if (!profilesMap.has(normalizedKey)) {
+          profilesMap.set(normalizedKey, {
+            platform: pat.platform,
+            url: href,
+            handle: handle ? `@${handle.replace(/^@/, '')}` : undefined,
+            icon: pat.icon,
+            isSecureHttps: isSecure,
+            hasRelMeOrNoopener: hasRelMe || hasNoopener,
+            status: !isSecure ? 'unsecured' : (hasRelMe || hasNoopener ? 'verified' : 'detected'),
+          });
+        }
+      }
+    }
+  }
+
+  const profiles = Array.from(profilesMap.values());
+  const platformsList = Array.from(new Set(profiles.map((p) => p.platform)));
+  const totalProfiles = profiles.length;
+  const platformsCount = platformsList.length;
+
+  let socialReachGrade: 'High' | 'Moderate' | 'Limited' | 'None' = 'None';
+  let score = 0;
+  if (platformsCount >= 4) {
+    socialReachGrade = 'High';
+    score = 100;
+  } else if (platformsCount >= 2) {
+    socialReachGrade = 'Moderate';
+    score = 80;
+  } else if (platformsCount === 1) {
+    socialReachGrade = 'Limited';
+    score = 55;
+  } else {
+    socialReachGrade = 'None';
+    score = 25;
+  }
+
+  return {
+    totalProfilesFound: totalProfiles,
+    platformsDetectedCount: platformsCount,
+    profiles,
+    platformsList,
+    hasMajorSocialPresence: platformsCount >= 2,
+    socialReachGrade,
+    socialFootprintScore: score,
+  };
+}
 
 function getAiClient(): GoogleGenAI | null {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -323,6 +426,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
   const metaTags = parseMeta(html);
   const securityHeaders = checkSecurityHeaders(allHeaders, isHttps);
   const techStack = detectTechnologies(allHeaders, html);
+  const socialFootprint = extractSocialFootprint(html);
 
   const rawData: RawAuditData = {
     url: targetUrl,
@@ -352,6 +456,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
     securityHeaders,
     allHeaders,
     techStack,
+    socialFootprint,
   };
 
   // Build audit items
@@ -679,6 +784,43 @@ app.disable('x-powered-by');`,
 }
 </script>`,
       },
+    });
+  }
+
+  // Social Profile Footprint & Authority Signals
+  if (socialFootprint.totalProfilesFound >= 2) {
+    items.push({
+      id: 'seo-social-footprint',
+      category: 'seo',
+      title: `Active Social Footprint (${socialFootprint.platformsDetectedCount} Channels Verified)`,
+      severity: 'good',
+      score: 100,
+      summary: `Found ${socialFootprint.totalProfilesFound} linked social media profiles across ${socialFootprint.platformsList.join(', ')}.`,
+      impact: 'Establishes verified brand entity footprint and Google Knowledge Graph association signals.',
+      currentValue: `${socialFootprint.totalProfilesFound} profiles (${socialFootprint.platformsList.join(', ')})`,
+    });
+  } else if (socialFootprint.totalProfilesFound === 1) {
+    items.push({
+      id: 'seo-social-footprint',
+      category: 'seo',
+      title: `Limited Social Footprint (Only ${socialFootprint.platformsList[0]} Linked)`,
+      severity: 'warning',
+      score: 65,
+      summary: `Only 1 social channel (${socialFootprint.platformsList[0]}) detected on the homepage.`,
+      impact: 'Multi-platform social presence builds brand trust and cross-network Google entity verification.',
+      currentValue: `1 profile (${socialFootprint.platformsList[0]})`,
+      recommendedValue: 'Link at least 2-3 primary channels (LinkedIn, X/Twitter, YouTube, GitHub)',
+    });
+  } else {
+    items.push({
+      id: 'seo-social-footprint',
+      category: 'seo',
+      title: 'No Social Media Profiles Found On Page',
+      severity: 'info',
+      score: 50,
+      summary: 'No outbound links to recognized social media profiles (Twitter/X, LinkedIn, GitHub, YouTube, etc.) were found on the page.',
+      impact: 'Search engines use authoritative social links to establish brand entity validation and topical authority.',
+      recommendedValue: 'Add verified social profile links in the footer or header navigation with rel="noopener me".',
     });
   }
 
