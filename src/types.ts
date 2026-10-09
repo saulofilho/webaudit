@@ -524,4 +524,109 @@ export interface ContentGapAnalysisData {
   };
 }
 
+// ==========================================
+// Local SEO, NAP Consistency & GBP Types
+// ==========================================
+
+export interface NapEntity {
+  name: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+    raw: string;
+  };
+  phone: {
+    raw: string;
+    formatted: string;
+    telHref?: string;
+  };
+  source: 'schema_markup' | 'footer' | 'header' | 'contact_page' | 'meta_data' | 'directory';
+  confidence: number; // 0 to 100
+}
+
+export interface CitationProfile {
+  id: string;
+  platform: 'Google Business Profile' | 'Apple Maps' | 'Bing Places' | 'Yelp' | 'Facebook Places' | 'YellowPages';
+  platformIcon?: string;
+  directoryUrl?: string;
+  claimUrl?: string;
+  status: 'verified' | 'unclaimed' | 'mismatch' | 'missing';
+  name: string;
+  address: string;
+  phone: string;
+  hasMismatch: boolean;
+  mismatchFields: ('name' | 'address' | 'phone')[];
+  notes?: string;
+}
+
+export interface GoogleBusinessProfileAudit {
+  status: 'optimized' | 'needs_attention' | 'unclaimed' | 'not_found';
+  profileFound: boolean;
+  businessName: string;
+  placeId?: string;
+  mapsUrl?: string;
+  primaryCategory: string;
+  additionalCategories: string[];
+  isClaimedAndVerified: boolean;
+  rating: number; // e.g. 4.8
+  reviewsCount: number;
+  reviewResponseRatePercent: number;
+  hasOpeningHours: boolean;
+  openingHoursFormatted?: string;
+  hasWebsiteBacklink: boolean;
+  hasGeoCoordinates: boolean;
+  latitude?: number;
+  longitude?: number;
+  hasLocalPhone: boolean;
+  hasServiceAreaConfigured: boolean;
+  hasRecentPosts: boolean;
+  descriptionStatus: 'optimized' | 'too_short' | 'missing';
+  descriptionLength: number;
+  optimizationScore: number; // 0-100
+  recommendations: Array<{
+    id: string;
+    title: string;
+    impact: 'critical' | 'high' | 'medium' | 'low';
+    description: string;
+    actionLabel: string;
+  }>;
+}
+
+export interface LocalSeoAuditData {
+  targetUrl: string;
+  analyzedAt: string;
+  overallLocalScore: number; // 0-100
+  napConsistencyScore: number; // 0-100
+  gbpOptimizationScore: number; // 0-100
+  localPackReadinessGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+  detectedNap: {
+    schema?: NapEntity;
+    onPage?: NapEntity;
+    footer?: NapEntity;
+    isConsistent: boolean;
+    consistencyIssues: string[];
+    canonicalNap: NapEntity;
+  };
+  citations: CitationProfile[];
+  googleBusinessProfile: GoogleBusinessProfileAudit;
+  localRankingSignals: {
+    hasLocalSchema: boolean;
+    schemaType?: string;
+    hasGoogleMapsEmbed: boolean;
+    hasClickToCallPhone: boolean;
+    hasCityInTitleOrH1: boolean;
+    hasGeoMetaTags: boolean;
+    hasKmlOrGeoSitemap: boolean;
+    hasOpeningHoursOnPage: boolean;
+  };
+  localKeywordsDetected: Array<{
+    keyword: string;
+    type: 'geo_city' | 'service_niche' | 'intent';
+    occurrences: number;
+  }>;
+}
+
 

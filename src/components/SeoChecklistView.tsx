@@ -109,16 +109,34 @@ export const SeoChecklistView: React.FC<SeoChecklistViewProps> = ({
   const [robotsTestBot, setRobotsTestBot] = useState<string>('Googlebot');
   const [robotsTestResult, setRobotsTestResult] = useState<{ allowed: boolean; reason: string } | null>(null);
 
-  // Load saved checklist overrides
+  // Load saved checklist overrides & listen for external updates (e.g., from SeoProgressDashboard)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(`seo_audit_checklist_${hostname}`);
-      if (stored) {
-        setManualChecks(JSON.parse(stored));
+    const readStorage = () => {
+      try {
+        const stored = localStorage.getItem(`seo_audit_checklist_${hostname}`);
+        if (stored) {
+          setManualChecks(JSON.parse(stored));
+        } else {
+          setManualChecks({});
+        }
+      } catch (e) {
+        console.warn('Could not read saved SEO checklist state', e);
       }
-    } catch (e) {
-      console.warn('Could not read saved SEO checklist state', e);
-    }
+    };
+
+    readStorage();
+
+    const handleSync = () => {
+      readStorage();
+    };
+
+    window.addEventListener('seo-checklist-sync', handleSync);
+    window.addEventListener('storage', handleSync);
+
+    return () => {
+      window.removeEventListener('seo-checklist-sync', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, [hostname]);
 
   const toggleManualCheck = (taskId: string) => {
@@ -126,6 +144,9 @@ export const SeoChecklistView: React.FC<SeoChecklistViewProps> = ({
       const updated = { ...prev, [taskId]: !prev[taskId] };
       try {
         localStorage.setItem(`seo_audit_checklist_${hostname}`, JSON.stringify(updated));
+        window.dispatchEvent(
+          new CustomEvent('seo-checklist-sync', { detail: { hostname, state: updated } })
+        );
       } catch (e) {
         console.warn('Could not save SEO checklist state', e);
       }
@@ -159,6 +180,9 @@ export const SeoChecklistView: React.FC<SeoChecklistViewProps> = ({
     setManualChecks(allIds);
     try {
       localStorage.setItem(`seo_audit_checklist_${hostname}`, JSON.stringify(allIds));
+      window.dispatchEvent(
+        new CustomEvent('seo-checklist-sync', { detail: { hostname, state: allIds } })
+      );
     } catch (e) {
       console.warn('Failed to save all completed', e);
     }
@@ -168,6 +192,9 @@ export const SeoChecklistView: React.FC<SeoChecklistViewProps> = ({
     setManualChecks({});
     try {
       localStorage.removeItem(`seo_audit_checklist_${hostname}`);
+      window.dispatchEvent(
+        new CustomEvent('seo-checklist-sync', { detail: { hostname, state: {} } })
+      );
     } catch (e) {
       console.warn('Failed to reset checklist', e);
     }

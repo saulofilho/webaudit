@@ -79,8 +79,10 @@ import { BrokenLinksView } from './components/BrokenLinksView';
 import { SitemapCrawlerView } from './components/SitemapCrawlerView';
 import { PageRankSimulator } from './components/PageRankSimulator';
 import { KeywordCannibalizationView } from './components/KeywordCannibalizationView';
+import { SeoProgressDashboard } from './components/SeoProgressDashboard';
 import { SeoChecklistView } from './components/SeoChecklistView';
 import { ContentGapAnalysisView } from './components/ContentGapAnalysisView';
+import { LocalSeoCheckView } from './components/LocalSeoCheckView';
 import { SerpSimulatorView } from './components/SerpSimulatorView';
 import { ContentSemanticsView } from './components/ContentSemanticsView';
 import { EcoAndScriptsView } from './components/EcoAndScriptsView';
@@ -1309,18 +1311,40 @@ export default function App() {
             {/* Main Items View (All or filtered categories) */}
             {(activeTab === 'all' || activeTab === 'security' || activeTab === 'seo' || activeTab === 'best_practices' || activeTab === 'performance_accessibility') && (
               <div className="space-y-4">
-                {/* Advanced SEO Tooling: Checklist, Content Gap Analysis, Page Rank Simulator, and Cannibalization */}
+                {/* Advanced SEO Tooling: Progress Dashboard, Checklist, Content Gap Analysis, Page Rank Simulator, and Cannibalization */}
                 {activeTab === 'seo' && currentReport && (
                   <div className="mb-4 space-y-4">
-                    {/* Step-by-Step SEO Checklist Audit Component (robots.txt, sitemap, meta tags, schema) */}
-                    <SeoChecklistView
+                    {/* Visual Timeline of SEO Improvements & Pillar Score Progression */}
+                    <SeoProgressDashboard
                       report={currentReport}
                       targetUrl={currentReport.targetUrl}
+                      onOpenChecklist={() => {
+                        const el = document.getElementById('seo-audit-checklist-section');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }}
                       onOpenAiFix={(item) => setSelectedAiFixItem(item)}
                     />
 
+                    {/* Step-by-Step SEO Checklist Audit Component (robots.txt, sitemap, meta tags, schema) */}
+                    <div id="seo-audit-checklist-section">
+                      <SeoChecklistView
+                        report={currentReport}
+                        targetUrl={currentReport.targetUrl}
+                        onOpenAiFix={(item) => setSelectedAiFixItem(item)}
+                      />
+                    </div>
+
                     {/* Content Gap Analysis: Target URL vs Top 3 Competitors in Search Results */}
                     <ContentGapAnalysisView report={currentReport} targetUrl={currentReport.targetUrl} />
+
+                    {/* Local SEO & NAP Consistency + Google Business Profile Optimization */}
+                    <div id="local-seo-audit-section">
+                      <LocalSeoCheckView
+                        report={currentReport}
+                        targetUrl={currentReport.targetUrl}
+                        onOpenAiFix={(item) => setSelectedAiFixItem(item)}
+                      />
+                    </div>
 
                     {/* PageRank Simulator */}
                     <PageRankSimulator auditReport={currentReport} targetUrl={currentReport.targetUrl} />

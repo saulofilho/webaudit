@@ -8,6 +8,7 @@ import { generateExecutiveSummary } from './server/geminiSummary';
 import { checkPageLinks, crawlSitemapAndPages } from './server/extendedAudits';
 import { auditKeywordCannibalization } from './server/cannibalizationAudit';
 import { auditContentGap } from './server/contentGapAudit';
+import { auditLocalSeo } from './server/localSeoAudit';
 import { handleJsMiner } from './server/secscan/jsMinerHandler';
 import { handleNiktoScan } from './server/secscan/niktoHandler';
 import { handleWafScan } from './server/secscan/wafHandler';
@@ -119,6 +120,22 @@ async function startServer() {
       console.error('Content gap analysis error:', err);
       return res.status(500).json({
         error: err.message || 'Failed to analyze content gap against top competitors.',
+      });
+    }
+  });
+
+  app.post('/api/local-seo-check', async (req, res) => {
+    try {
+      const { url, report } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'A valid URL is required to check local SEO.' });
+      }
+      const data = await auditLocalSeo(url, report);
+      return res.json(data);
+    } catch (err: any) {
+      console.error('Local SEO check error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to check local SEO, NAP consistency, and Google Business Profile.',
       });
     }
   });
