@@ -60,9 +60,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full border-b-2 border-[#141414] bg-[#E4E3E0] text-[#141414]">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-3 sm:px-6">
+      <div className="mx-auto flex min-h-14 max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-6 flex-wrap">
         {/* Brand */}
-        <div className="flex items-center gap-2.5 cursor-pointer select-none" onClick={onNewAudit}>
+        <div className="flex items-center gap-2.5 cursor-pointer select-none shrink-0" onClick={onNewAudit}>
           <div className="flex h-9 w-9 items-center justify-center bg-[#141414] text-[#E4E3E0] border border-[#141414] shadow-[2px_2px_0px_#141414]">
             <ShieldCheck className="h-5 w-5 text-white" />
           </div>
@@ -83,7 +83,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
           {/* Command Palette Trigger */}
           {onOpenCommandPalette && (
             <button

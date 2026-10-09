@@ -1491,7 +1491,14 @@ export default function App() {
               GITHUB PAGES GUIDE
             </button>
             <span>•</span>
-            <span className="uppercase text-[11px]">STANDALONE / CI/CD READY</span>
+            <a
+              href="https://buenavistalab.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline uppercase text-[11px] font-bold text-[#141414] hover:text-black transition-colors"
+            >
+              made by BUENA VISTA SEC
+            </a>
           </div>
         </div>
       </footer>
