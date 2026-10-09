@@ -79,6 +79,7 @@ import { BrokenLinksView } from './components/BrokenLinksView';
 import { SitemapCrawlerView } from './components/SitemapCrawlerView';
 import { PageRankSimulator } from './components/PageRankSimulator';
 import { KeywordCannibalizationView } from './components/KeywordCannibalizationView';
+import { SeoChecklistView } from './components/SeoChecklistView';
 import { ContentGapAnalysisView } from './components/ContentGapAnalysisView';
 import { SerpSimulatorView } from './components/SerpSimulatorView';
 import { ContentSemanticsView } from './components/ContentSemanticsView';
@@ -1308,9 +1309,16 @@ export default function App() {
             {/* Main Items View (All or filtered categories) */}
             {(activeTab === 'all' || activeTab === 'security' || activeTab === 'seo' || activeTab === 'best_practices' || activeTab === 'performance_accessibility') && (
               <div className="space-y-4">
-                {/* Advanced SEO Tooling: Content Gap Analysis, Page Rank Simulator, and Cannibalization */}
+                {/* Advanced SEO Tooling: Checklist, Content Gap Analysis, Page Rank Simulator, and Cannibalization */}
                 {activeTab === 'seo' && currentReport && (
                   <div className="mb-4 space-y-4">
+                    {/* Step-by-Step SEO Checklist Audit Component (robots.txt, sitemap, meta tags, schema) */}
+                    <SeoChecklistView
+                      report={currentReport}
+                      targetUrl={currentReport.targetUrl}
+                      onOpenAiFix={(item) => setSelectedAiFixItem(item)}
+                    />
+
                     {/* Content Gap Analysis: Target URL vs Top 3 Competitors in Search Results */}
                     <ContentGapAnalysisView report={currentReport} targetUrl={currentReport.targetUrl} />
 
