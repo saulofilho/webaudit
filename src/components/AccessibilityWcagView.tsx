@@ -16,6 +16,7 @@ import { AuditReport } from '../types';
 
 interface AccessibilityWcagViewProps {
   report: AuditReport;
+  onOpenImageAudit?: () => void;
 }
 
 // Relative luminance helper for WCAG contrast calculation
@@ -44,7 +45,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   return null;
 }
 
-export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ report }) => {
+export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ report, onOpenImageAudit }) => {
   const [fgColor, setFgColor] = useState<string>('#141414');
   const [bgColor, setBgColor] = useState<string>('#FFFFFF');
 
@@ -244,6 +245,16 @@ export const AccessibilityWcagView: React.FC<AccessibilityWcagViewProps> = ({ re
           <p className="text-[11px] text-[#141414]/70">
             {imagesTotal} images audited. {imagesMissingAlt > 0 ? `${imagesMissingAlt} image(s) lack an alt attribute, hindering screen reader navigation.` : 'All detected images provide corresponding alt attributes.'}
           </p>
+          {onOpenImageAudit && (
+            <button
+              type="button"
+              onClick={onOpenImageAudit}
+              className="mt-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase bg-amber-400 hover:bg-amber-500 text-[#141414] border-2 border-[#141414] cursor-pointer shadow-[1px_1px_0px_#141414] transition-all"
+            >
+              <Sparkles className="h-3 w-3 text-[#141414]" />
+              <span>Launch Bulk-Remediation Panel</span>
+            </button>
+          )}
         </div>
 
         {/* Heading Hierarchy */}

@@ -9,6 +9,7 @@ import { checkPageLinks, crawlSitemapAndPages } from './server/extendedAudits';
 import { auditKeywordCannibalization } from './server/cannibalizationAudit';
 import { auditContentGap } from './server/contentGapAudit';
 import { auditLocalSeo } from './server/localSeoAudit';
+import { auditImages } from './server/imageAudit';
 import { handleJsMiner } from './server/secscan/jsMinerHandler';
 import { handleNiktoScan } from './server/secscan/niktoHandler';
 import { handleWafScan } from './server/secscan/wafHandler';
@@ -22,10 +23,39 @@ async function startServer() {
     portArgIndex !== -1 && process.argv[portArgIndex + 1]
       ? parseInt(process.argv[portArgIndex + 1], 10)
       : null;
-  const PORT = portFromArg || (process.env.NODE_ENV === 'production' && process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
+  const PORT = portFromArg || (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000);
+
+  // Security Hardening: Disable Express fingerprinting
+  app.disable('x-powered-by');
+
+  // Global Security Headers Middleware
+  app.use((_req, res, next) => {
+    res.removeHeader('X-Powered-By');
+    res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https: blob:; font-src 'self' https: data:; frame-ancestors 'self' https:;"
+    );
+    next();
+  });
 
   // Middleware for API routes
   app.use('/api', express.json({ limit: '10mb' }));
+
+  // SEO & Discoverability routes: robots.txt and sitemap.xml
+  app.get('/robots.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.sendFile(path.join(process.cwd(), 'public', 'robots.txt'));
+  });
+  app.get('/sitemap.xml', (_req, res) => {
+    res.setHeader('Content-Type', 'application/xml');
+    res.sendFile(path.join(process.cwd(), 'public', 'sitemap.xml'));
+  });
 
   // Static favicon & public assets handler
   app.get('/favicon.svg', (_req, res) => {
@@ -136,6 +166,26 @@ async function startServer() {
       console.error('Local SEO check error:', err);
       return res.status(500).json({
         error: err.message || 'Failed to check local SEO, NAP consistency, and Google Business Profile.',
+      });
+    }
+  });
+
+  app.post('/api/audit-images', async (req, res) => {
+    try {
+      const { url, sampleHtml, crawlAdditionalPages } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: 'A valid URL is required to audit images.' });
+      }
+      const data = await auditImages(
+        url,
+        typeof sampleHtml === 'string' ? sampleHtml : undefined,
+        crawlAdditionalPages !== false
+      );
+      return res.json(data);
+    } catch (err: any) {
+      console.error('Image audit error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to scan images and analyze accessibility.',
       });
     }
   });

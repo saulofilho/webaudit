@@ -40,6 +40,7 @@ import {
   GitMerge,
   ArrowRight,
   Target,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -83,6 +84,7 @@ import { SeoProgressDashboard } from './components/SeoProgressDashboard';
 import { SeoChecklistView } from './components/SeoChecklistView';
 import { ContentGapAnalysisView } from './components/ContentGapAnalysisView';
 import { LocalSeoCheckView } from './components/LocalSeoCheckView';
+import { ImageAuditView } from './components/ImageAuditView';
 import { SerpSimulatorView } from './components/SerpSimulatorView';
 import { ContentSemanticsView } from './components/ContentSemanticsView';
 import { EcoAndScriptsView } from './components/EcoAndScriptsView';
@@ -874,6 +876,21 @@ export default function App() {
                   <span>WCAG ACCESSIBILITY</span>
                 </button>
 
+                {/* Image Accessibility & Alt Tag Audit */}
+                <button
+                  type="button"
+                  id="tab-image-audit"
+                  onClick={() => setActiveTab('image-audit')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'image-audit'
+                      ? 'bg-amber-400 text-[#141414] shadow-[2px_2px_0px_#141414]'
+                      : 'bg-white text-[#141414] hover:bg-amber-100'
+                  }`}
+                >
+                  <ImageIcon className="h-3.5 w-3.5 text-amber-600" />
+                  <span>{t.tabs.imageAudit}</span>
+                </button>
+
                 {/* Feature 5: Privacy & Compliance */}
                 <button
                   type="button"
@@ -1240,7 +1257,17 @@ export default function App() {
             )}
 
             {activeTab === 'accessibility' && (
-              <AccessibilityWcagView report={currentReport} />
+              <AccessibilityWcagView
+                report={currentReport}
+                onOpenImageAudit={() => setActiveTab('image-audit')}
+              />
+            )}
+
+            {activeTab === 'image-audit' && (
+              <ImageAuditView
+                report={currentReport}
+                targetUrl={currentReport.targetUrl}
+              />
             )}
 
             {activeTab === 'privacy' && (

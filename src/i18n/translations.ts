@@ -49,6 +49,7 @@ export interface TranslationDictionary {
     stride: string;
     soar: string;
     threatIntel: string;
+    imageAudit: string;
   };
   severity: {
     all: string;
@@ -113,6 +114,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       stride: 'STRIDE THREAT MODEL',
       soar: 'PLAYBOOKS SOAR',
       threatIntel: 'THREAT INTEL & KEV',
+      imageAudit: 'AUDITORIA DE IMAGENS & ALT',
     },
     severity: {
       all: 'TODOS',
@@ -175,6 +177,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       stride: 'STRIDE THREAT MODEL',
       soar: 'SOAR PLAYBOOKS',
       threatIntel: 'THREAT INTEL & KEV',
+      imageAudit: 'IMAGE ACCESSIBILITY AUDIT',
     },
     severity: {
       all: 'ALL',

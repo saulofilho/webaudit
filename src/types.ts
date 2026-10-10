@@ -199,7 +199,8 @@ export type NavigationTab =
   | 'llm-sec'
   | 'stride'
   | 'soar'
-  | 'threat-intel';
+  | 'threat-intel'
+  | 'image-audit';
 
 export interface LinkAuditItem {
   url: string;
@@ -627,6 +628,53 @@ export interface LocalSeoAuditData {
     type: 'geo_city' | 'service_niche' | 'intent';
     occurrences: number;
   }>;
+}
+
+// ==========================================
+// Image Accessibility & Bulk-Remediation Types
+// ==========================================
+
+export type ImageAltStatus = 'missing' | 'empty' | 'low_quality' | 'compliant';
+
+export interface ImageAuditItem {
+  id: string;
+  url: string;
+  pageUrl: string;
+  alt: string | null;
+  status: ImageAltStatus;
+  suggestedAlt: string;
+  remediatedAlt?: string;
+  isDecorative: boolean;
+  format: 'webp' | 'png' | 'jpeg' | 'jpg' | 'svg' | 'avif' | 'gif' | 'unknown';
+  contextRole: 'hero' | 'article' | 'linked_cta' | 'brand_logo' | 'icon' | 'avatar' | 'figure' | 'banner' | 'decorative';
+  parentTag?: 'a' | 'button' | 'figure' | 'header' | 'footer' | 'div' | 'p' | 'nav';
+  parentTextContext?: string;
+  filename: string;
+  dimensions?: {
+    width?: number;
+    height?: number;
+  };
+  fileSizeBytes?: number;
+  loadingAttr?: 'lazy' | 'eager' | 'auto';
+  issues: string[];
+  wcagCriteriaViolated: string[];
+  remediationSnippet?: string;
+  editedInSession?: boolean;
+}
+
+export interface ImageAuditSummary {
+  targetUrl: string;
+  totalImages: number;
+  missingAltCount: number;
+  emptyAltCount: number;
+  lowQualityCount: number;
+  compliantCount: number;
+  wcag111Score: number; // 0-100
+  wcagGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+  pagesAnalyzedCount: number;
+  formatDistribution: Record<string, number>;
+  images: ImageAuditItem[];
+  quickWins: string[];
 }
 
 
