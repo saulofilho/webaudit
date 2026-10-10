@@ -200,7 +200,10 @@ export type NavigationTab =
   | 'stride'
   | 'soar'
   | 'threat-intel'
-  | 'image-audit';
+  | 'image-audit'
+  | 'content-gap'
+  | 'local-seo'
+  | 'serp';
 
 export interface LinkAuditItem {
   url: string;

@@ -52,8 +52,15 @@ async function startServer() {
     res.setHeader('Content-Type', 'text/plain');
     res.sendFile(path.join(process.cwd(), 'public', 'robots.txt'));
   });
+  app.get('/robots.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('X-Robots-Tag', 'all');
+    res.sendFile(path.join(process.cwd(), 'public', 'robots.txt'));
+  });
+
   app.get('/sitemap.xml', (_req, res) => {
-    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('X-Robots-Tag', 'noindex, follow');
     res.sendFile(path.join(process.cwd(), 'public', 'sitemap.xml'));
   });
 

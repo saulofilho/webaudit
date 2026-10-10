@@ -1,4 +1,6 @@
 import { URL } from 'url';
+import fs from 'fs';
+import path from 'path';
 import { ImageAuditItem, ImageAuditSummary, ImageAltStatus } from '../src/types';
 
 function cleanFileName(src: string): string {
@@ -307,6 +309,23 @@ export async function auditImages(
   const discoveredInternalPages: string[] = [];
 
   // Fetch target URL if sampleHtml not provided
+  const isSelfAudit =
+    finalTargetUrl.includes('webauditpro') ||
+    finalTargetUrl.includes('localhost') ||
+    finalTargetUrl.includes('127.0.0.1') ||
+    finalTargetUrl.includes('.run.app');
+
+  if (isSelfAudit && !primaryHtml) {
+    try {
+      const idx = path.join(process.cwd(), 'index.html');
+      if (fs.existsSync(idx)) {
+        primaryHtml = fs.readFileSync(idx, 'utf-8');
+      }
+    } catch {
+      // fallback
+    }
+  }
+
   if (!primaryHtml) {
     try {
       const controller = new AbortController();

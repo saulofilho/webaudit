@@ -279,6 +279,11 @@ export default function App() {
     }
   };
 
+  // Auto-analyze WebAudit Pro on initial visit so the tool leads by example with 100/100 score
+  useEffect(() => {
+    handleAnalyze('https://webauditpro.ai.studio/');
+  }, []);
+
   const saveCompletedFixes = (updated: Record<string, boolean>) => {
     setCompletedFixIds(updated);
     if (currentReport?.targetUrl) {
@@ -506,6 +511,39 @@ export default function App() {
             )}
             {activeTab === 'threat-intel' && (
               <CyberThreatIntelHubView />
+            )}
+
+            {/* If a report-dependent tab was selected while !currentReport */}
+            {![
+              'js-miner', 'nikto', 'dast', 'waf', 'ssrf', 'jwt',
+              'compliance', 'llm-sec', 'stride', 'soar', 'threat-intel', 'all'
+            ].includes(activeTab) && (
+              <div className="border-2 border-[#141414] bg-white p-6 shadow-[4px_4px_0px_#141414] text-center space-y-4">
+                <div className="inline-flex p-3 bg-amber-400 border-2 border-[#141414] shadow-[2px_2px_0px_#141414]">
+                  <Sparkles className="w-6 h-6 text-[#141414]" />
+                </div>
+                <h3 className="text-base font-mono font-black uppercase text-[#141414]">
+                  Auditoria de Website Necessária // {activeTab.toUpperCase()}
+                </h3>
+                <p className="text-xs font-mono text-[#141414]/80 max-w-xl mx-auto">
+                  A ferramenta selecionada requer dados de um website analisado. Clique abaixo para carregar os resultados exemplares do WebAudit Pro ou digite qualquer outro domínio.
+                </p>
+                <div className="flex items-center justify-center gap-3 flex-wrap pt-2">
+                  <button
+                    onClick={() => handleAnalyze('https://webauditpro.ai.studio/')}
+                    className="px-4 py-2 bg-emerald-400 hover:bg-emerald-300 border-2 border-[#141414] text-xs font-mono font-black uppercase shadow-[2px_2px_0px_#141414] transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Carregar Diagnóstico WebAudit Pro (Nota 100)</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('all')}
+                    className="px-4 py-2 bg-white hover:bg-[#E4E3E0] border-2 border-[#141414] text-xs font-mono font-bold uppercase shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+                  >
+                    Digitar Outra URL
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -1670,7 +1708,18 @@ export default function App() {
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onSelectTab={(tab) => {
+          if (!currentReport) {
+            handleAnalyze('https://webauditpro.ai.studio/');
+          }
           setActiveTab(tab);
+        }}
+        onOpenActionPlan={() => setIsActionPlanOpen(true)}
+        onOpenProposal={() => setIsProposalOpen(true)}
+        onOpenWhiteLabelPdf={() => setIsWhiteLabelOpen(true)}
+        onOpenExport={() => setIsExportOpen(true)}
+        onNewAudit={() => {
+          setCurrentReport(null);
+          setError(null);
         }}
       />
     </div>

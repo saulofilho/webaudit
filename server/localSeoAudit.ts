@@ -1,4 +1,6 @@
 import { URL } from 'url';
+import fs from 'fs';
+import path from 'path';
 import {
   LocalSeoAuditData,
   NapEntity,
@@ -78,10 +80,29 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
   const fallbackBrand = titleCaseDomain(domain);
 
   let html: string | null = null;
-  try {
-    html = await fetchPageHtml(targetUrl);
-  } catch (err) {
-    console.warn('Could not fetch HTML for local SEO check, using report fallback:', err);
+  const isSelf =
+    domain.includes('webauditpro') ||
+    domain.includes('localhost') ||
+    domain.includes('127.0.0.1') ||
+    domain.includes('run.app');
+
+  if (isSelf) {
+    try {
+      const idx = path.join(process.cwd(), 'index.html');
+      if (fs.existsSync(idx)) {
+        html = fs.readFileSync(idx, 'utf-8');
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!html) {
+    try {
+      html = await fetchPageHtml(targetUrl);
+    } catch (err) {
+      console.warn('Could not fetch HTML for local SEO check, using report fallback:', err);
+    }
   }
 
   // 1. Extract Schema.org LocalBusiness / PostalAddress

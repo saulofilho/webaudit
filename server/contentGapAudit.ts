@@ -1,4 +1,6 @@
 import { URL } from 'url';
+import fs from 'fs';
+import path from 'path';
 import {
   ContentGapAnalysisData,
   CompetitorContentProfile,
@@ -286,8 +288,28 @@ export async function auditContentGap(
   const normTargetUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
   const targetDomain = cleanDomain(normTargetUrl);
 
+  const isSelf =
+    targetDomain.includes('webauditpro') ||
+    targetDomain.includes('localhost') ||
+    targetDomain.includes('127.0.0.1') ||
+    targetDomain.includes('run.app');
+
+  let targetHtml: string | null = null;
+  if (isSelf) {
+    try {
+      const idx = path.join(process.cwd(), 'index.html');
+      if (fs.existsSync(idx)) {
+        targetHtml = fs.readFileSync(idx, 'utf-8');
+      }
+    } catch {
+      // fallback
+    }
+  }
+
   // 1. Fetch & parse Target URL
-  const targetHtml = await fetchPageWithTimeout(normTargetUrl, 4500);
+  if (!targetHtml) {
+    targetHtml = await fetchPageWithTimeout(normTargetUrl, 4500);
+  }
   let targetContent: ScrapedContentInfo;
 
   if (targetHtml) {
