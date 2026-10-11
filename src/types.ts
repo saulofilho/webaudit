@@ -201,6 +201,7 @@ export type NavigationTab =
   | 'soar'
   | 'threat-intel'
   | 'image-audit'
+  | 'sitemap-generator'
   | 'content-gap'
   | 'local-seo'
   | 'serp';

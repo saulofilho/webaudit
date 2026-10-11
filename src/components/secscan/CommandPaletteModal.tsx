@@ -33,6 +33,7 @@ import {
   Printer,
   Download,
   RotateCcw,
+  Rocket,
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
 
@@ -45,6 +46,7 @@ interface CommandPaletteProps {
   onOpenWhiteLabelPdf?: () => void;
   onOpenExport?: () => void;
   onNewAudit?: () => void;
+  onOpenGoogleAccelerator?: () => void;
 }
 
 interface CommandItem {
@@ -67,10 +69,14 @@ export function CommandPaletteModal({
   onOpenWhiteLabelPdf,
   onOpenExport,
   onNewAudit,
+  onOpenGoogleAccelerator,
 }: CommandPaletteProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const commandItems: CommandItem[] = [
+    // Google Ranking & Indexing Accelerator Action
+    ...(onOpenGoogleAccelerator ? [{ id: 'a-google-accel', action: onOpenGoogleAccelerator, title: '🚀 Acelerador de Indexação no Google (#1 na Busca Orgânica)', category: 'Ações & Relatórios' as const, icon: Rocket, keywords: 'google indexar primeira pagina rank search console sitemap rastreamento' }] : []),
+
     // WebAudit Pro Suite
     { id: 'c-all', tab: 'all', title: 'Painel Geral de Auditoria 360° (Overview)', category: 'Auditoria Web & SEO', icon: Globe, keywords: 'geral resumo auditoria overview 360 nota score analise' },
     { id: 'c-vitals', tab: 'vitals', title: 'Core Web Vitals & Performance (LCP, INP, CLS)', category: 'Auditoria Web & SEO', icon: Gauge, keywords: 'core web vitals performance lcp inp cls velocidade ttfb pagespeed speed' },
@@ -82,6 +88,7 @@ export function CommandPaletteModal({
     { id: 'c-heatmap', tab: 'heatmap', title: 'Heatmap de Densidade & Oportunidades SEO', category: 'Auditoria Web & SEO', icon: Layers, keywords: 'heatmap seo densidade palavras h1 h2 headings titulo' },
     { id: 'c-broken', tab: 'broken-links', title: 'Verificador de Links Quebrados & HTTP 404', category: 'Auditoria Web & SEO', icon: Globe, keywords: 'links quebrados broken 404 redirecionamentos 301 ancoras' },
     { id: 'c-sitemap', tab: 'sitemap', title: 'Crawler de Sitemap XML & Mapeamento de Páginas', category: 'Auditoria Web & SEO', icon: Globe, keywords: 'sitemap crawler paginas indexacao xml robots googlebot' },
+    { id: 'c-sitemap-generator', tab: 'sitemap-generator', title: 'Gerador de Sitemap XML Dinâmico (Baixar & Enviar ao GSC)', category: 'Auditoria Web & SEO', icon: FileCode, keywords: 'gerador sitemap xml download google search console gsc indexacao rastreamento acelerar' },
     { id: 'c-ssl', tab: 'ssl-dns', title: 'Auditoria Profunda de SSL/TLS, DNS & Certificados', category: 'Auditoria Web & SEO', icon: Lock, keywords: 'ssl tls dns dnssec ciphers hsts certificado seguranca' },
     { id: 'c-wcag', tab: 'accessibility', title: 'Acessibilidade Digital WCAG 2.2 AAA & Leitores', category: 'Auditoria Web & SEO', icon: Globe, keywords: 'acessibilidade wcag aria contraste alt leitores tela deficientes' },
     { id: 'c-eco-scripts', tab: 'eco-scripts', title: 'Eco-Index, Emissões de CO2 & Scripts 3rd-Party', category: 'Auditoria Web & SEO', icon: Leaf, keywords: 'eco index co2 carbono verde scripts terceiros google analytics tags' },

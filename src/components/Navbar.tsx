@@ -14,6 +14,7 @@ import {
   SearchCheck,
   Briefcase,
   Languages,
+  Rocket,
 } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 
@@ -35,6 +36,7 @@ interface NavbarProps {
   language: Language;
   onToggleLanguage: () => void;
   onOpenCommandPalette?: () => void;
+  onOpenGoogleAccelerator?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -55,6 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   language,
   onToggleLanguage,
   onOpenCommandPalette,
+  onOpenGoogleAccelerator,
 }) => {
   const t = translations[language];
 
@@ -94,6 +97,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Terminal className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">CMD</span>
               <kbd className="bg-black/30 px-1 py-0.2 rounded text-[9px] font-mono">⌘K</kbd>
+            </button>
+          )}
+
+          {/* Google Ranking & Indexing Accelerator Trigger */}
+          {onOpenGoogleAccelerator && (
+            <button
+              onClick={onOpenGoogleAccelerator}
+              title="Acelerador de Indexação no Google & Ranqueamento #1"
+              className="flex items-center gap-1.5 border-2 border-[#141414] bg-amber-400 hover:bg-amber-300 text-[#141414] px-2.5 py-1 text-xs font-mono font-black shadow-[2px_2px_0px_#141414] cursor-pointer transition-all"
+            >
+              <Rocket className="h-3.5 w-3.5 text-[#141414]" />
+              <span className="hidden md:inline">INDEXAR NO GOOGLE</span>
+              <span className="md:hidden">GOOGLE</span>
             </button>
           )}
 

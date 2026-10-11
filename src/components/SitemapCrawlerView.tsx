@@ -22,9 +22,10 @@ import { PageRankSimulator } from './PageRankSimulator';
 
 interface SitemapCrawlerViewProps {
   report: AuditReport;
+  onOpenSitemapGenerator?: () => void;
 }
 
-export const SitemapCrawlerView: React.FC<SitemapCrawlerViewProps> = ({ report }) => {
+export const SitemapCrawlerView: React.FC<SitemapCrawlerViewProps> = ({ report, onOpenSitemapGenerator }) => {
   const [data, setData] = useState<SitemapCrawlData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +124,15 @@ export const SitemapCrawlerView: React.FC<SitemapCrawlerViewProps> = ({ report }
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenSitemapGenerator && (
+              <button
+                onClick={onOpenSitemapGenerator}
+                className="flex items-center gap-1.5 border-2 border-[#141414] bg-emerald-400 hover:bg-emerald-300 text-[#141414] px-3 py-1.5 text-xs font-mono font-black uppercase shadow-[2px_2px_0px_#141414] transition-all cursor-pointer"
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>Gerador de Sitemap XML</span>
+              </button>
+            )}
             <button
               onClick={fetchCrawl}
               disabled={isLoading}
@@ -158,8 +168,19 @@ export const SitemapCrawlerView: React.FC<SitemapCrawlerViewProps> = ({ report }
                 </span>
               )}
             </div>
-            <div className="text-[#141414]/70">
-              Avg Response Time: <strong className="text-[#141414]">{data.averageResponseTimeMs}ms</strong>
+            <div className="flex items-center gap-3">
+              {onOpenSitemapGenerator && (
+                <button
+                  type="button"
+                  onClick={onOpenSitemapGenerator}
+                  className="text-xs font-mono font-black text-emerald-700 hover:text-emerald-900 underline flex items-center gap-1 cursor-pointer"
+                >
+                  <ArrowRight className="h-3 w-3" /> Gerar & Baixar Sitemap XML Agora
+                </button>
+              )}
+              <div className="text-[#141414]/70">
+                Avg Response Time: <strong className="text-[#141414]">{data.averageResponseTimeMs}ms</strong>
+              </div>
             </div>
           </div>
         )}

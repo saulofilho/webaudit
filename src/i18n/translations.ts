@@ -50,6 +50,7 @@ export interface TranslationDictionary {
     soar: string;
     threatIntel: string;
     imageAudit: string;
+    sitemapGenerator: string;
   };
   severity: {
     all: string;
@@ -115,6 +116,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       soar: 'PLAYBOOKS SOAR',
       threatIntel: 'THREAT INTEL & KEV',
       imageAudit: 'AUDITORIA DE IMAGENS & ALT',
+      sitemapGenerator: 'GERADOR DE SITEMAP XML',
     },
     severity: {
       all: 'TODOS',
@@ -178,6 +180,7 @@ export const translations: Record<Language, TranslationDictionary> = {
       soar: 'SOAR PLAYBOOKS',
       threatIntel: 'THREAT INTEL & KEV',
       imageAudit: 'IMAGE ACCESSIBILITY AUDIT',
+      sitemapGenerator: 'XML SITEMAP GENERATOR',
     },
     severity: {
       all: 'ALL',

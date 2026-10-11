@@ -41,6 +41,7 @@ import {
   ArrowRight,
   Target,
   Image as ImageIcon,
+  Rocket,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -78,6 +79,7 @@ import { MobileSimulatorView } from './components/MobileSimulatorView';
 import { SeoHeatmapView } from './components/SeoHeatmapView';
 import { BrokenLinksView } from './components/BrokenLinksView';
 import { SitemapCrawlerView } from './components/SitemapCrawlerView';
+import { DynamicSitemapGeneratorView } from './components/DynamicSitemapGeneratorView';
 import { PageRankSimulator } from './components/PageRankSimulator';
 import { KeywordCannibalizationView } from './components/KeywordCannibalizationView';
 import { SeoProgressDashboard } from './components/SeoProgressDashboard';
@@ -107,6 +109,7 @@ import { ThreatModelingView } from './components/secscan/ThreatModelingView';
 import { VisualSoarPlaybookView } from './components/secscan/VisualSoarPlaybookView';
 import { CyberThreatIntelHubView } from './components/secscan/CyberThreatIntelHubView';
 import { CommandPaletteModal } from './components/secscan/CommandPaletteModal';
+import { GoogleRankingAcceleratorModal } from './components/GoogleRankingAcceleratorModal';
 
 const STORAGE_KEY = 'webaudit_history_v1';
 const ACTION_PLAN_STORAGE_PREFIX = 'webaudit_actionplan_v1_';
@@ -153,6 +156,7 @@ export default function App() {
   const [isProposalOpen, setIsProposalOpen] = useState<boolean>(false);
   const [isMonitorOpen, setIsMonitorOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+  const [isGoogleAcceleratorOpen, setIsGoogleAcceleratorOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
 
   // Keyboard shortcut listener for Cmd+K / Ctrl+K
@@ -465,6 +469,7 @@ export default function App() {
         language={language}
         onToggleLanguage={handleToggleLanguage}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onOpenGoogleAccelerator={() => setIsGoogleAcceleratorOpen(true)}
       />
 
       {/* Main Container */}
@@ -512,11 +517,17 @@ export default function App() {
             {activeTab === 'threat-intel' && (
               <CyberThreatIntelHubView />
             )}
+            {activeTab === 'sitemap-generator' && (
+              <DynamicSitemapGeneratorView
+                report={currentReport}
+                onOpenGoogleAccelerator={() => setIsGoogleAcceleratorOpen(true)}
+              />
+            )}
 
             {/* If a report-dependent tab was selected while !currentReport */}
             {![
               'js-miner', 'nikto', 'dast', 'waf', 'ssrf', 'jwt',
-              'compliance', 'llm-sec', 'stride', 'soar', 'threat-intel', 'all'
+              'compliance', 'llm-sec', 'stride', 'soar', 'threat-intel', 'sitemap-generator', 'all'
             ].includes(activeTab) && (
               <div className="border-2 border-[#141414] bg-white p-6 shadow-[4px_4px_0px_#141414] text-center space-y-4">
                 <div className="inline-flex p-3 bg-amber-400 border-2 border-[#141414] shadow-[2px_2px_0px_#141414]">
@@ -579,6 +590,29 @@ export default function App() {
                 >
                   <Terminal className="h-3.5 w-3.5" />
                   <span>Paleta de Ferramentas (⌘K)</span>
+                </button>
+              </div>
+
+              {/* Google Ranking & Indexation Accelerator Banner integrado no SecScan */}
+              <div className="border-2 border-[#141414] bg-amber-400 p-4 shadow-[3px_3px_0px_#141414] flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#141414] text-white shrink-0">
+                    <Rocket className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-mono font-black text-xs sm:text-sm uppercase text-[#141414]">
+                      Quer Colocar Seu Site no 1º Lugar do Google?
+                    </h4>
+                    <p className="text-[11px] font-mono text-[#141414]/90">
+                      Aprenda por que sites novos demoram para aparecer e como solicitar indexação imediata no Googlebot
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsGoogleAcceleratorOpen(true)}
+                  className="px-3.5 py-1.5 bg-[#141414] hover:bg-black text-white font-mono font-black text-xs uppercase shadow-[2px_2px_0px_#888888] transition-all cursor-pointer shrink-0"
+                >
+                  Abrir Acelerador Google →
                 </button>
               </div>
 
@@ -794,6 +828,21 @@ export default function App() {
                 >
                   <Compass className="h-3.5 w-3.5 text-emerald-500" />
                   <span>{t.tabs.sitemapCrawler}</span>
+                </button>
+
+                {/* Feature: Dynamic XML Sitemap Generator */}
+                <button
+                  type="button"
+                  id="tab-sitemap-generator"
+                  onClick={() => setActiveTab('sitemap-generator')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer border-2 border-[#141414] ${
+                    activeTab === 'sitemap-generator'
+                      ? 'bg-emerald-600 text-white shadow-[2px_2px_0px_#141414]'
+                      : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
+                  }`}
+                >
+                  <FileCode className="h-3.5 w-3.5" />
+                  <span>{t.tabs.sitemapGenerator}</span>
                 </button>
 
                 {/* Feature: Keyword Cannibalization & Canonical Audit */}
@@ -1271,7 +1320,17 @@ export default function App() {
             )}
 
             {activeTab === 'sitemap' && (
-              <SitemapCrawlerView report={currentReport} />
+              <SitemapCrawlerView
+                report={currentReport}
+                onOpenSitemapGenerator={() => setActiveTab('sitemap-generator')}
+              />
+            )}
+
+            {activeTab === 'sitemap-generator' && (
+              <DynamicSitemapGeneratorView
+                report={currentReport}
+                onOpenGoogleAccelerator={() => setIsGoogleAcceleratorOpen(true)}
+              />
             )}
 
             {activeTab === 'cannibalization' && currentReport && (
@@ -1437,6 +1496,33 @@ export default function App() {
                       >
                         <span>Open Cannibalization Audit</span>
                         <ArrowRight className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Spotlight Card: Dynamic XML Sitemap Generator for Google Search Console */}
+                    <div className="border-2 border-[#141414] bg-emerald-50 p-4 sm:p-5 shadow-[3px_3px_0px_#141414] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-emerald-500 text-white px-2 py-0.5 text-xs font-black uppercase border border-[#141414] flex items-center gap-1">
+                            <FileCode className="h-3 w-3" />
+                            SITEMAP XML DINÂMICO
+                          </span>
+                          <h4 className="font-black text-sm uppercase text-[#141414]">
+                            Gerador de Sitemap XML & Acelerador Google Search Console
+                          </h4>
+                        </div>
+                        <p className="text-xs text-neutral-700 font-sans">
+                          Gere e baixe um sitemap.xml 100% customizado com tags de imagem e diretiva robots.txt, com guia passo a passo para envio e aceleração de indexação via GSC.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('sitemap-generator')}
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-black uppercase bg-[#141414] text-white hover:bg-neutral-800 transition-all cursor-pointer whitespace-nowrap border-2 border-[#141414] shadow-[2px_2px_0px_#888888]"
+                      >
+                        <span>Gerar & Baixar Sitemap</span>
+                        <ArrowRight className="h-3.5 w-3.5 text-emerald-400" />
                       </button>
                     </div>
                   </div>
@@ -1721,6 +1807,14 @@ export default function App() {
           setCurrentReport(null);
           setError(null);
         }}
+        onOpenGoogleAccelerator={() => setIsGoogleAcceleratorOpen(true)}
+      />
+
+      {/* Google Ranking & Instant Indexing Accelerator Modal */}
+      <GoogleRankingAcceleratorModal
+        isOpen={isGoogleAcceleratorOpen}
+        onClose={() => setIsGoogleAcceleratorOpen(false)}
+        onOpenSitemapGenerator={() => setActiveTab('sitemap-generator')}
       />
     </div>
   );
