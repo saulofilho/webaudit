@@ -51,6 +51,20 @@ async function startServer() {
   // In-memory or env storage for Google Search Console verification
   let googleVerificationCode = process.env.GOOGLE_SITE_VERIFICATION || '';
 
+  // Public OpenGraph image assets with permissive CORS for social preview scrapers
+  app.get(['/og-image.jpg', '/og-image.png'], (req, res) => {
+    const filename = req.path.endsWith('.png') ? 'og-image.png' : 'og-image.jpg';
+    const filePath = path.join(process.cwd(), 'public', filename);
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', filename.endsWith('.png') ? 'image/png' : 'image/jpeg');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      return res.sendFile(filePath);
+    }
+    return res.status(404).end();
+  });
+
   // SEO & Discoverability routes: dynamic robots.txt and sitemap.xml
   app.get('/robots.txt', (req, res) => {
     const proto = req.headers['x-forwarded-proto'] || (req.secure ? 'https' : 'http');
@@ -393,10 +407,10 @@ Sitemap: ${proto}://${host}/sitemap.xml
     });
 
     // For social crawlers (WhatsApp, Facebook, Twitter, Telegram, LinkedIn, Discord, Slack)
-    // intercept and return HTML with the exact absolute og:image URL matching current host
+    // intercept and return HTML with optimal OpenGraph tags matching current origin
     app.use(async (req, res, next) => {
       const userAgent = req.get('user-agent') || '';
-      const isSocialCrawler = /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|TelegramBot|Discordbot|Slackbot|Googlebot|bingbot/i.test(userAgent);
+      const isSocialCrawler = /facebookexternalhit|WhatsApp|Twitterbot|LinkedInBot|TelegramBot|Discordbot|Slackbot|Googlebot|bingbot|Applebot/i.test(userAgent);
       
       if (isSocialCrawler && !req.path.startsWith('/api') && !req.path.includes('.')) {
         try {
@@ -405,8 +419,10 @@ Sitemap: ${proto}://${host}/sitemap.xml
           const origin = `${proto}://${host}`;
           let html = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf-8');
           html = await vite.transformIndexHtml(req.originalUrl, html);
-          html = html.replace(/https:\/\/[^"'\s]+\/og-image\.jpg/g, `${origin}/og-image.jpg`);
-          html = html.replace(/content="\/og-image\.jpg"/g, `content="${origin}/og-image.jpg"`);
+          
+          // Update og:url to the actual shared URL
+          html = html.replace(/property="og:url"\s+content="[^"]*"/g, `property="og:url" content="${origin}${req.path}"`);
+
           res.setHeader('Content-Type', 'text/html; charset=utf-8');
           return res.send(html);
         } catch {
@@ -426,8 +442,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
         const host = req.get('host') || 'localhost:3000';
         const origin = `${proto}://${host}`;
         let html = fs.readFileSync(path.join(distPath, 'index.html'), 'utf-8');
-        html = html.replace(/https:\/\/[^"'\s]+\/og-image\.jpg/g, `${origin}/og-image.jpg`);
-        html = html.replace(/content="\/og-image\.jpg"/g, `content="${origin}/og-image.jpg"`);
+        html = html.replace(/property="og:url"\s+content="[^"]*"/g, `property="og:url" content="${origin}${req.path}"`);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.send(html);
       } catch {

@@ -12,7 +12,32 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     
-    <!-- Dynamic Origin Resolver for Canonical, OG Image & Google Site Verification -->
+    <!-- Open Graph Social Media Meta Tags (WhatsApp, Facebook, LinkedIn, Discord, Slack) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="WebAudit Pro" />
+    <meta property="og:title" content="WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO 2026" />
+    <meta property="og:description" content="Auditoria de sites completa e profissional: Análise instantânea de SEO, Segurança Cibernética, Core Web Vitals, Acessibilidade WCAG e LGPD com IA. Teste grátis agora." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&amp;h=630&amp;fit=crop&amp;q=85&amp;auto=format" />
+    <meta property="og:image:secure_url" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&amp;h=630&amp;fit=crop&amp;q=85&amp;auto=format" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="WebAudit Pro — Ferramenta de Auditoria de Sites, Segurança &amp; SEO" />
+    <meta property="og:url" content="https://webauditpro.ai.studio/" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Generic & Schema Image Thumbnail Fallbacks (WhatsApp, Telegram, Google Discover) -->
+    <meta itemprop="image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&amp;h=630&amp;fit=crop&amp;q=85&amp;auto=format" />
+    <link rel="image_src" href="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&amp;h=630&amp;fit=crop&amp;q=85&amp;auto=format" />
+
+    <!-- Twitter Card Meta Tags (X / Twitter) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO 2026" />
+    <meta name="twitter:description" content="Auditoria de sites completa e profissional: Análise instantânea de SEO, Segurança Cibernética, Core Web Vitals, Acessibilidade WCAG e LGPD com IA. Teste grátis agora." />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&amp;h=630&amp;fit=crop&amp;q=85&amp;auto=format" />
+    <meta name="twitter:image:alt" content="WebAudit Pro — Ferramenta de Auditoria de Sites, Segurança &amp; SEO" />
+
+    <!-- Dynamic Origin Resolver for Canonical & Google Site Verification -->
     <script>
       (function() {
         try {
@@ -21,12 +46,6 @@
           if (canon && origin) canon.setAttribute('href', origin + '/');
           var ogUrl = document.querySelector('meta[property="og:url"]');
           if (ogUrl && origin) ogUrl.setAttribute('content', origin + '/');
-          var ogImg = document.querySelector('meta[property="og:image"]');
-          if (ogImg && origin) ogImg.setAttribute('content', origin + '/og-image.jpg');
-          var ogImgSec = document.querySelector('meta[property="og:image:secure_url"]');
-          if (ogImgSec && origin) ogImgSec.setAttribute('content', origin + '/og-image.jpg');
-          var twImg = document.querySelector('meta[name="twitter:image"]');
-          if (twImg && origin) twImg.setAttribute('content', origin + '/og-image.jpg');
           var vCode = localStorage.getItem('google_site_verification_code');
           if (vCode) {
             var metaV = document.createElement('meta');
@@ -37,31 +56,6 @@
         } catch(e) {}
       })();
     </script>
-    
-    <!-- Open Graph Social Media Meta Tags (WhatsApp, Facebook, LinkedIn, Discord, Slack) -->
-    <meta property="og:title" content="WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO 2026" />
-    <meta property="og:description" content="Auditoria de sites completa e profissional: Análise instantânea de SEO, Segurança Cibernética, Core Web Vitals, Acessibilidade WCAG e LGPD com IA. Teste grátis agora." />
-    <meta property="og:image" content="https://ais-pre-t2kk3mxigooldwm2tbdz73-422976694894.us-east5.run.app/og-image.jpg" />
-    <meta property="og:image:secure_url" content="https://ais-pre-t2kk3mxigooldwm2tbdz73-422976694894.us-east5.run.app/og-image.jpg" />
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO" />
-    <meta property="og:url" content="https://ais-pre-t2kk3mxigooldwm2tbdz73-422976694894.us-east5.run.app/" />
-    <meta property="og:site_name" content="WebAudit Pro" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="pt_BR" />
-
-    <!-- Generic & Schema Image Thumbnail Fallbacks (WhatsApp, Telegram, Google Discover) -->
-    <meta itemprop="image" content="https://ais-pre-t2kk3mxigooldwm2tbdz73-422976694894.us-east5.run.app/og-image.jpg" />
-    <link rel="image_src" href="https://ais-pre-t2kk3mxigooldwm2tbdz73-422976694894.us-east5.run.app/og-image.jpg" />
-
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO 2026" />
-    <meta name="twitter:description" content="Auditoria de sites completa e profissional: Análise instantânea de SEO, Segurança Cibernética, Core Web Vitals, Acessibilidade WCAG e LGPD com IA. Teste grátis agora." />
-    <meta name="twitter:image" content="https://ais-pre-t2kk3mxigooldwm2tbdz73-422976694894.us-east5.run.app/og-image.jpg" />
-    <meta name="twitter:image:alt" content="WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO" />
 
     <!-- Schema.org JSON-LD Structured Data: WebApplication, WebSite & FAQPage -->
     <script type="application/ld+json">

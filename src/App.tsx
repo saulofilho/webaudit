@@ -283,11 +283,6 @@ export default function App() {
     }
   };
 
-  // Auto-analyze WebAudit Pro on initial visit so the tool leads by example with 100/100 score
-  useEffect(() => {
-    handleAnalyze('https://webauditpro.ai.studio/');
-  }, []);
-
   const saveCompletedFixes = (updated: Record<string, boolean>) => {
     setCompletedFixIds(updated);
     if (currentReport?.targetUrl) {
