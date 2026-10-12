@@ -18,6 +18,10 @@ import {
   Target,
   Maximize2,
   Sparkles,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
 } from 'lucide-react';
 import { AuditReport, AuditItem } from '../types';
 
@@ -54,6 +58,7 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
   const [viewMode, setViewMode] = useState<HeatmapViewMode>('wireframe');
   const [qualityFilter, setQualityFilter] = useState<QualityFilter>('all');
   const [copiedZoneId, setCopiedZoneId] = useState<string | null>(null);
+  const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(true);
 
   const meta = report.rawData.metaTags;
   const isHttps = report.rawData.protocol === 'https:' || report.targetUrl.startsWith('https://');
@@ -560,7 +565,7 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
       {/* Control Toolbar: View Modes & Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 border-2 border-[#141414] bg-white shadow-[2px_2px_0px_#141414]">
         {/* View Mode Selector */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[11px] font-bold text-[#141414]/70 mr-1 uppercase">MODE:</span>
           {(
             [
@@ -588,32 +593,347 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
           })}
         </div>
 
-        {/* Quality Filter */}
-        <div className="flex items-center gap-1.5">
-          <Filter className="h-3.5 w-3.5 text-[#141414]/60 mr-0.5" />
-          <span className="text-[11px] font-bold text-[#141414]/70 mr-1 uppercase">SHOW:</span>
-          {(
-            [
-              { id: 'all', label: 'ALL (7)' },
-              { id: 'critical', label: `CRITICAL (${criticalCount})` },
-              { id: 'warning', label: `WARNING (${warningCount})` },
-              { id: 'optimal', label: `OPTIMAL (${optimalCount})` },
-            ] as const
-          ).map((filt) => (
-            <button
-              key={filt.id}
-              type="button"
-              onClick={() => setQualityFilter(filt.id)}
-              className={`px-2 py-0.5 text-[11px] font-bold border transition-all cursor-pointer ${
-                qualityFilter === filt.id
-                  ? 'bg-[#141414] text-white border-[#141414]'
-                  : 'bg-white text-[#141414] border-[#141414] hover:bg-[#E4E3E0]'
-              }`}
-            >
-              {filt.label}
-            </button>
-          ))}
+        {/* Quality Filter & Legend Guide Toggle */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Filter className="h-3.5 w-3.5 text-[#141414]/60 mr-0.5" />
+            <span className="text-[11px] font-bold text-[#141414]/70 mr-1 uppercase">SHOW:</span>
+            {(
+              [
+                { id: 'all', label: 'ALL (7)' },
+                { id: 'critical', label: `CRITICAL (${criticalCount})` },
+                { id: 'warning', label: `WARNING (${warningCount})` },
+                { id: 'optimal', label: `OPTIMAL (${optimalCount})` },
+              ] as const
+            ).map((filt) => (
+              <button
+                key={filt.id}
+                type="button"
+                onClick={() => setQualityFilter(filt.id)}
+                className={`px-2 py-0.5 text-[11px] font-bold border transition-all cursor-pointer ${
+                  qualityFilter === filt.id
+                    ? 'bg-[#141414] text-white border-[#141414]'
+                    : 'bg-white text-[#141414] border-[#141414] hover:bg-[#E4E3E0]'
+                }`}
+              >
+                {filt.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsLegendExpanded(!isLegendExpanded)}
+            className="flex items-center gap-1.5 border border-[#141414] bg-neutral-100 px-2.5 py-1 text-xs font-bold hover:bg-[#E4E3E0] transition-all cursor-pointer"
+            title="Toggle Descriptive SEO Metric Intensity Legend"
+          >
+            <Info className="h-3.5 w-3.5 text-blue-700" />
+            <span>{isLegendExpanded ? 'HIDE LEGEND GUIDE' : 'COLOR INTENSITY LEGEND'}</span>
+            {isLegendExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </button>
         </div>
+      </div>
+
+      {/* Comprehensive Descriptive SEO Intensity & Thermal Legend Guide */}
+      <div className="border-2 border-[#141414] bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#141414] transition-all">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-[#141414] pb-3">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center border-2 border-[#141414] bg-amber-300 shadow-[1px_1px_0px_#141414] shrink-0">
+              <Info className="h-5 w-5 text-[#141414]" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-tight">
+                  SEO Metric Intensity & Color Scale Legend
+                </h3>
+                <span className="bg-[#141414] text-white text-[9px] font-bold px-1.5 py-0.2 uppercase">
+                  Google Standards & Algorithm Rationale
+                </span>
+              </div>
+              <p className="text-[11px] text-[#141414]/75 mt-0.5">
+                Understand what each color intensity represents across Google Search ranking algorithms, crawler parsing, and document health.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsLegendExpanded(!isLegendExpanded)}
+            className="flex items-center gap-1.5 border border-[#141414] bg-[#E4E3E0] px-2.5 py-1 text-xs font-black hover:bg-white transition-all shadow-[1px_1px_0px_#141414] cursor-pointer self-start sm:self-auto shrink-0"
+          >
+            <span>{isLegendExpanded ? 'COLLAPSE GUIDE' : 'EXPAND GUIDE'}</span>
+            {isLegendExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+
+        {isLegendExpanded && (
+          <div className="mt-4 space-y-4">
+            {/* 3 Detailed Intensity Cards Explaining the Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {/* GREEN / HIGH INTENSITY CARD */}
+              <div
+                onClick={() => setQualityFilter(qualityFilter === 'optimal' ? 'all' : 'optimal')}
+                className={`border-2 border-emerald-700 bg-emerald-50/50 p-3.5 transition-all cursor-pointer hover:shadow-[3px_3px_0px_#047857] flex flex-col justify-between ${
+                  qualityFilter === 'optimal' ? 'ring-2 ring-emerald-700 bg-emerald-100/70' : ''
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-emerald-300">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3.5 h-3.5 bg-emerald-500 border-2 border-emerald-900 inline-block shadow-xs" />
+                      <span className="text-xs font-black text-emerald-950 uppercase tracking-tight">
+                        High Quality / Optimal
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black px-1.5 py-0.5 bg-emerald-200 text-emerald-950 border border-emerald-700">
+                      85 - 100 PTS
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-[11px] text-emerald-950">
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-emerald-900">
+                        What This Color Represents:
+                      </span>
+                      <p className="mt-0.5 leading-relaxed text-[11px]">
+                        Full compliance with Google Search Essentials and semantic HTML5 standards. The element provides unequivocal context to crawler algorithms.
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-emerald-900">
+                        Audited Metric Criteria:
+                      </span>
+                      <ul className="mt-0.5 space-y-1 list-disc list-inside text-[10px] leading-snug">
+                        <li><strong>Title tag:</strong> 30–65 chars, primary brand keywords.</li>
+                        <li><strong>Meta description:</strong> 120–165 chars with clear CTA.</li>
+                        <li><strong>Semantic H1:</strong> Exactly 1 primary topic headline.</li>
+                        <li><strong>Mobile Viewport:</strong> Present, responsive scaling.</li>
+                        <li><strong>Structured Data:</strong> Valid Schema.org JSON-LD found.</li>
+                        <li><strong>Protocol & Assets:</strong> 100% HTTPS TLS &amp; image alt tags.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-emerald-900">
+                        Algorithmic &amp; SERP Impact:
+                      </span>
+                      <p className="mt-0.5 text-[10px] text-emerald-900/90 leading-snug">
+                        ✓ High crawl budget efficiency &amp; fast indexation.<br />
+                        ✓ Full rich snippet eligibility (Knowledge Graph, Sitelinks).<br />
+                        ✓ Zero structural ranking demotions.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-emerald-300 flex items-center justify-between text-[10px] font-bold text-emerald-900">
+                  <span>Action: Fully compliant (maintain)</span>
+                  <span className="underline">{optimalCount} zone(s) matched</span>
+                </div>
+              </div>
+
+              {/* AMBER / MODERATE INTENSITY CARD */}
+              <div
+                onClick={() => setQualityFilter(qualityFilter === 'warning' ? 'all' : 'warning')}
+                className={`border-2 border-amber-600 bg-amber-50/50 p-3.5 transition-all cursor-pointer hover:shadow-[3px_3px_0px_#d97706] flex flex-col justify-between ${
+                  qualityFilter === 'warning' ? 'ring-2 ring-amber-700 bg-amber-100/70' : ''
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-amber-300">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3.5 h-3.5 bg-amber-400 border-2 border-amber-900 inline-block shadow-xs" />
+                      <span className="text-xs font-black text-amber-950 uppercase tracking-tight">
+                        Moderate / Warning
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black px-1.5 py-0.5 bg-amber-200 text-amber-950 border border-amber-700">
+                      60 - 84 PTS
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-[11px] text-amber-950">
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-amber-900">
+                        What This Color Represents:
+                      </span>
+                      <p className="mt-0.5 leading-relaxed text-[11px]">
+                        Suboptimal optimization or partial signal coverage. The element exists but deviates from optimal search engine guidelines or snippet limits.
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-amber-900">
+                        Audited Metric Criteria:
+                      </span>
+                      <ul className="mt-0.5 space-y-1 list-disc list-inside text-[10px] leading-snug">
+                        <li><strong>Title/Description:</strong> Too brief or truncated by SERP pixels.</li>
+                        <li><strong>Headings:</strong> Multiple H1s diluting topical focus or missing H2s.</li>
+                        <li><strong>Social Cards:</strong> Incomplete OpenGraph (missing og:image).</li>
+                        <li><strong>Media Assets:</strong> Missing alt text on some page images.</li>
+                        <li><strong>External Links:</strong> Unprotected without rel="noopener".</li>
+                        <li><strong>Content depth:</strong> Inadequate semantic outline division.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-amber-900">
+                        Algorithmic &amp; SERP Impact:
+                      </span>
+                      <p className="mt-0.5 text-[10px] text-amber-900/90 leading-snug">
+                        ⚠ Googlebot may overwrite title/snippet in SERP.<br />
+                        ⚠ Diluted keyword prominence and lower social CTR.<br />
+                        ⚠ Suboptimal passage ranking in competitive niches.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-amber-300 flex items-center justify-between text-[10px] font-bold text-amber-900">
+                  <span>Action: Optimization recommended</span>
+                  <span className="underline">{warningCount} zone(s) matched</span>
+                </div>
+              </div>
+
+              {/* ROSE / CRITICAL INTENSITY CARD */}
+              <div
+                onClick={() => setQualityFilter(qualityFilter === 'critical' ? 'all' : 'critical')}
+                className={`border-2 border-rose-700 bg-rose-50/50 p-3.5 transition-all cursor-pointer hover:shadow-[3px_3px_0px_#be123c] flex flex-col justify-between ${
+                  qualityFilter === 'critical' ? 'ring-2 ring-rose-700 bg-rose-100/70' : ''
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-rose-300">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3.5 h-3.5 bg-rose-500 border-2 border-rose-900 inline-block shadow-xs" />
+                      <span className="text-xs font-black text-rose-950 uppercase tracking-tight">
+                        Low Quality / Critical
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-black px-1.5 py-0.5 bg-rose-200 text-rose-950 border border-rose-700">
+                      0 - 59 PTS
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-[11px] text-rose-950">
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-rose-900">
+                        What This Color Represents:
+                      </span>
+                      <p className="mt-0.5 leading-relaxed text-[11px]">
+                        Severe degradation, critical security hazard, or complete omission of foundational SEO prerequisites. Immediate remediation required.
+                      </p>
+                    </div>
+
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-rose-900">
+                        Audited Metric Criteria:
+                      </span>
+                      <ul className="mt-0.5 space-y-1 list-disc list-inside text-[10px] leading-snug">
+                        <li><strong>Head Tags:</strong> Completely missing &lt;title&gt; or description.</li>
+                        <li><strong>Mobile Indexing:</strong> Missing &lt;meta name="viewport"&gt;.</li>
+                        <li><strong>Security:</strong> Plain HTTP transmission (missing TLS cert).</li>
+                        <li><strong>Form Security:</strong> Data forms posting over unencrypted HTTP.</li>
+                        <li><strong>Headline:</strong> 0 primary &lt;h1&gt; tags present in DOM.</li>
+                        <li><strong>Canonicalization:</strong> Missing canonical tag risking duplicate penalties.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <span className="font-bold block text-[10px] uppercase tracking-wider text-rose-900">
+                        Algorithmic &amp; SERP Impact:
+                      </span>
+                      <p className="mt-0.5 text-[10px] text-rose-900/90 leading-snug">
+                        ⛔ Exclusion from Google mobile-first index.<br />
+                        ⛔ Browser security warnings causing bounce spikes.<br />
+                        ⛔ Severe organic traffic drops &amp; unbranded previews.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-rose-300 flex items-center justify-between text-[10px] font-bold text-rose-900">
+                  <span>Action: Urgent blocker (fix now)</span>
+                  <span className="underline">{criticalCount} zone(s) matched</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Thermal Continuum Scale Bar */}
+            <div className="border border-[#141414] bg-neutral-50 p-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[10px]">
+                <span className="font-black uppercase tracking-tight text-[#141414]">
+                  Thermal Continuum &amp; Algorithmic Scoring Weight:
+                </span>
+                <span className="text-[#141414]/70">
+                  Aggregated from 7 architectural zones: Meta (25%), Social (20%), H1 (20%), Content (15%), Media (10%), Links (5%), Security (5%)
+                </span>
+              </div>
+              <div className="mt-2 h-3 w-full border border-[#141414] bg-neutral-200 flex overflow-hidden">
+                <div
+                  className="h-full bg-rose-500 transition-all"
+                  style={{ width: `${(criticalCount / zones.length) * 100}%` }}
+                  title={`Critical (0-59): ${criticalCount} zone(s)`}
+                />
+                <div
+                  className="h-full bg-amber-400 transition-all"
+                  style={{ width: `${(warningCount / zones.length) * 100}%` }}
+                  title={`Warning (60-84): ${warningCount} zone(s)`}
+                />
+                <div
+                  className="h-full bg-emerald-500 transition-all"
+                  style={{ width: `${(optimalCount / zones.length) * 100}%` }}
+                  title={`Optimal (85-100): ${optimalCount} zone(s)`}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-1 text-[9px] font-bold text-[#141414]/75">
+                <span>0 (Critical Blocker / Insecure)</span>
+                <span>60 (Acceptance Threshold)</span>
+                <span>85 (Googlebot Recommendation Threshold)</span>
+                <span>100 (Full Search Optimization)</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Condensed Quick-Reference Strip when collapsed */}
+        {!isLegendExpanded && (
+          <div className="mt-3.5 pt-3 border-t border-[#141414]/20 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div
+              onClick={() => setQualityFilter(qualityFilter === 'optimal' ? 'all' : 'optimal')}
+              className="flex items-center gap-2 p-2 border border-emerald-700 bg-emerald-50 text-emerald-950 cursor-pointer hover:bg-emerald-100 transition-colors"
+            >
+              <span className="w-3.5 h-3.5 bg-emerald-500 border border-emerald-900 shrink-0" />
+              <div className="text-[11px] leading-tight">
+                <span className="font-black uppercase block">🟢 High Quality (85–100)</span>
+                <span className="text-[#141414]/80 text-[10px]">Optimal Google Search Essentials compliance & rich snippets</span>
+              </div>
+            </div>
+
+            <div
+              onClick={() => setQualityFilter(qualityFilter === 'warning' ? 'all' : 'warning')}
+              className="flex items-center gap-2 p-2 border border-amber-600 bg-amber-50 text-amber-950 cursor-pointer hover:bg-amber-100 transition-colors"
+            >
+              <span className="w-3.5 h-3.5 bg-amber-400 border border-amber-900 shrink-0" />
+              <div className="text-[11px] leading-tight">
+                <span className="font-black uppercase block">🟡 Moderate / Warning (60–84)</span>
+                <span className="text-[#141414]/80 text-[10px]">Truncated meta tags, missing alt tags or partial signals</span>
+              </div>
+            </div>
+
+            <div
+              onClick={() => setQualityFilter(qualityFilter === 'critical' ? 'all' : 'critical')}
+              className="flex items-center gap-2 p-2 border border-rose-700 bg-rose-50 text-rose-950 cursor-pointer hover:bg-rose-100 transition-colors"
+            >
+              <span className="w-3.5 h-3.5 bg-rose-500 border border-rose-900 shrink-0" />
+              <div className="text-[11px] leading-tight">
+                <span className="font-black uppercase block">🔴 Low / Critical (0–59)</span>
+                <span className="text-[#141414]/80 text-[10px]">Severe indexing blockers (missing title/H1, HTTP protocol)</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Interactive Visualization + Zone Deep Dive Inspector */}
@@ -634,20 +954,56 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                 </span>
               </div>
 
-              {/* Thermal Legend */}
-              <div className="flex items-center gap-2 text-[10px] font-bold">
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-800" />
-                  HIGH (85-100)
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-amber-400 border border-amber-700" />
-                  MODERATE (60-84)
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 bg-rose-500 border border-rose-800" />
-                  LOW (0-59)
-                </span>
+              {/* Thermal Legend Quick Guide & Filter */}
+              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
+                <span className="text-[#141414]/60 uppercase text-[9px] mr-0.5">Scale:</span>
+                <button
+                  type="button"
+                  onClick={() => setQualityFilter(qualityFilter === 'optimal' ? 'all' : 'optimal')}
+                  className={`flex items-center gap-1.5 px-1.5 py-0.5 border cursor-pointer transition-all ${
+                    qualityFilter === 'optimal'
+                      ? 'border-emerald-900 bg-emerald-100 ring-1 ring-emerald-800'
+                      : 'border-emerald-700/60 bg-emerald-50 hover:bg-emerald-100'
+                  }`}
+                  title="Green indicates optimal compliance (85-100 pts) with Google Search Essentials"
+                >
+                  <span className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-900 inline-block" />
+                  <span className="text-emerald-950 font-black">OPTIMAL (85–100)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQualityFilter(qualityFilter === 'warning' ? 'all' : 'warning')}
+                  className={`flex items-center gap-1.5 px-1.5 py-0.5 border cursor-pointer transition-all ${
+                    qualityFilter === 'warning'
+                      ? 'border-amber-900 bg-amber-100 ring-1 ring-amber-800'
+                      : 'border-amber-700/60 bg-amber-50 hover:bg-amber-100'
+                  }`}
+                  title="Amber indicates moderate issues (60-84 pts) requiring optimization"
+                >
+                  <span className="w-2.5 h-2.5 bg-amber-400 border border-amber-900 inline-block" />
+                  <span className="text-amber-950 font-black">WARNING (60–84)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQualityFilter(qualityFilter === 'critical' ? 'all' : 'critical')}
+                  className={`flex items-center gap-1.5 px-1.5 py-0.5 border cursor-pointer transition-all ${
+                    qualityFilter === 'critical'
+                      ? 'border-rose-900 bg-rose-100 ring-1 ring-rose-800'
+                      : 'border-rose-700/60 bg-rose-50 hover:bg-rose-100'
+                  }`}
+                  title="Red indicates critical indexing blockers or missing tags (0-59 pts)"
+                >
+                  <span className="w-2.5 h-2.5 bg-rose-500 border border-rose-900 inline-block" />
+                  <span className="text-rose-950 font-black">CRITICAL (0–59)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLegendExpanded(!isLegendExpanded)}
+                  className="flex items-center gap-1 px-1.5 py-0.5 border border-[#141414] bg-neutral-100 text-[#141414] hover:bg-[#E4E3E0] text-[10px] font-black cursor-pointer ml-1"
+                >
+                  <Info className="h-3 w-3 text-blue-700" />
+                  <span>{isLegendExpanded ? 'HIDE GUIDE' : 'METRIC GUIDE'}</span>
+                </button>
               </div>
             </div>
 
@@ -1037,6 +1393,26 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
               <p className="text-[11px] text-[#141414]/80 mt-1">
                 {selectedZone.impactSummary}
               </p>
+
+              {/* Color Intensity Rationale Callout */}
+              <div className="mt-3 p-2.5 border border-[#141414] bg-neutral-50 text-[10px] space-y-1">
+                <div className="flex items-center gap-1.5 font-black uppercase text-[#141414]">
+                  <span
+                    className={`w-2 h-2 border border-[#141414] inline-block ${getHeatmapColor(
+                      selectedZone.status,
+                      'bg'
+                    )}`}
+                  />
+                  <span>Thermal Intensity: {selectedZone.status.toUpperCase()} ({selectedZone.score}/100)</span>
+                </div>
+                <p className="text-[#141414]/80 leading-relaxed">
+                  {selectedZone.status === 'optimal'
+                    ? 'Meets or exceeds Google Search Essentials thresholds. High crawl priority and zero structural penalties.'
+                    : selectedZone.status === 'warning'
+                    ? 'Suboptimal metrics detected. Element is functional but risks snippet truncation or diluted keyword weighting.'
+                    : 'Critical SEO deficiency detected. Violates baseline search guidelines and risks indexing demotion or mobile exclusion.'}
+                </p>
+              </div>
             </div>
 
             {/* Detected Metrics Grid */}
