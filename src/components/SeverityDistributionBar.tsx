@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertOctagon, AlertTriangle, CheckCircle2, BarChart2 } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, CheckCircle2, BarChart2, TrendingDown } from 'lucide-react';
 
 interface SeverityDistributionBarProps {
   criticalCount: number;
@@ -9,6 +9,8 @@ interface SeverityDistributionBarProps {
   activeFilter: string; // 'all' | 'critical' | 'warning' | 'good'
   onSelectFilter: (filter: 'all' | 'critical' | 'warning' | 'good') => void;
   categoryName?: string;
+  onViewImprovementProgress?: () => void;
+  isProgressExpanded?: boolean;
 }
 
 export const SeverityDistributionBar: React.FC<SeverityDistributionBarProps> = ({
@@ -19,6 +21,8 @@ export const SeverityDistributionBar: React.FC<SeverityDistributionBarProps> = (
   activeFilter,
   onSelectFilter,
   categoryName,
+  onViewImprovementProgress,
+  isProgressExpanded = false,
 }) => {
   if (totalCount === 0) {
     return null;
@@ -112,6 +116,22 @@ export const SeverityDistributionBar: React.FC<SeverityDistributionBarProps> = (
           <span className="text-[10px] text-[#141414]/60 pl-1 font-mono">
             TOTAL: {totalCount}
           </span>
+
+          {onViewImprovementProgress && (
+            <button
+              type="button"
+              onClick={onViewImprovementProgress}
+              title="Compare Critical vs Warning issue counts over the last 5 audit runs"
+              className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-black uppercase border border-[#141414] transition-all cursor-pointer ml-auto ${
+                isProgressExpanded
+                  ? 'bg-emerald-600 text-white shadow-[1px_1px_0px_#141414]'
+                  : 'bg-[#141414] text-white hover:bg-neutral-800 shadow-[1px_1px_0px_#888888]'
+              }`}
+            >
+              <TrendingDown className="h-3 w-3 text-emerald-300" />
+              <span>{isProgressExpanded ? 'FECHAR 5-RUNS' : 'VER EVOLUÇÃO (5 RUNS)'}</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -35,7 +35,7 @@ import {
   BarChart3,
   ListTodo,
 } from 'lucide-react';
-import { AuditReport, AuditItem, MetaTagsData } from '../types';
+import { AuditReport, AuditItem, MetaTagsData, SavedAuditSummary } from '../types';
 import {
   SEO_CHECKLIST_TASKS_DEF,
   ProgressTaskDef,
@@ -47,10 +47,12 @@ import {
   loadTimelineEvents,
   saveTimelineEvents,
 } from '../utils/seoProgressStorage';
+import { CompetitorVisibilityRankBenchmark } from './CompetitorVisibilityRankBenchmark';
 
 interface SeoProgressDashboardProps {
   report: AuditReport;
   targetUrl?: string;
+  savedAudits?: SavedAuditSummary[];
   onOpenChecklist?: () => void;
   onOpenAiFix?: (item: AuditItem) => void;
 }
@@ -58,6 +60,7 @@ interface SeoProgressDashboardProps {
 export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
   report,
   targetUrl: propUrl,
+  savedAudits = [],
   onOpenChecklist,
   onOpenAiFix,
 }) => {
@@ -619,6 +622,18 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
               <span>{copiedReport ? 'Copied MD' : 'Export'}</span>
             </button>
 
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('seo-competitor-benchmark-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-3 py-1.5 text-xs font-black uppercase bg-amber-400 hover:bg-amber-300 text-[#141414] border border-[#141414] shadow-[2px_2px_0px_#141414] cursor-pointer flex items-center gap-1.5 transition-all"
+            >
+              <Target className="h-3.5 w-3.5" />
+              <span>Competitor Benchmark</span>
+            </button>
+
             {onOpenChecklist && (
               <button
                 type="button"
@@ -979,6 +994,15 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
             </div>
           </button>
         </div>
+      </div>
+
+      {/* Competitive Benchmark & Search Visibility vs Top 3 Competitors based on Historical Crawl Data */}
+      <div id="seo-competitor-benchmark-section" className="p-4 sm:p-5 bg-neutral-100 border-b-2 border-[#141414]">
+        <CompetitorVisibilityRankBenchmark
+          report={report}
+          targetUrl={targetUrl}
+          savedAudits={savedAudits}
+        />
       </div>
 
       {/* Unlockable Milestone Achievements */}

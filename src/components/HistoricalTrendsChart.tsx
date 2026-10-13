@@ -22,22 +22,28 @@ import {
   Clock,
   Sparkles,
 } from 'lucide-react';
-import { SavedAuditSummary } from '../types';
+import { SavedAuditSummary, AuditReport } from '../types';
 import { formatDate } from '../utils/formatters';
+import { IssueImprovementProgressChart } from './IssueImprovementProgressChart';
 
 interface HistoricalTrendsChartProps {
   savedAudits: SavedAuditSummary[];
   currentUrl?: string;
+  currentReport?: AuditReport | null;
   onSelectAudit?: (id: string) => void;
   onReaudit?: (url: string) => void;
+  defaultViewMode?: 'critical-vs-warning' | 'scores' | 'both';
 }
 
 export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
   savedAudits,
   currentUrl,
+  currentReport,
   onSelectAudit,
   onReaudit,
+  defaultViewMode = 'critical-vs-warning',
 }) => {
+  const [viewMode, setViewMode] = useState<'critical-vs-warning' | 'scores' | 'both'>(defaultViewMode);
   // Extract unique URLs
   const uniqueUrls = useMemo(() => {
     const urls = Array.from(new Set(savedAudits.map((a) => a.targetUrl)));
@@ -179,7 +185,7 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
     return null;
   };
 
-  if (savedAudits.length === 0) {
+  if (savedAudits.length === 0 && !currentReport) {
     return (
       <div className="border-2 border-[#141414] bg-white p-8 text-center font-mono shadow-[4px_4px_0px_#141414]">
         <Activity className="h-8 w-8 text-[#141414]/40 mx-auto mb-2" />
@@ -192,61 +198,134 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
   }
 
   return (
-    <div className="border-2 border-[#141414] bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#141414] font-mono text-[#141414] space-y-5">
-      {/* Header & URL Selector */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#141414] pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-[#141414]" />
-            <h3 className="text-xs sm:text-sm font-black text-[#141414] uppercase">
-              TIMELINE EVOLUTION & HISTORICAL TRENDS
-            </h3>
+    <div className="space-y-6">
+      {/* Primary View Switcher: Critical vs Warning 5-Run Comparison vs Score Timeline */}
+      <div className="border-2 border-[#141414] bg-white p-3 sm:p-4 shadow-[4px_4px_0px_#141414] font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Activity className="h-4 w-4 text-[#141414]" />
+          <div>
+            <span className="text-xs font-black uppercase tracking-wide text-[#141414]">
+              HISTORICAL PROGRESSION VIEW
+            </span>
+            <span className="text-[10px] text-[#141414]/70 block">
+              Compare issue reduction velocity or score trajectory
+            </span>
           </div>
-          <p className="text-[11px] text-[#141414]/70 mt-0.5">
-            Track how security, SEO, performance, and best practices scores trend over time across audits.
-          </p>
         </div>
 
-        {/* URL Filter selector */}
-        <div className="flex items-center gap-2 shrink-0">
-          <label htmlFor="url-filter-select" className="text-[11px] font-bold uppercase text-[#141414]">
-            FILTER URL:
-          </label>
-          <select
-            id="url-filter-select"
-            value={selectedUrl}
-            onChange={(e) => setSelectedUrl(e.target.value)}
-            className="bg-[#E4E3E0] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-bold text-[#141414] focus:outline-none focus:bg-white"
+        <div className="flex items-center bg-[#E4E3E0] p-1 border-2 border-[#141414]">
+          <button
+            type="button"
+            onClick={() => setViewMode('critical-vs-warning')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer ${
+              viewMode === 'critical-vs-warning'
+                ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                : 'text-[#141414] hover:bg-white'
+            }`}
           >
-            {uniqueUrls.length > 1 && <option value="all">ALL URLS ({uniqueUrls.length})</option>}
-            {uniqueUrls.map((url) => {
-              let display = url;
-              try {
-                display = new URL(url).hostname;
-              } catch {
-                // ignore
-              }
-              return (
-                <option key={url} value={url}>
-                  {display}
-                </option>
-              );
-            })}
-          </select>
+            <span className="flex items-center gap-0.5">
+              <span className="h-2 w-2 bg-rose-600 inline-block border border-black" />
+              <span className="h-2 w-2 bg-amber-400 inline-block border border-black" />
+            </span>
+            <span>CRITICAL VS WARNING (5 RUNS)</span>
+          </button>
 
-          {onReaudit && selectedUrl !== 'all' && (
-            <button
-              type="button"
-              onClick={() => onReaudit(selectedUrl)}
-              className="flex items-center gap-1 bg-[#141414] text-white hover:bg-black px-2.5 py-1 text-xs font-black uppercase border border-[#141414] shadow-[2px_2px_0px_#888888] cursor-pointer"
-              title="Run a new audit right now to record a fresh point on the timeline"
-            >
-              <RefreshCw className="h-3 w-3" />
-              <span>RE-AUDIT</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setViewMode('scores')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer ${
+              viewMode === 'scores'
+                ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                : 'text-[#141414] hover:bg-white'
+            }`}
+          >
+            <Activity className="h-3.5 w-3.5" />
+            <span>SCORE TIMELINE</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode('both')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black uppercase transition-all cursor-pointer hidden md:flex ${
+              viewMode === 'both'
+                ? 'bg-[#141414] text-white shadow-[2px_2px_0px_#888888]'
+                : 'text-[#141414] hover:bg-white'
+            }`}
+          >
+            <Layers className="h-3.5 w-3.5" />
+            <span>SHOW BOTH</span>
+          </button>
         </div>
       </div>
+
+      {/* 1. Critical vs Warning 5-Run Comparison Visualization */}
+      {(viewMode === 'critical-vs-warning' || viewMode === 'both') && (
+        <IssueImprovementProgressChart
+          savedAudits={savedAudits}
+          currentUrl={currentUrl}
+          currentReport={currentReport}
+          onSelectAudit={onSelectAudit}
+          onReaudit={onReaudit}
+        />
+      )}
+
+      {/* 2. Score Timeline Line Chart */}
+      {(viewMode === 'scores' || viewMode === 'both') && savedAudits.length > 0 && (
+        <div className="border-2 border-[#141414] bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#141414] font-mono text-[#141414] space-y-5">
+          {/* Header & URL Selector */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-[#141414] pb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-[#141414]" />
+                <h3 className="text-xs sm:text-sm font-black text-[#141414] uppercase">
+                  METRIC SCORE TIMELINE (0–100 PTS)
+                </h3>
+              </div>
+              <p className="text-[11px] text-[#141414]/70 mt-0.5">
+                Track how security, SEO, performance, and best practices scores trend over time across audits.
+              </p>
+            </div>
+
+            {/* URL Filter selector */}
+            <div className="flex items-center gap-2 shrink-0">
+              <label htmlFor="url-filter-select" className="text-[11px] font-bold uppercase text-[#141414]">
+                FILTER URL:
+              </label>
+              <select
+                id="url-filter-select"
+                value={selectedUrl}
+                onChange={(e) => setSelectedUrl(e.target.value)}
+                className="bg-[#E4E3E0] border-2 border-[#141414] px-2.5 py-1 text-xs font-mono font-bold text-[#141414] focus:outline-none focus:bg-white"
+              >
+                {uniqueUrls.length > 1 && <option value="all">ALL URLS ({uniqueUrls.length})</option>}
+                {uniqueUrls.map((url) => {
+                  let display = url;
+                  try {
+                    display = new URL(url).hostname;
+                  } catch {
+                    // ignore
+                  }
+                  return (
+                    <option key={url} value={url}>
+                      {display}
+                    </option>
+                  );
+                })}
+              </select>
+
+              {onReaudit && selectedUrl !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => onReaudit(selectedUrl)}
+                  className="flex items-center gap-1 bg-[#141414] text-white hover:bg-black px-2.5 py-1 text-xs font-black uppercase border border-[#141414] shadow-[2px_2px_0px_#888888] cursor-pointer"
+                  title="Run a new audit right now to record a fresh point on the timeline"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  <span>RE-AUDIT</span>
+                </button>
+              )}
+            </div>
+          </div>
 
       {/* KPI Stats bar */}
       {stats && (
@@ -519,6 +598,8 @@ export const HistoricalTrendsChart: React.FC<HistoricalTrendsChartProps> = ({
           </table>
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 };

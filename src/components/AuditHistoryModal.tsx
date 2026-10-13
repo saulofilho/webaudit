@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, History, Trash2, ArrowRight, Calendar, Activity, ListFilter } from 'lucide-react';
-import { SavedAuditSummary } from '../types';
+import { SavedAuditSummary, AuditReport } from '../types';
 import { formatDate } from '../utils/formatters';
 import { HistoricalTrendsChart } from './HistoricalTrendsChart';
 
@@ -9,6 +9,7 @@ interface AuditHistoryModalProps {
   onClose: () => void;
   savedAudits: SavedAuditSummary[];
   currentUrl?: string;
+  currentReport?: AuditReport | null;
   onSelectAudit: (id: string) => void;
   onClearHistory: () => void;
   onReaudit?: (url: string) => void;
@@ -19,11 +20,12 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
   onClose,
   savedAudits,
   currentUrl,
+  currentReport,
   onSelectAudit,
   onClearHistory,
   onReaudit,
 }) => {
-  const [modalTab, setModalTab] = useState<'list' | 'trends'>('trends');
+  const [modalTab, setModalTab] = useState<'trends' | 'list'>('trends');
 
   if (!isOpen) return null;
 
@@ -92,6 +94,7 @@ export const AuditHistoryModal: React.FC<AuditHistoryModalProps> = ({
             <HistoricalTrendsChart
               savedAudits={savedAudits}
               currentUrl={currentUrl}
+              currentReport={currentReport}
               onSelectAudit={(id) => {
                 onSelectAudit(id);
                 onClose();

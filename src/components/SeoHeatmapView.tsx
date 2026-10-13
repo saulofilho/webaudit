@@ -59,6 +59,7 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
   const [qualityFilter, setQualityFilter] = useState<QualityFilter>('all');
   const [copiedZoneId, setCopiedZoneId] = useState<string | null>(null);
   const [isLegendExpanded, setIsLegendExpanded] = useState<boolean>(true);
+  const [activeLegendTooltip, setActiveLegendTooltip] = useState<'optimal' | 'warning' | 'critical' | null>(null);
 
   const meta = report.rawData.metaTags;
   const isHttps = report.rawData.protocol === 'https:' || report.targetUrl.startsWith('https://');
@@ -478,6 +479,10 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
         if (type === 'badge') return 'bg-rose-100 text-rose-950 border-rose-700';
         return 'shadow-[0_0_12px_rgba(244,63,94,0.45)]';
     }
+  };
+
+  const isZoneDimmed = (status: 'optimal' | 'warning' | 'critical') => {
+    return qualityFilter !== 'all' && qualityFilter !== status;
   };
 
   return (
@@ -1031,6 +1036,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                   <div
                     onClick={() => setSelectedZoneId('zone-meta')}
                     className={`border-2 p-3 cursor-pointer transition-all ${
+                      isZoneDimmed(zones[0].status) ? 'opacity-30 grayscale-[25%]' : ''
+                    } ${
                       selectedZoneId === 'zone-meta'
                         ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                         : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1059,6 +1066,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                   <div
                     onClick={() => setSelectedZoneId('zone-social')}
                     className={`border-2 p-3 cursor-pointer transition-all ${
+                      isZoneDimmed(zones[1].status) ? 'opacity-30 grayscale-[25%]' : ''
+                    } ${
                       selectedZoneId === 'zone-social'
                         ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                         : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1087,6 +1096,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                   <div
                     onClick={() => setSelectedZoneId('zone-h1')}
                     className={`border-2 p-3.5 cursor-pointer transition-all ${
+                      isZoneDimmed(zones[2].status) ? 'opacity-30 grayscale-[25%]' : ''
+                    } ${
                       selectedZoneId === 'zone-h1'
                         ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                         : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1117,6 +1128,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                     <div
                       onClick={() => setSelectedZoneId('zone-content')}
                       className={`border-2 p-3 cursor-pointer transition-all ${
+                        isZoneDimmed(zones[3].status) ? 'opacity-30 grayscale-[25%]' : ''
+                      } ${
                         selectedZoneId === 'zone-content'
                           ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                           : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1145,6 +1158,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                     <div
                       onClick={() => setSelectedZoneId('zone-media')}
                       className={`border-2 p-3 cursor-pointer transition-all ${
+                        isZoneDimmed(zones[4].status) ? 'opacity-30 grayscale-[25%]' : ''
+                      } ${
                         selectedZoneId === 'zone-media'
                           ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                           : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1174,6 +1189,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                   <div
                     onClick={() => setSelectedZoneId('zone-links')}
                     className={`border-2 p-3 cursor-pointer transition-all ${
+                      isZoneDimmed(zones[5].status) ? 'opacity-30 grayscale-[25%]' : ''
+                    } ${
                       selectedZoneId === 'zone-links'
                         ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                         : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1202,6 +1219,8 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                   <div
                     onClick={() => setSelectedZoneId('zone-security')}
                     className={`border-2 p-3 cursor-pointer transition-all ${
+                      isZoneDimmed(zones[6].status) ? 'opacity-30 grayscale-[25%]' : ''
+                    } ${
                       selectedZoneId === 'zone-security'
                         ? 'border-[#141414] ring-2 ring-[#141414] bg-white'
                         : 'border-[#141414]/40 bg-white hover:border-[#141414]'
@@ -1366,6 +1385,311 @@ export const SeoHeatmapView: React.FC<SeoHeatmapViewProps> = ({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Interactive Legend Below Heatmap Container */}
+          <div className="border-2 border-[#141414] bg-white p-4 shadow-[4px_4px_0px_#141414] space-y-3">
+            {/* Legend Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#141414] pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="p-1 border border-[#141414] bg-neutral-100 shadow-xs">
+                  <Flame className="h-4 w-4 text-[#141414]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-black uppercase tracking-tight text-[#141414]">
+                      Interactive SEO Impact Intensity Legend
+                    </h4>
+                    {qualityFilter !== 'all' && (
+                      <span className="text-[9px] font-black uppercase px-1.5 py-0.2 bg-amber-200 text-amber-950 border border-amber-600">
+                        Filter: {qualityFilter}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#141414]/70 mt-0.5">
+                    Color swatches map to SEO impact intensity. Click a level to filter heatmap zones; hover or tap ⓘ for explanatory tooltips.
+                  </p>
+                </div>
+              </div>
+
+              {qualityFilter !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setQualityFilter('all')}
+                  className="self-start sm:self-auto text-[10px] font-black uppercase px-2 py-1 bg-neutral-100 hover:bg-neutral-200 border border-[#141414] cursor-pointer flex items-center gap-1 shadow-xs transition-colors shrink-0"
+                >
+                  <span>Reset Filter</span>
+                  <span className="text-[9px] bg-[#141414] text-white px-1 leading-tight">✕</span>
+                </button>
+              )}
+            </div>
+
+            {/* 3 Interactive Swatch Cards with Explanatory Tooltips */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative">
+              {/* LEVEL 1: GREEN = High Optimization */}
+              <div
+                className={`relative border-2 p-3 cursor-pointer transition-all ${
+                  qualityFilter === 'optimal'
+                    ? 'border-emerald-800 bg-emerald-50/90 ring-2 ring-emerald-600 shadow-[2px_2px_0px_#141414]'
+                    : 'border-[#141414]/40 bg-white hover:border-emerald-600 hover:bg-emerald-50/30'
+                }`}
+                onClick={() => setQualityFilter(qualityFilter === 'optimal' ? 'all' : 'optimal')}
+                onMouseEnter={() => setActiveLegendTooltip('optimal')}
+                onMouseLeave={() => setActiveLegendTooltip((prev) => (prev === 'optimal' ? null : prev))}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* Color Swatch */}
+                    <span className="w-4 h-4 bg-emerald-500 border-2 border-emerald-950 shrink-0 shadow-xs inline-block" />
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] font-black uppercase text-[#141414]">Green</span>
+                        <span className="text-[9px] font-bold text-emerald-900 bg-emerald-100 px-1 border border-emerald-600">
+                          85–100 pts
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-emerald-900 block leading-tight">
+                        High Optimization
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tooltip trigger button */}
+                  <button
+                    type="button"
+                    aria-label="High Optimization explanatory tooltip"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveLegendTooltip(activeLegendTooltip === 'optimal' ? null : 'optimal');
+                    }}
+                    className="text-[#141414]/60 hover:text-emerald-900 p-0.5 rounded-xs hover:bg-emerald-100 transition-colors cursor-pointer"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-[#141414]/75 mt-2 line-clamp-2 leading-relaxed">
+                  Full Google Search Essentials compliance. Valid title/meta, schema JSON-LD, single H1 &amp; HTTPS.
+                </p>
+
+                <div className="mt-2.5 pt-1.5 border-t border-[#141414]/15 flex items-center justify-between text-[9px] font-bold">
+                  <span className="text-emerald-900">{optimalCount} zone(s)</span>
+                  <span className="text-[#141414]/60 uppercase">
+                    {qualityFilter === 'optimal' ? 'Active Filter ✓' : 'Click to filter'}
+                  </span>
+                </div>
+
+                {/* Explanatory Tooltip Popover */}
+                {activeLegendTooltip === 'optimal' && (
+                  <div
+                    role="tooltip"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 z-40 sm:w-72 bg-[#141414] text-white p-3 border-2 border-emerald-400 shadow-[4px_4px_0px_rgba(0,0,0,0.6)] text-left"
+                  >
+                    <div className="flex items-center justify-between pb-1.5 border-b border-white/20 mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-emerald-400 border border-white shrink-0" />
+                        <span className="text-[11px] font-black uppercase text-emerald-300">
+                          Green: High Optimization
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-white/70 bg-white/10 px-1 font-mono">85–100 PTS</span>
+                    </div>
+                    <div className="space-y-1.5 text-[10px] leading-relaxed text-neutral-200">
+                      <p>
+                        <strong className="text-white">Definition:</strong> Meets or exceeds Google Search Essentials, Core Web Vitals, and semantic HTML5 standards.
+                      </p>
+                      <p>
+                        <strong className="text-white">Audited Signals:</strong> Title length within 30–65 chars, rich meta description, schema JSON-LD detected, active HTTPS, single valid H1 tag.
+                      </p>
+                      <p>
+                        <strong className="text-white">Search Impact:</strong> Maximizes Googlebot crawl budget and optimizes URL eligibility for rich snippets and site links.
+                      </p>
+                    </div>
+                    <div className="mt-2 pt-1 border-t border-white/15 text-[9px] text-emerald-300 font-bold flex items-center justify-between">
+                      <span>Threshold: ≥ 85 pts</span>
+                      <span>Zero ranking penalties</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* LEVEL 2: YELLOW = Moderate */}
+              <div
+                className={`relative border-2 p-3 cursor-pointer transition-all ${
+                  qualityFilter === 'warning'
+                    ? 'border-amber-700 bg-amber-50/90 ring-2 ring-amber-500 shadow-[2px_2px_0px_#141414]'
+                    : 'border-[#141414]/40 bg-white hover:border-amber-600 hover:bg-amber-50/30'
+                }`}
+                onClick={() => setQualityFilter(qualityFilter === 'warning' ? 'all' : 'warning')}
+                onMouseEnter={() => setActiveLegendTooltip('warning')}
+                onMouseLeave={() => setActiveLegendTooltip((prev) => (prev === 'warning' ? null : prev))}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* Color Swatch */}
+                    <span className="w-4 h-4 bg-amber-400 border-2 border-amber-950 shrink-0 shadow-xs inline-block" />
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] font-black uppercase text-[#141414]">Yellow</span>
+                        <span className="text-[9px] font-bold text-amber-900 bg-amber-100 px-1 border border-amber-600">
+                          60–84 pts
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-amber-950 block leading-tight">
+                        Moderate
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tooltip trigger button */}
+                  <button
+                    type="button"
+                    aria-label="Moderate explanatory tooltip"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveLegendTooltip(activeLegendTooltip === 'warning' ? null : 'warning');
+                    }}
+                    className="text-[#141414]/60 hover:text-amber-900 p-0.5 rounded-xs hover:bg-amber-100 transition-colors cursor-pointer"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-[#141414]/75 mt-2 line-clamp-2 leading-relaxed">
+                  Suboptimal metrics or warnings. Non-blocking but risks SERP snippet truncation or diluted keyword authority.
+                </p>
+
+                <div className="mt-2.5 pt-1.5 border-t border-[#141414]/15 flex items-center justify-between text-[9px] font-bold">
+                  <span className="text-amber-950">{warningCount} zone(s)</span>
+                  <span className="text-[#141414]/60 uppercase">
+                    {qualityFilter === 'warning' ? 'Active Filter ✓' : 'Click to filter'}
+                  </span>
+                </div>
+
+                {/* Explanatory Tooltip Popover */}
+                {activeLegendTooltip === 'warning' && (
+                  <div
+                    role="tooltip"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 z-40 sm:w-72 bg-[#141414] text-white p-3 border-2 border-amber-400 shadow-[4px_4px_0px_rgba(0,0,0,0.6)] text-left"
+                  >
+                    <div className="flex items-center justify-between pb-1.5 border-b border-white/20 mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-amber-400 border border-white shrink-0" />
+                        <span className="text-[11px] font-black uppercase text-amber-300">
+                          Yellow: Moderate
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-white/70 bg-white/10 px-1 font-mono">60–84 PTS</span>
+                    </div>
+                    <div className="space-y-1.5 text-[10px] leading-relaxed text-neutral-200">
+                      <p>
+                        <strong className="text-white">Definition:</strong> Functional elements with minor gaps that dilute ranking potential without completely blocking indexing.
+                      </p>
+                      <p>
+                        <strong className="text-white">Audited Signals:</strong> Truncated title/description, missing image alt tags, missing external link noopener tags, or flat heading structures.
+                      </p>
+                      <p>
+                        <strong className="text-white">Search Impact:</strong> Search engines may rewrite SERP snippets or demote topical relevance for competitive queries.
+                      </p>
+                    </div>
+                    <div className="mt-2 pt-1 border-t border-white/15 text-[9px] text-amber-300 font-bold flex items-center justify-between">
+                      <span>Threshold: 60–84 pts</span>
+                      <span>Remediation recommended</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* LEVEL 3: RED = Needs Attention */}
+              <div
+                className={`relative border-2 p-3 cursor-pointer transition-all ${
+                  qualityFilter === 'critical'
+                    ? 'border-rose-800 bg-rose-50/90 ring-2 ring-rose-600 shadow-[2px_2px_0px_#141414]'
+                    : 'border-[#141414]/40 bg-white hover:border-rose-600 hover:bg-rose-50/30'
+                }`}
+                onClick={() => setQualityFilter(qualityFilter === 'critical' ? 'all' : 'critical')}
+                onMouseEnter={() => setActiveLegendTooltip('critical')}
+                onMouseLeave={() => setActiveLegendTooltip((prev) => (prev === 'critical' ? null : prev))}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* Color Swatch */}
+                    <span className="w-4 h-4 bg-rose-500 border-2 border-rose-950 shrink-0 shadow-xs inline-block" />
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] font-black uppercase text-[#141414]">Red</span>
+                        <span className="text-[9px] font-bold text-rose-900 bg-rose-100 px-1 border border-rose-600">
+                          0–59 pts
+                        </span>
+                      </div>
+                      <span className="text-xs font-black text-rose-950 block leading-tight">
+                        Needs Attention
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tooltip trigger button */}
+                  <button
+                    type="button"
+                    aria-label="Needs Attention explanatory tooltip"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveLegendTooltip(activeLegendTooltip === 'critical' ? null : 'critical');
+                    }}
+                    className="text-[#141414]/60 hover:text-rose-900 p-0.5 rounded-xs hover:bg-rose-100 transition-colors cursor-pointer"
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-[#141414]/75 mt-2 line-clamp-2 leading-relaxed">
+                  Critical SEO blocker or security risk. Violates baseline search guidelines, causing crawler abandonment or penalties.
+                </p>
+
+                <div className="mt-2.5 pt-1.5 border-t border-[#141414]/15 flex items-center justify-between text-[9px] font-bold">
+                  <span className="text-rose-900">{criticalCount} zone(s)</span>
+                  <span className="text-[#141414]/60 uppercase">
+                    {qualityFilter === 'critical' ? 'Active Filter ✓' : 'Click to filter'}
+                  </span>
+                </div>
+
+                {/* Explanatory Tooltip Popover */}
+                {activeLegendTooltip === 'critical' && (
+                  <div
+                    role="tooltip"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 z-40 sm:w-72 bg-[#141414] text-white p-3 border-2 border-rose-400 shadow-[4px_4px_0px_rgba(0,0,0,0.6)] text-left"
+                  >
+                    <div className="flex items-center justify-between pb-1.5 border-b border-white/20 mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-rose-500 border border-white shrink-0" />
+                        <span className="text-[11px] font-black uppercase text-rose-300">
+                          Red: Needs Attention
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-white/70 bg-white/10 px-1 font-mono">0–59 PTS</span>
+                    </div>
+                    <div className="space-y-1.5 text-[10px] leading-relaxed text-neutral-200">
+                      <p>
+                        <strong className="text-white">Definition:</strong> Severe structural failure or transport defect violating baseline Google Webmaster guidelines.
+                      </p>
+                      <p>
+                        <strong className="text-white">Audited Signals:</strong> Missing title tag, zero or duplicate H1 headings, insecure HTTP protocol, broken anchor hierarchy.
+                      </p>
+                      <p>
+                        <strong className="text-white">Search Impact:</strong> High probability of indexing demotion, mobile exclusion, or total exclusion from primary search results.
+                      </p>
+                    </div>
+                    <div className="mt-2 pt-1 border-t border-white/15 text-[9px] text-rose-300 font-bold flex items-center justify-between">
+                      <span>Threshold: 0–59 pts</span>
+                      <span>Immediate fix required</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

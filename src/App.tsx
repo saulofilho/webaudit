@@ -63,6 +63,7 @@ import { HeadersInspector } from './components/HeadersInspector';
 import { TechStackView } from './components/TechStackView';
 import { SiteComparator } from './components/SiteComparator';
 import { HistoricalTrendsChart } from './components/HistoricalTrendsChart';
+import { IssueImprovementProgressChart } from './components/IssueImprovementProgressChart';
 import { ExportModal } from './components/ExportModal';
 import { GitHubPagesModal } from './components/GitHubPagesModal';
 import { AuditHistoryModal } from './components/AuditHistoryModal';
@@ -123,6 +124,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [completedFixIds, setCompletedFixIds] = useState<Record<string, boolean>>({});
   const [isQuickWinsOnly, setIsQuickWinsOnly] = useState<boolean>(false);
+  const [showInlineIssueProgress, setShowInlineIssueProgress] = useState<boolean>(false);
 
   // Internationalization language state
   const [language, setLanguage] = useState<Language>(() => {
@@ -207,6 +209,10 @@ export default function App() {
   }, [currentReport?.targetUrl]);
 
   const saveReportToHistory = (report: AuditReport) => {
+    const criticalCount = report.items.filter((i) => i.severity === 'critical').length;
+    const warningCount = report.items.filter((i) => i.severity === 'warning').length;
+    const goodCount = report.items.filter((i) => i.severity === 'good').length;
+
     const summary: SavedAuditSummary = {
       id: report.id,
       targetUrl: report.targetUrl,
@@ -217,6 +223,9 @@ export default function App() {
       seoScore: report.categories.seo.score,
       bestPracticesScore: report.categories.best_practices.score,
       perfScore: report.categories.performance_accessibility.score,
+      criticalCount,
+      warningCount,
+      goodCount,
     };
 
     setSavedAudits((prev) => {
@@ -1248,6 +1257,7 @@ export default function App() {
               <HistoricalTrendsChart
                 savedAudits={savedAudits}
                 currentUrl={currentReport.targetUrl}
+                currentReport={currentReport}
                 onSelectAudit={(id) => {
                   const item = savedAudits.find((a) => a.id === id);
                   if (item) handleAnalyze(item.targetUrl);
@@ -1437,6 +1447,7 @@ export default function App() {
                     <SeoProgressDashboard
                       report={currentReport}
                       targetUrl={currentReport.targetUrl}
+                      savedAudits={savedAudits}
                       onOpenChecklist={() => {
                         const el = document.getElementById('seo-audit-checklist-section');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -1532,7 +1543,25 @@ export default function App() {
                   activeFilter={severityFilter}
                   onSelectFilter={(filter) => setSeverityFilter(filter)}
                   categoryName={categoryLabel}
+                  onViewImprovementProgress={() => setShowInlineIssueProgress((prev) => !prev)}
+                  isProgressExpanded={showInlineIssueProgress}
                 />
+
+                {/* Inline 5-Run Critical vs Warning Progression Comparison Visualization */}
+                {showInlineIssueProgress && (
+                  <div className="pt-2 animate-in fade-in duration-200">
+                    <IssueImprovementProgressChart
+                      savedAudits={savedAudits}
+                      currentUrl={currentReport.targetUrl}
+                      currentReport={currentReport}
+                      onSelectAudit={(id) => {
+                        const item = savedAudits.find((a) => a.id === id);
+                        if (item) handleAnalyze(item.targetUrl);
+                      }}
+                      onReaudit={(url) => handleAnalyze(url)}
+                    />
+                  </div>
+                )}
 
                 {/* Filters Row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 border-2 border-[#141414] bg-white shadow-[2px_2px_0px_#141414]">
@@ -1764,6 +1793,7 @@ export default function App() {
         onClose={() => setIsHistoryOpen(false)}
         savedAudits={savedAudits}
         currentUrl={currentReport?.targetUrl}
+        currentReport={currentReport}
         onSelectAudit={(id) => {
           const found = savedAudits.find((a) => a.id === id);
           if (found) handleAnalyze(found.targetUrl);

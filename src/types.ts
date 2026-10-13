@@ -166,6 +166,9 @@ export interface SavedAuditSummary {
   seoScore: number;
   bestPracticesScore: number;
   perfScore: number;
+  criticalCount?: number;
+  warningCount?: number;
+  goodCount?: number;
 }
 
 export type NavigationTab =
