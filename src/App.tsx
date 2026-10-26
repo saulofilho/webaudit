@@ -111,6 +111,7 @@ import { VisualSoarPlaybookView } from './components/secscan/VisualSoarPlaybookV
 import { CyberThreatIntelHubView } from './components/secscan/CyberThreatIntelHubView';
 import { CommandPaletteModal } from './components/secscan/CommandPaletteModal';
 import { GoogleRankingAcceleratorModal } from './components/GoogleRankingAcceleratorModal';
+import { WeeklyCompetitorAlertModal } from './components/WeeklyCompetitorAlertModal';
 
 const STORAGE_KEY = 'webaudit_history_v1';
 const ACTION_PLAN_STORAGE_PREFIX = 'webaudit_actionplan_v1_';
@@ -157,6 +158,7 @@ export default function App() {
   const [isSeoChecklistOpen, setIsSeoChecklistOpen] = useState<boolean>(false);
   const [isProposalOpen, setIsProposalOpen] = useState<boolean>(false);
   const [isMonitorOpen, setIsMonitorOpen] = useState<boolean>(false);
+  const [isCompetitorAlertsOpen, setIsCompetitorAlertsOpen] = useState<boolean>(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
   const [isGoogleAcceleratorOpen, setIsGoogleAcceleratorOpen] = useState<boolean>(false);
   const [selectedAiFixItem, setSelectedAiFixItem] = useState<AuditItem | null>(null);
@@ -462,6 +464,7 @@ export default function App() {
         onOpenSeoChecklist={() => setIsSeoChecklistOpen(true)}
         onOpenProposal={() => setIsProposalOpen(true)}
         onOpenMonitor={() => setIsMonitorOpen(true)}
+        onOpenCompetitorAlerts={() => setIsCompetitorAlertsOpen(true)}
         pendingActionCount={pendingActionCount}
         onNewAudit={() => {
           setCurrentReport(null);
@@ -1448,6 +1451,7 @@ export default function App() {
                       report={currentReport}
                       targetUrl={currentReport.targetUrl}
                       savedAudits={savedAudits}
+                      onOpenAlertModal={() => setIsCompetitorAlertsOpen(true)}
                       onOpenChecklist={() => {
                         const el = document.getElementById('seo-audit-checklist-section');
                         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -1833,6 +1837,7 @@ export default function App() {
           setError(null);
         }}
         onOpenGoogleAccelerator={() => setIsGoogleAcceleratorOpen(true)}
+        onOpenCompetitorAlerts={() => setIsCompetitorAlertsOpen(true)}
       />
 
       {/* Google Ranking & Instant Indexing Accelerator Modal */}
@@ -1840,6 +1845,13 @@ export default function App() {
         isOpen={isGoogleAcceleratorOpen}
         onClose={() => setIsGoogleAcceleratorOpen(false)}
         onOpenSitemapGenerator={() => setActiveTab('sitemap-generator')}
+      />
+
+      {/* Weekly Competitor Drop Alert Modal */}
+      <WeeklyCompetitorAlertModal
+        isOpen={isCompetitorAlertsOpen}
+        onClose={() => setIsCompetitorAlertsOpen(false)}
+        report={currentReport}
       />
     </div>
   );

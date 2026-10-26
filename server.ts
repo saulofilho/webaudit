@@ -6,6 +6,7 @@ import { createServer as createViteServer } from 'vite';
 import { analyzeWebsite } from './server/analyzer';
 import { generateAIFix } from './server/geminiFix';
 import { generateExecutiveSummary } from './server/geminiSummary';
+import { generateSeoAiInsights } from './server/geminiSeoInsights';
 import { checkPageLinks, crawlSitemapAndPages } from './server/extendedAudits';
 import { auditKeywordCannibalization } from './server/cannibalizationAudit';
 import { auditContentGap } from './server/contentGapAudit';
@@ -388,6 +389,23 @@ Sitemap: ${proto}://${host}/sitemap.xml
       console.error('AI Summary error:', err);
       return res.status(500).json({
         error: err.message || 'Failed to generate executive summary with AI.',
+      });
+    }
+  });
+
+  app.post('/api/gemini/seo-insights', async (req, res) => {
+    try {
+      const { report, tone } = req.body;
+      if (!report || !report.targetUrl) {
+        return res.status(400).json({ error: 'Complete audit report is required.' });
+      }
+
+      const insights = await generateSeoAiInsights(report, tone);
+      return res.json(insights);
+    } catch (err: any) {
+      console.error('AI SEO Insights error:', err);
+      return res.status(500).json({
+        error: err.message || 'Failed to generate SEO AI insights.',
       });
     }
   });

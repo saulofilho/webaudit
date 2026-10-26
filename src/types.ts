@@ -684,4 +684,53 @@ export interface ImageAuditSummary {
   quickWins: string[];
 }
 
+// ==========================================
+// Weekly Competitor Drop Alert Types
+// ==========================================
+
+export type AlertDayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+
+export interface WeeklyCompetitorAlertConfig {
+  id: string;
+  domain: string;
+  competitors: string[];
+  enabled: boolean;
+  recipients: string[];
+  dispatchDay: AlertDayOfWeek;
+  dispatchTimeUtc: string; // e.g. '08:00'
+  
+  // Trigger sensitivity thresholds
+  visibilityDropThresholdPercent: number; // e.g. 5 (alert if domain drops >= 5%)
+  competitorSurgeThresholdPercent: number; // e.g. 3 (alert if competitor avg surges while domain drops)
+  top3RankDropCount: number; // e.g. 2 (alert if >= 2 keywords drop from top 3)
+  top10RankDropCount: number; // e.g. 4 (alert if >= 4 keywords drop from top 10)
+  alertOnPage1Exit: boolean; // alert if any high-volume keyword drops off page 1
+  alertOnNetNegativeDrift: boolean; // alert if net rank drift is negative
+  
+  // Content & Delivery options
+  includeAiRootCauseAnalysis: boolean;
+  includePdfAttachmentLink: boolean;
+  includeCompetitorGaps: boolean;
+  webhookUrl?: string;
+  
+  // Metadata & History
+  createdAt: string;
+  lastEvaluatedAt?: string;
+  lastAlertSentAt?: string;
+  status: 'active' | 'paused';
+}
+
+export interface CompetitorAlertDispatchLog {
+  id: string;
+  timestamp: string;
+  domain: string;
+  recipients: string[];
+  triggerReason: string;
+  visibilityChange: number;
+  competitorAvgChange: number;
+  top3Drops: number;
+  top10Drops: number;
+  status: 'delivered' | 'simulated';
+}
+
 

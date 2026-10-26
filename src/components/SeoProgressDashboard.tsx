@@ -34,6 +34,7 @@ import {
   Target,
   BarChart3,
   ListTodo,
+  Bell,
 } from 'lucide-react';
 import { AuditReport, AuditItem, MetaTagsData, SavedAuditSummary } from '../types';
 import {
@@ -48,6 +49,7 @@ import {
   saveTimelineEvents,
 } from '../utils/seoProgressStorage';
 import { CompetitorVisibilityRankBenchmark } from './CompetitorVisibilityRankBenchmark';
+import { SeoAiInsightPanel } from './SeoAiInsightPanel';
 
 interface SeoProgressDashboardProps {
   report: AuditReport;
@@ -55,6 +57,7 @@ interface SeoProgressDashboardProps {
   savedAudits?: SavedAuditSummary[];
   onOpenChecklist?: () => void;
   onOpenAiFix?: (item: AuditItem) => void;
+  onOpenAlertModal?: () => void;
 }
 
 export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
@@ -63,6 +66,7 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
   savedAudits = [],
   onOpenChecklist,
   onOpenAiFix,
+  onOpenAlertModal,
 }) => {
   const targetUrl = propUrl || report?.targetUrl || 'https://example.com';
 
@@ -625,6 +629,18 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
             <button
               type="button"
               onClick={() => {
+                const el = document.getElementById('seo-ai-insights-panel');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-3 py-1.5 text-xs font-black uppercase bg-violet-600 hover:bg-violet-500 text-white border border-[#141414] shadow-[2px_2px_0px_#141414] cursor-pointer flex items-center gap-1.5 transition-all"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+              <span>AI SEO Insights</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 const el = document.getElementById('seo-competitor-benchmark-section');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
@@ -633,6 +649,17 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
               <Target className="h-3.5 w-3.5" />
               <span>Competitor Benchmark</span>
             </button>
+
+            {onOpenAlertModal && (
+              <button
+                type="button"
+                onClick={onOpenAlertModal}
+                className="px-3 py-1.5 text-xs font-black uppercase bg-rose-500 hover:bg-rose-400 text-white border border-[#141414] shadow-[2px_2px_0px_#141414] cursor-pointer flex items-center gap-1.5 transition-all"
+              >
+                <Bell className="h-3.5 w-3.5" />
+                <span>Weekly Alerts</span>
+              </button>
+            )}
 
             {onOpenChecklist && (
               <button
@@ -720,6 +747,16 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
             <span>~{estimatedMinutesSaved} min dev effort logged</span>
           </div>
         </div>
+      </div>
+
+      {/* Dynamic AI SEO Insights Panel (Gemini 3.8 Flash summary of critical SEO improvements) */}
+      <div className="p-4 sm:p-5 bg-neutral-100 border-b-2 border-[#141414]">
+        <SeoAiInsightPanel
+          report={report}
+          targetUrl={targetUrl}
+          onOpenAiFix={onOpenAiFix}
+          onOpenChecklist={onOpenChecklist}
+        />
       </div>
 
       {/* Main Visual Timeline Chart Section */}
@@ -1002,6 +1039,7 @@ export const SeoProgressDashboard: React.FC<SeoProgressDashboardProps> = ({
           report={report}
           targetUrl={targetUrl}
           savedAudits={savedAudits}
+          onOpenAlertModal={onOpenAlertModal}
         />
       </div>
 

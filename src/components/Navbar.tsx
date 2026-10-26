@@ -28,6 +28,7 @@ interface NavbarProps {
   onOpenSeoChecklist?: () => void;
   onOpenProposal?: () => void;
   onOpenMonitor?: () => void;
+  onOpenCompetitorAlerts?: () => void;
   onNewAudit: () => void;
   hasReport: boolean;
   isBackendActive: boolean;
@@ -49,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSeoChecklist,
   onOpenProposal,
   onOpenMonitor,
+  onOpenCompetitorAlerts,
   onNewAudit,
   hasReport,
   isBackendActive,
@@ -132,6 +134,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Bell className="h-3.5 w-3.5" />
               <span>{t.scheduledMonitor}</span>
+            </button>
+          )}
+
+          {/* Competitor Drop Alerts */}
+          {onOpenCompetitorAlerts && (
+            <button
+              onClick={onOpenCompetitorAlerts}
+              title={language === 'pt' ? 'Alertas Semanais de Queda vs Concorrentes' : 'Weekly Competitor Drop Alerts'}
+              className="hidden md:flex items-center gap-1 border border-[#141414] bg-rose-100 hover:bg-rose-200 text-rose-950 px-2 py-1 text-xs font-mono font-bold transition-all shadow-[2px_2px_0px_#141414] cursor-pointer"
+            >
+              <Bell className="h-3.5 w-3.5 text-rose-600" />
+              <span>{language === 'pt' ? 'Alertas Concorrentes' : 'Drop Alerts'}</span>
             </button>
           )}
 

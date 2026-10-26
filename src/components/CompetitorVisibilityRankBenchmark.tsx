@@ -32,6 +32,8 @@ import {
   Layers,
   Award,
   Info,
+  BellRing,
+  Mail,
 } from 'lucide-react';
 import { AuditReport, SavedAuditSummary } from '../types';
 
@@ -69,12 +71,14 @@ interface CompetitorVisibilityRankBenchmarkProps {
   report: AuditReport;
   targetUrl?: string;
   savedAudits?: SavedAuditSummary[];
+  onOpenAlertModal?: () => void;
 }
 
 export const CompetitorVisibilityRankBenchmark: React.FC<CompetitorVisibilityRankBenchmarkProps> = ({
   report,
   targetUrl: propUrl,
   savedAudits = [],
+  onOpenAlertModal,
 }) => {
   const targetUrl = propUrl || report?.targetUrl || 'https://example.com';
 
@@ -330,6 +334,18 @@ export const CompetitorVisibilityRankBenchmark: React.FC<CompetitorVisibilityRan
 
           {/* Action buttons */}
           <div className="flex flex-wrap items-center gap-2">
+            {onOpenAlertModal && (
+              <button
+                type="button"
+                onClick={onOpenAlertModal}
+                title="Configure automated weekly email alerts if search visibility or rankings drop vs competitors"
+                className="px-3 py-1.5 text-xs font-black uppercase bg-rose-500 hover:bg-rose-400 text-white border border-white shadow-[2px_2px_0px_white] cursor-pointer flex items-center gap-1.5 transition-all active:translate-y-0.5"
+              >
+                <BellRing className="h-3.5 w-3.5" />
+                <span>Weekly Drop Alerts</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setIsEditingCompetitors(!isEditingCompetitors)}
@@ -533,6 +549,31 @@ export const CompetitorVisibilityRankBenchmark: React.FC<CompetitorVisibilityRan
           </div>
         </div>
       </div>
+
+      {/* Automated Weekly Alert Callout Banner */}
+      {onOpenAlertModal && (
+        <div className="px-4 py-2.5 bg-gradient-to-r from-rose-50 via-amber-50 to-indigo-50 border-b-2 border-[#141414] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-rose-500 text-white border border-[#141414] shrink-0">
+              <BellRing className="h-4 w-4" />
+            </div>
+            <div className="text-xs">
+              <span className="font-black uppercase text-[#141414]">Automated Weekly Email Alerts: </span>
+              <span className="text-neutral-700 font-sans">
+                Protect your organic search share. Receive proactive weekly alerts if <strong className="font-mono">{hostname}</strong> drops visibility or loses Page 1 keywords vs top competitors.
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenAlertModal}
+            className="px-3 py-1 text-xs font-black uppercase bg-[#141414] hover:bg-neutral-800 text-white border border-[#141414] shadow-[1px_1px_0px_#141414] cursor-pointer flex items-center gap-1.5 shrink-0 transition-transform active:translate-y-0.5"
+          >
+            <Mail className="h-3 w-3 text-emerald-400" />
+            <span>Configure Alerts</span>
+          </button>
+        </div>
+      )}
 
       {/* View Mode Tabs Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-neutral-200 border-b-2 border-[#141414]">

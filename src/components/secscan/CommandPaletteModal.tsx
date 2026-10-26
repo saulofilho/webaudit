@@ -34,6 +34,7 @@ import {
   Download,
   RotateCcw,
   Rocket,
+  BellRing,
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
 
@@ -47,6 +48,7 @@ interface CommandPaletteProps {
   onOpenExport?: () => void;
   onNewAudit?: () => void;
   onOpenGoogleAccelerator?: () => void;
+  onOpenCompetitorAlerts?: () => void;
 }
 
 interface CommandItem {
@@ -70,10 +72,14 @@ export function CommandPaletteModal({
   onOpenExport,
   onNewAudit,
   onOpenGoogleAccelerator,
+  onOpenCompetitorAlerts,
 }: CommandPaletteProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const commandItems: CommandItem[] = [
+    // Weekly Competitor Alerts Action
+    ...(onOpenCompetitorAlerts ? [{ id: 'a-comp-alerts', action: onOpenCompetitorAlerts, title: '🔔 Alertas Semanais por E-mail (Queda de Visibilidade vs Concorrentes)', category: 'Ações & Relatórios' as const, icon: BellRing, keywords: 'alertas email semanal queda concorrentes search visibility rankings concorrencia notify drop' }] : []),
+
     // Google Ranking & Indexing Accelerator Action
     ...(onOpenGoogleAccelerator ? [{ id: 'a-google-accel', action: onOpenGoogleAccelerator, title: '🚀 Acelerador de Indexação no Google (#1 na Busca Orgânica)', category: 'Ações & Relatórios' as const, icon: Rocket, keywords: 'google indexar primeira pagina rank search console sitemap rastreamento' }] : []),
 
