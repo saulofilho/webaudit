@@ -12,6 +12,8 @@ then explains every finding and gives you a copy-paste fix.
 
 It is built to be **run by you, on your machine** — see [Philosophy](#philosophy-local-first-and-open-source).
 
+![WebAudit Pro home screen: URL input, test presets and the SecScan security toolkit](docs/images/screenshot-home.png)
+
 ---
 
 ## Table of contents
