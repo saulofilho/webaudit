@@ -1,3 +1,4 @@
+import { extractMetaTags, hasAltAttribute, parseAttributes } from '../src/utils/htmlMeta';
 import { safeFetch } from './security/safeFetch';
 import { GoogleGenAI, Type } from '@google/genai';
 import {
@@ -11,8 +12,6 @@ import {
   SocialFootprintSummary,
 } from '../src/types';
 import { detectTechnologies } from './techDetector';
-import fs from 'fs';
-import path from 'path';
 
 export function extractSocialFootprint(html: string): SocialFootprintSummary {
   const patterns: { platform: string; regex: RegExp; icon: string }[] = [
@@ -133,118 +132,7 @@ function calculateGrade(score: number): string {
 }
 
 function parseMeta(html: string): MetaTagsData {
-  const meta: MetaTagsData = {
-    openGraph: {},
-    twitter: {},
-    structuredDataTypes: [],
-  };
-
-  // Title
-  const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-  if (titleMatch && titleMatch[1]) {
-    meta.title = titleMatch[1].trim();
-    meta.titleLength = meta.title.length;
-  }
-
-  // Meta Description
-  const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i) ||
-                    html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i);
-  if (descMatch && descMatch[1]) {
-    meta.description = descMatch[1].trim();
-    meta.descriptionLength = meta.description.length;
-  }
-
-  // Canonical
-  const canonMatch = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']*)["']/i) ||
-                     html.match(/<link[^>]+href=["']([^"']*)["'][^>]+rel=["']canonical["']/i);
-  if (canonMatch && canonMatch[1]) {
-    meta.canonical = canonMatch[1].trim();
-  }
-
-  // Robots
-  const robotsMatch = html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']*)["']/i) ||
-                      html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']robots["']/i);
-  if (robotsMatch && robotsMatch[1]) {
-    meta.robots = robotsMatch[1].trim();
-  }
-
-  // Viewport
-  const vpMatch = html.match(/<meta[^>]+name=["']viewport["'][^>]+content=["']([^"']*)["']/i) ||
-                  html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']viewport["']/i);
-  if (vpMatch && vpMatch[1]) {
-    meta.viewport = vpMatch[1].trim();
-  }
-
-  // Language
-  const langMatch = html.match(/<html[^>]+lang=["']([^"']*)["']/i);
-  if (langMatch && langMatch[1]) {
-    meta.language = langMatch[1].trim();
-  }
-
-  // Charset
-  const charsetMatch = html.match(/<meta[^>]+charset=["']([^"']*)["']/i) ||
-                       html.match(/<meta[^>]+http-equiv=["']content-type["'][^>]+content=["'][^"']*charset=([^"';\s]+)/i);
-  if (charsetMatch && charsetMatch[1]) {
-    meta.charset = charsetMatch[1].trim();
-  }
-
-  // Favicon
-  const iconMatch = html.match(/<link[^>]+rel=["'](?:icon|shortcut icon|apple-touch-icon)["'][^>]+href=["']([^"']*)["']/i);
-  if (iconMatch && iconMatch[1]) {
-    meta.favicon = iconMatch[1].trim();
-  }
-
-  // Open Graph
-  const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i) ||
-                  html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:title["']/i);
-  if (ogTitle && ogTitle[1]) meta.openGraph.title = ogTitle[1].trim();
-
-  const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["']/i) ||
-                 html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:description["']/i);
-  if (ogDesc && ogDesc[1]) meta.openGraph.description = ogDesc[1].trim();
-
-  const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']*)["']/i) ||
-                  html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:image["']/i);
-  if (ogImage && ogImage[1]) meta.openGraph.image = ogImage[1].trim();
-
-  const ogUrl = html.match(/<meta[^>]+property=["']og:url["'][^>]+content=["']([^"']*)["']/i) ||
-                html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:url["']/i);
-  if (ogUrl && ogUrl[1]) meta.openGraph.url = ogUrl[1].trim();
-
-  const ogSite = html.match(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']*)["']/i);
-  if (ogSite && ogSite[1]) meta.openGraph.siteName = ogSite[1].trim();
-
-  // Twitter
-  const twCard = html.match(/<meta[^>]+name=["']twitter:card["'][^>]+content=["']([^"']*)["']/i);
-  if (twCard && twCard[1]) meta.twitter.card = twCard[1].trim();
-
-  const twTitle = html.match(/<meta[^>]+name=["']twitter:title["'][^>]+content=["']([^"']*)["']/i);
-  if (twTitle && twTitle[1]) meta.twitter.title = twTitle[1].trim();
-
-  const twDesc = html.match(/<meta[^>]+name=["']twitter:description["'][^>]+content=["']([^"']*)["']/i);
-  if (twDesc && twDesc[1]) meta.twitter.description = twDesc[1].trim();
-
-  const twImage = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']*)["']/i);
-  if (twImage && twImage[1]) meta.twitter.image = twImage[1].trim();
-
-  // Structured Data JSON-LD
-  const ldJsonMatches = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-  for (const m of ldJsonMatches) {
-    try {
-      const parsed = JSON.parse(m[1].trim());
-      if (parsed['@type']) {
-        if (Array.isArray(parsed['@type'])) {
-          meta.structuredDataTypes.push(...parsed['@type']);
-        } else {
-          meta.structuredDataTypes.push(parsed['@type']);
-        }
-      }
-    } catch {
-      meta.structuredDataTypes.push('Schema.org (JSON-LD)');
-    }
-  }
-
-  return meta;
+  return extractMetaTags(html);
 }
 
 function checkSecurityHeaders(headers: Record<string, string>, isHttps: boolean): SecurityHeaderCheck[] {
@@ -329,37 +217,12 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
   }
 
   let finalUrl = targetUrl;
-  let targetHost = '';
-  try {
-    targetHost = new URL(targetUrl).hostname.toLowerCase();
-  } catch {
-    targetHost = '';
-  }
-
-  const isSelfAudit =
-    targetHost.includes('webauditpro.ai.studio') ||
-    targetHost.includes('webauditpro') ||
-    targetHost.includes('localhost') ||
-    targetHost.includes('127.0.0.1') ||
-    targetHost.includes('.run.app');
-
   const startTime = Date.now();
   let response: Response | undefined;
   let html = '';
   let statusCode = 200;
   let statusText = 'OK';
   const allHeaders: Record<string, string> = {};
-
-  if (isSelfAudit) {
-    try {
-      const indexPath = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(indexPath)) {
-        html = fs.readFileSync(indexPath, 'utf-8');
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   if (!html) {
     try {
@@ -387,29 +250,13 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
 
       html = await response.text();
     } catch (err: any) {
-      if (!isSelfAudit) {
-        throw new Error(`Unable to fetch target URL (${targetUrl}): ${err.message || 'Connection failure or timeout'}`);
-      }
+      throw new Error(`Unable to fetch target URL (${targetUrl}): ${err.message || 'Connection failure or timeout'}`);
     }
   }
 
-  if (isSelfAudit) {
-    finalUrl = targetUrl.startsWith('http://localhost') ? targetUrl : 'https://webauditpro.ai.studio/';
-    allHeaders['strict-transport-security'] = 'max-age=63072000; includeSubDomains; preload';
-    allHeaders['content-security-policy'] = "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https: blob:; font-src 'self' https: data:; frame-ancestors 'self' https:;";
-    allHeaders['x-frame-options'] = 'SAMEORIGIN';
-    allHeaders['x-content-type-options'] = 'nosniff';
-    allHeaders['referrer-policy'] = 'strict-origin-when-cross-origin';
-    allHeaders['permissions-policy'] = 'camera=(), microphone=(), geolocation=()';
-    allHeaders['cross-origin-opener-policy'] = 'same-origin';
-    delete allHeaders['x-powered-by'];
-    delete allHeaders['server'];
-    statusCode = 200;
-    statusText = 'OK';
-  }
 
-  const responseTimeMs = isSelfAudit ? 142 : Date.now() - startTime;
-  const isHttps = isSelfAudit ? true : finalUrl.startsWith('https://');
+  const responseTimeMs = Date.now() - startTime;
+  const isHttps = finalUrl.startsWith('https://');
   const contentLengthBytes = html.length;
 
   // DOM Counts
@@ -422,7 +269,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
   let imagesMissingAlt = 0;
   for (const img of imgMatches) {
     const attrs = img[1] || '';
-    if (!attrs.match(/\balt\s*=\s*["'][^"']*["']/i)) {
+    if (!hasAltAttribute(attrs)) {
       imagesMissingAlt++;
     }
   }
@@ -431,20 +278,21 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
   let externalLinksWithoutRel = 0;
   const parsedTargetHost = new URL(finalUrl).hostname.toLowerCase();
   for (const link of linkMatches) {
-    const attrs = link[1] || '';
-    const hrefMatch = attrs.match(/\bhref\s*=\s*["']([^"']*)["']/i);
-    if (hrefMatch && hrefMatch[1]) {
-      const href = hrefMatch[1];
-      if (href.startsWith('http://') || href.startsWith('https://')) {
-        try {
-          const linkHost = new URL(href).hostname.toLowerCase();
-          if (linkHost !== parsedTargetHost && !attrs.match(/\brel\s*=\s*["'][^"']*(?:noopener|noreferrer)[^"']*["']/i)) {
-            externalLinksWithoutRel++;
-          }
-        } catch {
-          // ignore
-        }
+    const attrs = parseAttributes(link[1] || '');
+    const href = attrs.href || '';
+    if (!href.startsWith('http://') && !href.startsWith('https://')) continue;
+    try {
+      const linkHost = new URL(href).hostname.toLowerCase();
+      // Only links that open a new browsing context (target="_blank" or a named
+      // window) expose window.opener; plain links are not affected.
+      const target = (attrs.target || '').toLowerCase();
+      const opensNewContext = target !== '' && !['_self', '_top', '_parent'].includes(target);
+      const rel = (attrs.rel || '').toLowerCase().split(/\s+/);
+      if (opensNewContext && linkHost !== parsedTargetHost && !rel.includes('noopener') && !rel.includes('noreferrer')) {
+        externalLinksWithoutRel++;
       }
+    } catch {
+      // ignore
     }
   }
 
@@ -798,27 +646,9 @@ app.disable('x-powered-by');`,
   }
 
   // Keyword Cannibalization & Canonical Signal Audit
-  const hasSelfCanonical = isSelfAudit || Boolean(metaTags.canonical && (metaTags.canonical === finalUrl || `${metaTags.canonical}/` === finalUrl || metaTags.canonical === `${finalUrl}/`));
-  if (!metaTags.canonical) {
-    items.push({
-      id: 'seo-cannibalization',
-      category: 'seo',
-      title: 'High Cannibalization Risk: Missing Canonical Declaration',
-      severity: 'warning',
-      score: 55,
-      summary: 'Page lacks a canonical URL tag, making it vulnerable to keyword cannibalization and URL alias competition.',
-      impact: 'Without an explicit canonical tag, search bots may index tracking parameters, alternate protocols, or duplicate internal paths as competing documents.',
-      recommendedValue: `<link rel="canonical" href="${finalUrl}" />`,
-      codeSnippet: {
-        language: 'html',
-        title: 'Define Canonical Tag',
-        code: `<link rel="canonical" href="${finalUrl}" />`,
-      },
-      references: [
-        { title: 'Google Search Essentials: Consolidating Duplicate URLs', url: 'https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls' },
-      ],
-    });
-  } else if (!hasSelfCanonical) {
+  const hasSelfCanonical = Boolean(metaTags.canonical && (metaTags.canonical === finalUrl || `${metaTags.canonical}/` === finalUrl || metaTags.canonical === `${finalUrl}/`));
+  // A missing canonical is already reported by the canonical check above; not repeated here.
+  if (metaTags.canonical && !hasSelfCanonical) {
     items.push({
       id: 'seo-cannibalization',
       category: 'seo',
@@ -829,7 +659,7 @@ app.disable('x-powered-by');`,
       impact: 'Instructs search engines to attribute ranking power and keyword indexation to the specified target page.',
       currentValue: metaTags.canonical,
     });
-  } else {
+  } else if (metaTags.canonical) {
     items.push({
       id: 'seo-cannibalization',
       category: 'seo',
@@ -1003,11 +833,11 @@ app.disable('x-powered-by');`,
     items.push({
       id: 'bp-links-rel',
       category: 'best_practices',
-      title: `External Links Missing rel="noopener" (${externalLinksWithoutRel} links)`,
-      severity: 'warning',
-      score: 60,
-      summary: `Found ${externalLinksWithoutRel} external link(s) without rel="noopener noreferrer" security attributes.`,
-      impact: 'Vulnerable to reverse tabnabbing (the opened tab can alter the source window location via window.opener).',
+      title: `target="_blank" Links Without rel="noopener" (${externalLinksWithoutRel} links)`,
+      severity: 'info',
+      score: 85,
+      summary: `Found ${externalLinksWithoutRel} external link(s) opening a new tab without rel="noopener". Current browsers apply noopener to target="_blank" by default, so the remaining risk is limited to older browsers.`,
+      impact: 'Older browsers allow reverse tabnabbing: the opened tab can change the original page via window.opener.',
       codeSnippet: {
         language: 'html',
         title: 'Secure External Link Pattern',
@@ -1185,7 +1015,7 @@ Respond in JSON format with:
 4. "additionalActionableAdvice": Array with up to 2 forward-looking technical recommendations (e.g., PWA, Core Web Vitals, Edge caching).`;
 
       const aiResponse = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
+        model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',

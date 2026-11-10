@@ -1,7 +1,5 @@
 import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
-import fs from 'fs';
-import path from 'path';
 import {
   ContentGapAnalysisData,
   CompetitorContentProfile,
@@ -160,123 +158,17 @@ async function fetchPageWithTimeout(targetUrl: string, timeoutMs = 4000): Promis
   }
 }
 
-// Generates high-confidence competitor presets based on target domain or niche
-function getTop3CompetitorsForTarget(targetUrl: string, customCompetitors?: string[]): { url: string; domain: string; name: string }[] {
-  if (customCompetitors && customCompetitors.length >= 3) {
-    return customCompetitors.slice(0, 3).map((u, idx) => ({
-      url: u.startsWith('http') ? u : `https://${u}`,
-      domain: cleanDomain(u),
-      name: `Competitor #${idx + 1} (${cleanDomain(u)})`,
-    }));
+/** Raised for invalid input (e.g. no competitor URLs) so the route can answer 400. */
+export class ContentGapInputError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ContentGapInputError';
   }
-
-  const targetDomain = cleanDomain(targetUrl).toLowerCase();
-
-  // Industry matching heuristics
-  if (targetDomain.includes('shop') || targetDomain.includes('store') || targetDomain.includes('buy') || targetDomain.includes('cart') || targetDomain.includes('retail')) {
-    return [
-      { url: 'https://www.shopify.com', domain: 'shopify.com', name: 'Shopify Global Commerce' },
-      { url: 'https://www.bigcommerce.com', domain: 'bigcommerce.com', name: 'BigCommerce Platform' },
-      { url: 'https://www.woocommerce.com', domain: 'woocommerce.com', name: 'WooCommerce Core' },
-    ];
-  }
-
-  if (targetDomain.includes('tech') || targetDomain.includes('dev') || targetDomain.includes('cloud') || targetDomain.includes('code') || targetDomain.includes('api')) {
-    return [
-      { url: 'https://github.com', domain: 'github.com', name: 'GitHub Enterprise' },
-      { url: 'https://vercel.com', domain: 'vercel.com', name: 'Vercel Frontend Cloud' },
-      { url: 'https://aws.amazon.com', domain: 'aws.amazon.com', name: 'AWS Cloud Services' },
-    ];
-  }
-
-  if (targetDomain.includes('seo') || targetDomain.includes('rank') || targetDomain.includes('audit') || targetDomain.includes('search')) {
-    return [
-      { url: 'https://ahrefs.com', domain: 'ahrefs.com', name: 'Ahrefs SEO Intelligence' },
-      { url: 'https://semrush.com', domain: 'semrush.com', name: 'Semrush Marketing' },
-      { url: 'https://moz.com', domain: 'moz.com', name: 'Moz SEO Software' },
-    ];
-  }
-
-  if (targetDomain.includes('blog') || targetDomain.includes('news') || targetDomain.includes('media')) {
-    return [
-      { url: 'https://medium.com', domain: 'medium.com', name: 'Medium Publishing' },
-      { url: 'https://techcrunch.com', domain: 'techcrunch.com', name: 'TechCrunch News' },
-      { url: 'https://theverge.com', domain: 'theverge.com', name: 'The Verge Media' },
-    ];
-  }
-
-  // General high-ranking authority digital competitors
-  const basePrefix = targetDomain.split('.')[0] || 'market';
-  return [
-    { url: `https://${basePrefix}-pro.com`, domain: `${basePrefix}-pro.com`, name: `${capitalize(basePrefix)} Benchmark Leader` },
-    { url: `https://authority-${basePrefix}.org`, domain: `authority-${basePrefix}.org`, name: `Global ${capitalize(basePrefix)} Hub` },
-    { url: `https://next-${basePrefix}.io`, domain: `next-${basePrefix}.io`, name: `NextGen ${capitalize(basePrefix)} Solutions` },
-  ];
 }
 
 function capitalize(str: string): string {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// Generate fallback content benchmark profile if competitor cannot be fetched
-function generateCompetitorProfile(
-  comp: { url: string; domain: string; name: string },
-  serpRank: number,
-  targetProfile: ScrapedContentInfo,
-  nicheQuery: string
-): { profile: CompetitorContentProfile; frequencyMap: Map<string, number> } {
-  // Rank 1 usually has 2.2x - 2.8x words of an unoptimized target
-  const multiplier = serpRank === 1 ? 2.6 : serpRank === 2 ? 2.2 : 1.9;
-  const benchmarkWords = Math.max(1850, Math.round(targetProfile.wordCount * multiplier));
-  const readingTimeMin = Math.max(5, Math.ceil(benchmarkWords / 210));
-  const h2Count = Math.max(6, Math.round(serpRank === 1 ? 11 : serpRank === 2 ? 8 : 7));
-  const h3Count = Math.max(8, Math.round(h2Count * 1.5));
-  const imageCount = Math.max(4, Math.round(benchmarkWords / 280));
-  const domainAuthority = serpRank === 1 ? 84 : serpRank === 2 ? 78 : 72;
-
-  const title = `${capitalize(nicheQuery)}: Comprehensive Guide & Best Solutions (${new Date().getFullYear()}) | ${comp.domain}`;
-  const description = `Discover top-tier strategies for ${nicheQuery}, architectural benchmarks, case studies, and comparison matrix by ${comp.name}.`;
-
-  const frequencyMap = new Map<string, number>();
-
-  // Seed strong topical keywords
-  const topKeywords = [
-    nicheQuery,
-    `${nicheQuery} best practices`,
-    'architecture',
-    'performance optimization',
-    'security guidelines',
-    'pricing comparison',
-    'enterprise scalability',
-    'integration api',
-  ];
-
-  topKeywords.forEach((kw, i) => {
-    frequencyMap.set(kw, Math.max(3, 16 - i * 2 - serpRank));
-  });
-
-  return {
-    profile: {
-      id: `comp-${serpRank}-${comp.domain.replace(/[^a-z0-9]/gi, '_')}`,
-      url: comp.url,
-      domain: comp.domain,
-      serpRank,
-      title,
-      description,
-      wordCount: benchmarkWords,
-      readingTimeMin,
-      headingCounts: {
-        h1: 1,
-        h2: h2Count,
-        h3: h3Count,
-      },
-      imageCount,
-      domainAuthority,
-      topKeywords,
-    },
-    frequencyMap,
-  };
 }
 
 export async function auditContentGap(
@@ -289,104 +181,72 @@ export async function auditContentGap(
   const normTargetUrl = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
   const targetDomain = cleanDomain(normTargetUrl);
 
-  const isSelf =
-    targetDomain.includes('webauditpro') ||
-    targetDomain.includes('localhost') ||
-    targetDomain.includes('127.0.0.1') ||
-    targetDomain.includes('run.app');
-
-  let targetHtml: string | null = null;
-  if (isSelf) {
-    try {
-      const idx = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(idx)) {
-        targetHtml = fs.readFileSync(idx, 'utf-8');
-      }
-    } catch {
-      // fallback
-    }
-  }
-
   // 1. Fetch & parse Target URL
+  const targetHtml = await fetchPageWithTimeout(normTargetUrl, 8000);
   if (!targetHtml) {
-    targetHtml = await fetchPageWithTimeout(normTargetUrl, 4500);
+    throw new Error(`Could not load ${normTargetUrl} to analyze its content.`);
   }
-  let targetContent: ScrapedContentInfo;
-
-  if (targetHtml) {
-    targetContent = parseHtmlMetadata(targetHtml, normTargetUrl);
-  } else {
-    // Intelligent heuristic profile for target
-    targetContent = {
-      url: normTargetUrl,
-      domain: targetDomain,
-      title: `${capitalize(targetDomain.split('.')[0])} Platform & Services`,
-      description: `Official website of ${targetDomain}. Explore features, technical documentation, and overview.`,
-      wordCount: 840,
-      readingTimeMin: 4,
-      headingCounts: { h1: 1, h2: 3, h3: 4 },
-      imageCount: 5,
-      textTokens: [],
-      frequencyMap: new Map([
-        ['services', 4],
-        ['features', 3],
-        ['overview', 3],
-        ['platform', 5],
-        ['solutions', 2],
-      ]),
-    };
-  }
+  const targetContent: ScrapedContentInfo = parseHtmlMetadata(targetHtml, normTargetUrl);
 
   // Derive primary query/niche
   const nicheQuery = options?.primaryQuery ||
     targetContent.title.split(/[-|–—:]/)[0].trim().toLowerCase() ||
     targetDomain.split('.')[0];
 
-  // 2. Determine top 3 competitors in search results
-  const competitorDefs = getTop3CompetitorsForTarget(normTargetUrl, options?.competitorUrls);
+  // 2. Competitors: only real pages the user picked. There is no SERP data source,
+  // so competitors are never guessed or invented.
+  const competitorUrls = (options?.competitorUrls || [])
+    .map((u) => (typeof u === 'string' ? u.trim() : ''))
+    .filter(Boolean)
+    .slice(0, 3);
+  if (competitorUrls.length === 0) {
+    throw new ContentGapInputError(
+      'Provide 1 to 3 competitor URLs (pages ranking for your target query) to run the content gap analysis.'
+    );
+  }
 
-  // 3. Gather competitor profiles & keyword maps
+  // 3. Gather competitor profiles & keyword maps (pages that fail to load are skipped)
   const competitorProfiles: CompetitorContentProfile[] = [];
   const competitorFreqMaps: Map<string, number>[] = [];
+  const failedCompetitors: string[] = [];
 
-  for (let i = 0; i < competitorDefs.length; i++) {
-    const compDef = competitorDefs[i];
-    const rank = i + 1;
-    let compHtml: string | null = null;
-
-    if (options?.competitorUrls && options.competitorUrls[i]) {
-      compHtml = await fetchPageWithTimeout(compDef.url, 3500);
+  const fetched = await Promise.all(
+    competitorUrls.map(async (u) => {
+      const url = u.startsWith('http') ? u : `https://${u}`;
+      return { url, html: await fetchPageWithTimeout(url, 8000) };
+    })
+  );
+  for (const { url, html } of fetched) {
+    if (!html) {
+      failedCompetitors.push(url);
+      continue;
     }
-
-    if (compHtml) {
-      const parsed = parseHtmlMetadata(compHtml, compDef.url);
-      const da = rank === 1 ? 82 : rank === 2 ? 76 : 69;
-      const topKws = Array.from(parsed.frequencyMap.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([k]) => k);
-
-      competitorProfiles.push({
-        id: `comp-${rank}-${parsed.domain.replace(/[^a-z0-9]/gi, '_')}`,
-        url: parsed.url,
-        domain: parsed.domain,
-        serpRank: rank,
-        title: parsed.title,
-        description: parsed.description,
-        wordCount: Math.max(parsed.wordCount, 1200),
-        readingTimeMin: parsed.readingTimeMin,
-        headingCounts: parsed.headingCounts,
-        imageCount: parsed.imageCount,
-        domainAuthority: da,
-        topKeywords: topKws,
-      });
-      competitorFreqMaps.push(parsed.frequencyMap);
-    } else {
-      const fallback = generateCompetitorProfile(compDef, rank, targetContent, nicheQuery);
-      competitorProfiles.push(fallback.profile);
-      competitorFreqMaps.push(fallback.frequencyMap);
-    }
+    const parsed = parseHtmlMetadata(html, url);
+    const position = competitorProfiles.length + 1;
+    const topKws = Array.from(parsed.frequencyMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([k]) => k);
+    competitorProfiles.push({
+      id: `comp-${position}-${parsed.domain.replace(/[^a-z0-9]/gi, '_')}`,
+      url: parsed.url,
+      domain: parsed.domain,
+      serpRank: position,
+      title: parsed.title,
+      description: parsed.description,
+      wordCount: parsed.wordCount,
+      readingTimeMin: parsed.readingTimeMin,
+      headingCounts: parsed.headingCounts,
+      imageCount: parsed.imageCount,
+      domainAuthority: null,
+      topKeywords: topKws,
+    });
+    competitorFreqMaps.push(parsed.frequencyMap);
   }
+  if (competitorProfiles.length === 0) {
+    throw new Error(`None of the competitor pages could be loaded: ${failedCompetitors.join(', ')}`);
+  }
+  const compCount = competitorProfiles.length;
 
   // 4. Keyword Gap Analysis & Scoring
   // Aggregate candidate keywords from competitors and target
@@ -432,42 +292,10 @@ export async function auditContentGap(
     }
   }
 
-  // Synthesize industry essential keywords if pool is small
-  const essentialNicheKeywords = [
-    `${nicheQuery} tutorial`,
-    `${nicheQuery} pricing`,
-    `${nicheQuery} integration`,
-    `${nicheQuery} security architecture`,
-    `${nicheQuery} vs competitors`,
-    `api documentation`,
-    `cloud infrastructure`,
-    `speed performance benchmarks`,
-    `enterprise migration`,
-    `customer case studies`,
-    `sla and uptime`,
-    `open source alternatives`,
-    `data privacy compliance`,
-    `automation workflow`,
-  ];
-
-  essentialNicheKeywords.forEach((kw) => {
-    if (!candidateKeywordPool.has(kw)) {
-      const c1 = Math.floor(Math.random() * 6) + 8;
-      const c2 = Math.floor(Math.random() * 5) + 6;
-      const c3 = Math.floor(Math.random() * 4) + 4;
-      candidateKeywordPool.set(kw, {
-        keyword: kw,
-        targetFreq: targetContent.frequencyMap.get(kw) || 0,
-        compFreqs: [c1, c2, c3],
-        compAvg: Math.round((c1 + c2 + c3) / 3),
-      });
-    }
-  });
-
   const keywordGaps: KeywordGapItem[] = [];
 
   for (const [kw, data] of candidateKeywordPool.entries()) {
-    const compAvg = (data.compFreqs[0] + data.compFreqs[1] + data.compFreqs[2]) / 3;
+    const compAvg = (data.compFreqs[0] + data.compFreqs[1] + data.compFreqs[2]) / compCount;
     data.compAvg = parseFloat(compAvg.toFixed(1));
 
     // Determine status
@@ -479,11 +307,6 @@ export async function auditContentGap(
     } else {
       status = 'shared';
     }
-
-    // Determine Search Volume & Difficulty simulation based on keyword length/niche
-    const hash = hashString(kw);
-    const searchVolume = Math.round((((hash % 120) + 10) * 110) / 10) * 10;
-    const difficulty = (hash % 55) + 25; // 25% - 80%
 
     // Search intent
     let intent: 'Informational' | 'Commercial' | 'Transactional' | 'Navigational' = 'Informational';
@@ -500,9 +323,9 @@ export async function auditContentGap(
 
     // Priority
     let priority: 'Critical' | 'High' | 'Medium' | 'Low' = 'Medium';
-    if (status === 'missing' && compAvg >= 5 && searchVolume >= 2500) {
+    if (status === 'missing' && compAvg >= 5) {
       priority = 'Critical';
-    } else if (status === 'missing' || (status === 'weak' && searchVolume >= 2000)) {
+    } else if (status === 'missing' || (status === 'weak' && compAvg >= 4)) {
       priority = 'High';
     } else if (status === 'shared') {
       priority = 'Low';
@@ -521,8 +344,9 @@ export async function auditContentGap(
     keywordGaps.push({
       id: `gap-${kw.replace(/[^a-z0-9]/gi, '_')}`,
       keyword: kw,
-      searchVolume,
-      difficulty,
+      // No keyword-volume data source is connected; never estimate these.
+      searchVolume: null,
+      difficulty: null,
       intent,
       relevanceScore,
       targetFrequency: data.targetFreq,
@@ -541,7 +365,7 @@ export async function auditContentGap(
     if (b.status === 'missing' && a.status !== 'missing') return 1;
     const priDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
     if (priDiff !== 0) return priDiff;
-    return b.searchVolume - a.searchVolume;
+    return b.competitorAverageFrequency - a.competitorAverageFrequency;
   });
 
   // Limit to top 35 most relevant keyword gaps for UI responsiveness
@@ -568,12 +392,21 @@ export async function auditContentGap(
 
   // Content Quality Score calculation
   // Target score depends on length ratio, headings, and keyword coverage
-  const lengthRatio = Math.min(1, targetContent.wordCount / compAvgWords);
+  const lengthRatio = Math.min(1, targetContent.wordCount / Math.max(1, compAvgWords));
   const coverageRatio = (sharedCount + weakCount * 0.5) / Math.max(1, prioritizedGaps.length);
   const headingRatio = Math.min(1, targetContent.headingCounts.h2 / Math.max(1, compAvgH2));
 
   const targetContentScore = Math.min(95, Math.max(25, Math.round((lengthRatio * 40) + (coverageRatio * 40) + (headingRatio * 20))));
-  const competitorAverageContentScore = 88;
+  // Same formula applied to each competitor, then averaged
+  const scoreFor = (wordCount: number, h2: number, freqMap: Map<string, number>) => {
+    const lr = Math.min(1, wordCount / Math.max(1, compAvgWords));
+    const cov = prioritizedGaps.filter((g) => (freqMap.get(g.keyword) || 0) > 0).length / Math.max(1, prioritizedGaps.length);
+    const hr = Math.min(1, h2 / Math.max(1, compAvgH2));
+    return Math.min(95, Math.max(25, Math.round(lr * 40 + cov * 40 + hr * 20)));
+  };
+  const competitorAverageContentScore = Math.round(
+    competitorProfiles.reduce((acc, c, i) => acc + scoreFor(c.wordCount, c.headingCounts.h2, competitorFreqMaps[i]), 0) / compCount
+  );
 
   // 6. Action Plan synthesis
   const recommendedWordAddition = wordCountGap < 0 ? Math.abs(wordCountGap) + 200 : 350;
@@ -590,7 +423,7 @@ export async function auditContentGap(
   ];
 
   const quickWins = [
-    `Add ${recommendedWordAddition.toLocaleString()} words of in-depth explanatory copy to eliminate the ${Math.abs(wordCountGapPercent)}% content length deficit against Google SERP Top 3.`,
+    wordCountGap < 0 ? `Add ${recommendedWordAddition.toLocaleString()} words of in-depth explanatory copy to close the ${Math.abs(wordCountGapPercent)}% content length gap against the selected competitors.` : `Content length already matches or exceeds the selected competitors (${compAvgWords.toLocaleString()} words on average).`,
     `Inject ${topMissing.length} critical missing keywords into strategic H2 subheadings and introductory paragraphs.`,
     `Add at least ${Math.max(2, compAvgH2 - targetContent.headingCounts.h2)} more H2 sections to match competitor topical structure.`,
     `Include an FAQ schema section targeting Commercial and Informational queries to capture Google People Also Ask (PAA) rich snippets.`,
@@ -610,6 +443,7 @@ export async function auditContentGap(
       imageCount: targetContent.imageCount,
     },
     competitors: competitorProfiles,
+    failedCompetitorUrls: failedCompetitors,
     benchmarkStats: {
       competitorAverageWordCount: compAvgWords,
       wordCountGap,
@@ -633,11 +467,3 @@ export async function auditContentGap(
   };
 }
 
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}

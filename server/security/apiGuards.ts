@@ -10,8 +10,13 @@ import { normalizeTargetUrl, UnsafeUrlError } from './safeFetch';
 export function validateTargetUrls(req: Request, res: Response, next: NextFunction) {
   if (req.method !== 'POST' || !req.body || typeof req.body !== 'object') return next();
   try {
-    const { url, competitorUrls } = req.body as { url?: unknown; competitorUrls?: unknown };
-    if (typeof url === 'string' && url.trim()) normalizeTargetUrl(url);
+    const body = req.body as { url?: unknown; targetUrl?: unknown; competitorUrls?: unknown };
+    const { competitorUrls } = body;
+    // Normalize bare domains ("example.com") so every handler receives an absolute URL
+    if (typeof body.url === 'string' && body.url.trim()) body.url = normalizeTargetUrl(body.url).toString();
+    if (typeof body.targetUrl === 'string' && body.targetUrl.trim()) {
+      body.targetUrl = normalizeTargetUrl(body.targetUrl).toString();
+    }
     if (competitorUrls !== undefined) {
       if (!Array.isArray(competitorUrls) || competitorUrls.length > 5) {
         return res.status(400).json({ error: 'competitorUrls must be an array of at most 5 URLs.' });
@@ -99,4 +104,22 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
 export function clampInt(value: unknown, fallback: number, min: number, max: number): number {
   const n = typeof value === 'number' && Number.isFinite(value) ? Math.floor(value) : fallback;
   return Math.min(max, Math.max(min, n));
+}
+
+/**
+ * Maps handler errors to HTTP status: bad input → 400, target site unreachable → 502,
+ * anything else → 500.
+ */
+export function sendError(res: Response, err: unknown, fallbackMessage: string) {
+  const e = err as { name?: string; message?: string; cause?: { code?: string } } | undefined;
+  const message = e?.message || fallbackMessage;
+  if (e?.name === 'UnsafeUrlError' || e?.name === 'ContentGapInputError') {
+    return res.status(400).json({ error: message });
+  }
+  const unreachable =
+    /ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|EHOSTUNREACH|timeout|aborted|Could not load|Unable to fetch|Failed to load|None of the competitor pages/i;
+  if (unreachable.test(message) || (e?.cause?.code && unreachable.test(e.cause.code))) {
+    return res.status(502).json({ error: message });
+  }
+  return res.status(500).json({ error: message });
 }

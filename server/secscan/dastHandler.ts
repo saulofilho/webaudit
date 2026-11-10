@@ -1,3 +1,4 @@
+import { sendError } from '../security/apiGuards';
 import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
@@ -115,6 +116,6 @@ export async function handleDastFuzz(req: Request, res: Response) {
       tests: results
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Falha ao executar fuzzer DAST.' });
+    return sendError(res, err, 'Falha ao executar fuzzer DAST.');
   }
 }

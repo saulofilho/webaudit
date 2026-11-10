@@ -83,7 +83,7 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
   const [newCompetitorInput, setNewCompetitorInput] = useState<string>('');
   
   // Recipients
-  const [recipients, setRecipients] = useState<string[]>(['saulosilvaf@gmail.com']);
+  const [recipients, setRecipients] = useState<string[]>([]);
   const [newRecipientInput, setNewRecipientInput] = useState<string>('');
 
   // Triggers & Thresholds
@@ -128,7 +128,7 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
           const existing = list.find((a) => a.domain.toLowerCase() === domain.toLowerCase());
           if (existing) {
             setCompetitorsList(existing.competitors);
-            setRecipients(existing.recipients.length > 0 ? existing.recipients : ['saulosilvaf@gmail.com']);
+            setRecipients(existing.recipients);
             setVisibilityDropThreshold(existing.visibilityDropThresholdPercent);
             setCompetitorSurgeThreshold(existing.competitorSurgeThresholdPercent);
             setTop3DropCount(existing.top3RankDropCount);
@@ -149,7 +149,7 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
             domain,
             competitors: defaultCompetitors,
             enabled: true,
-            recipients: ['saulosilvaf@gmail.com'],
+            recipients: [],
             dispatchDay: 'monday',
             dispatchTimeUtc: '08:00',
             visibilityDropThresholdPercent: 5,
@@ -179,34 +179,8 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
         if (storedLogs) {
           setDispatchLogs(JSON.parse(storedLogs));
         } else {
-          const sampleLogs: CompetitorAlertDispatchLog[] = [
-            {
-              id: 'log-1',
-              timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-              domain,
-              recipients: ['saulosilvaf@gmail.com'],
-              triggerReason: 'Search Visibility dropped -6.8% while top 3 competitors surged +2.4%',
-              visibilityChange: -6.8,
-              competitorAvgChange: +2.4,
-              top3Drops: 3,
-              top10Drops: 5,
-              status: 'delivered',
-            },
-            {
-              id: 'log-2',
-              timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-              domain,
-              recipients: ['saulosilvaf@gmail.com'],
-              triggerReason: 'Routine weekly check: Stable ranking variance (no threshold crossed)',
-              visibilityChange: +1.2,
-              competitorAvgChange: +0.8,
-              top3Drops: 0,
-              top10Drops: 1,
-              status: 'simulated',
-            },
-          ];
-          setDispatchLogs(sampleLogs);
-          localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(sampleLogs));
+          // No dispatch history until an alert is actually triggered
+          setDispatchLogs([]);
         }
       } catch {
         // ignore
@@ -268,7 +242,7 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
       domain: targetUrlInput,
       competitors: competitorsList,
       enabled: true,
-      recipients: recipients.length > 0 ? recipients : ['saulosilvaf@gmail.com'],
+      recipients,
       dispatchDay,
       dispatchTimeUtc: dispatchTime,
       visibilityDropThresholdPercent: visibilityDropThreshold,
@@ -318,7 +292,7 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
         competitorAvgChange: +competitorSurgeThreshold + 0.6,
         top3Drops: top3DropCount + 1,
         top10Drops: top10DropCount + 2,
-        status: 'delivered',
+        status: 'simulated',
       };
 
       const updatedLogs = [newLog, ...dispatchLogs];
@@ -1000,7 +974,7 @@ export const WeeklyCompetitorAlertModal: React.FC<WeeklyCompetitorAlertModalProp
                 </span>
                 <span className="text-neutral-600 font-sans">
                   Simulating alert dispatch to:{' '}
-                  <strong className="text-[#141414] font-mono">{recipients[0] || 'saulosilvaf@gmail.com'}</strong>
+                  <strong className="text-[#141414] font-mono">{recipients[0] || 'no recipient configured'}</strong>
                 </span>
               </div>
 

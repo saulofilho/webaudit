@@ -1,3 +1,4 @@
+import { sendError } from '../security/apiGuards';
 import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
@@ -305,6 +306,6 @@ export async function handleJsMiner(req: Request, res: Response) {
       securityScore: Math.max(10, 100 - (secretsFound.length * 25) - (sinksFound.length * 10) - (bucketsFound.length * 5))
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Falha ao processar mineração JS.' });
+    return sendError(res, err, 'Falha ao processar mineração JS.');
   }
 }

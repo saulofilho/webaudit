@@ -1,3 +1,4 @@
+import { sendError } from '../security/apiGuards';
 import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
@@ -221,6 +222,6 @@ export async function handleNiktoScan(req: Request, res: Response) {
       results: probeResults
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Falha ao executar varredura Nikto.' });
+    return sendError(res, err, 'Falha ao executar varredura Nikto.');
   }
 }

@@ -1,3 +1,4 @@
+import { isLikelyHtmlPage } from './sitemapUtils';
 import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
 import {
@@ -23,7 +24,14 @@ interface RawCrawledPage {
   canonical?: string;
   contentLength: number;
   inboundLinks: { sourceUrl: string; anchorText: string }[];
+  lang?: string;
 }
+
+function extractLang(html: string): string | undefined {
+  const m = html.match(/<html[^>]+lang=["']([^"']+)["']/i);
+  return m ? m[1].trim() : undefined;
+}
+
 
 function resolveUrl(href: string, baseUrl: string): string | null {
   try {
@@ -124,57 +132,7 @@ export async function auditKeywordCannibalization(
   const baseObj = new URL(targetUrl);
   const baseHost = baseObj.hostname.toLowerCase();
   const rootOrigin = baseObj.origin;
-
-  if (
-    baseHost.includes('webauditpro') ||
-    baseHost.includes('localhost') ||
-    baseHost.includes('127.0.0.1') ||
-    baseHost.includes('.run.app')
-  ) {
-    return {
-      targetUrl: 'https://webauditpro.ai.studio/',
-      analyzedAt: new Date().toISOString(),
-      pagesScannedCount: 6,
-      internalLinksScannedCount: 24,
-      cannibalizationRiskScore: 0,
-      canonicalHygieneScore: 100,
-      totalClustersDetected: 0,
-      highRiskCount: 0,
-      moderateRiskCount: 0,
-      lowRiskCount: 0,
-      uniqueKeywordsCannibalized: 0,
-      potentialEquityReclaimPercent: 0,
-      clusters: [],
-      summaryInsights: [
-        'Nenhum conflito de canibalização de palavras-chave detectado nas páginas do WebAudit Pro.',
-        '100% de conformidade com tags rel="canonical" auto-referenciais e URLs padronizadas.',
-        'Arquitetura de textos âncora internos 100% distribuída de forma única e harmoniosa.',
-        'Hierarquia de palavras-chave estruturada para maximizar o ranqueamento no topo do Google.',
-      ],
-      bestPracticesChecklist: [
-        {
-          rule: 'Self-Referential Canonical on Clean Pages',
-          status: 'pass',
-          detail: 'Todas as páginas principais declaram canonical auto-referencial completo com protocolo HTTPS e domínio limpo.',
-        },
-        {
-          rule: 'Single URL Targeting Head Keywords',
-          status: 'pass',
-          detail: 'Cada palavra-chave foco possui exatamente uma URL destino principal sem fragmentação de autoridade.',
-        },
-        {
-          rule: 'Consistent Internal Anchor Text Discipline',
-          status: 'pass',
-          detail: 'Nenhum texto âncora interno aponta para destinos contraditórios.',
-        },
-        {
-          rule: 'Duplicate / Thin Content 301 Redirection',
-          status: 'pass',
-          detail: 'Não há páginas duplicadas ou parâmetros de busca indexados concorrendo entre si.',
-        },
-      ],
-    };
-  }
+  const brandName = baseHost.replace(/^www\./, '').split('.')[0].toUpperCase();
 
   // 1. Fetch homepage
   const controller = new AbortController();
@@ -193,7 +151,7 @@ export async function auditKeywordCannibalization(
     homeStatusCode = res.status;
     homeHtml = await res.text();
   } catch (err: any) {
-    console.warn(`Could not fetch targetUrl (${targetUrl}): ${err.message}. Using synthetic crawl model.`);
+    throw new Error(`Could not load ${targetUrl} to audit keyword cannibalization: ${err.message}`);
   } finally {
     clearTimeout(timeoutId);
   }
@@ -246,7 +204,7 @@ export async function auditKeywordCannibalization(
           const locMatches = [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)];
           for (const loc of locMatches) {
             const u = loc[1].trim();
-            if (u.startsWith('http') && discoveredUrls.size < maxPages) {
+            if (u.startsWith('http') && isLikelyHtmlPage(u) && discoveredUrls.size < maxPages) {
               discoveredUrls.add(u);
             }
           }
@@ -254,30 +212,6 @@ export async function auditKeywordCannibalization(
         }
       } catch {
         // sitemap fetch error ignored
-      }
-    }
-  }
-
-  // Fallback synthetic pages if site is an SPA or protected by Cloudflare/WAF with few links
-  const targetHostName = baseHost.replace(/^www\./, '');
-  const brandName = targetHostName.split('.')[0].toUpperCase();
-
-  if (discoveredUrls.size < 3) {
-    const syntheticPaths = [
-      '/',
-      '/features',
-      '/solutions',
-      '/pricing',
-      '/plans',
-      '/blog/seo-guide',
-      '/resources/seo-guide-2026',
-      '/tools/audit',
-      '/scanner',
-      '/about',
-    ];
-    for (const p of syntheticPaths) {
-      if (discoveredUrls.size < maxPages) {
-        discoveredUrls.add(`${rootOrigin}${p}`);
       }
     }
   }
@@ -301,7 +235,8 @@ export async function auditKeywordCannibalization(
         return {
           url: u,
           statusCode: homeStatusCode,
-          title: cleanTitle(titleMatch ? titleMatch[1] : `${brandName} - Modern Digital Platform & Tools`),
+          title: titleMatch ? cleanTitle(titleMatch[1]) : '',
+          lang: extractLang(homeHtml),
           h1: h1Match ? cleanTitle(h1Match[1]) : undefined,
           metaDescription: descMatch ? descMatch[1].trim() : undefined,
           canonical: canonMatch ? canonMatch[1].trim() : undefined,
@@ -318,6 +253,8 @@ export async function auditKeywordCannibalization(
             Accept: 'text/html,application/xhtml+xml',
           },
         });
+        const contentType = res.headers.get('content-type') || '';
+        if (!res.ok || (contentType && !/html/i.test(contentType))) return null;
         const html = await res.text();
         const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
         const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
@@ -344,15 +281,11 @@ export async function auditKeywordCannibalization(
           }
         }
 
-        const pathClean = new URL(u).pathname.replace(/[-_/]/g, ' ').trim();
-        const fallbackTitle = pathClean
-          ? `${pathClean.toUpperCase()} | ${brandName}`
-          : `${brandName} - Homepage`;
-
         return {
           url: u,
           statusCode: res.status,
-          title: cleanTitle(titleMatch ? titleMatch[1] : fallbackTitle),
+          title: titleMatch ? cleanTitle(titleMatch[1]) : '',
+          lang: extractLang(html),
           h1: h1Match ? cleanTitle(h1Match[1]) : undefined,
           metaDescription: descMatch ? descMatch[1].trim() : undefined,
           canonical: canonMatch ? canonMatch[1].trim() : undefined,
@@ -360,26 +293,13 @@ export async function auditKeywordCannibalization(
           inboundLinks: [],
         };
       } catch {
-        // Synthesize plausible title from URL path for resilient diagnostics
-        const urlObj = new URL(u);
-        const segs = urlObj.pathname.split('/').filter(Boolean);
-        const lastSeg = segs.length > 0 ? segs[segs.length - 1].replace(/[-_]/g, ' ') : 'Home';
-        const synthTitle = `${lastSeg.charAt(0).toUpperCase() + lastSeg.slice(1)} - ${brandName}`;
-
-        return {
-          url: u,
-          statusCode: 200,
-          title: synthTitle,
-          h1: `${lastSeg.toUpperCase()} Solutions`,
-          canonical: Math.random() > 0.4 ? u : undefined,
-          contentLength: 28000,
-          inboundLinks: [],
-        };
+        // Unreachable page: excluded from the analysis rather than guessed.
+        return null;
       }
     });
 
     const batchResults = await Promise.all(promises);
-    crawledPages.push(...batchResults);
+    for (const r of batchResults) if (r) crawledPages.push(r as RawCrawledPage);
   }
 
   // 4. Map inbound internal links to each page
@@ -399,17 +319,8 @@ export async function auditKeywordCannibalization(
     }
   }
 
-  // Add realistic simulated inbound cross-links if few discovered
-  crawledPages.forEach((p, idx) => {
-    const list = inboundMap.get(p.url) || [];
-    if (list.length === 0) {
-      const parent = idx === 0 ? crawledPages[1]?.url || targetUrl : crawledPages[0]?.url || targetUrl;
-      const segs = new URL(p.url).pathname.split('/').filter(Boolean);
-      const anchor = segs.length > 0 ? segs[segs.length - 1].replace(/[-_]/g, ' ') : 'Home';
-      list.push({ sourceUrl: parent, anchorText: anchor });
-      inboundMap.set(p.url, list);
-    }
-    p.inboundLinks = list;
+  crawledPages.forEach((p) => {
+    p.inboundLinks = inboundMap.get(p.url) || [];
   });
 
   // 5. Build Keyword Cannibalization Clusters
@@ -429,15 +340,42 @@ export async function auditKeywordCannibalization(
 
   const candidatePairs: CandidatePair[] = [];
 
+  // Words shared by most titles are site branding ("Docs | MDN", "Acme - Home"),
+  // not a topic the pages compete for; ignore them when comparing titles.
+  const titleTokenDocFreq = new Map<string, number>();
+  for (const p of crawledPages) {
+    for (const t of new Set(extractKeywordsFromText(p.title))) {
+      titleTokenDocFreq.set(t, (titleTokenDocFreq.get(t) || 0) + 1);
+    }
+  }
+  const brandTokens = new Set<string>(
+    [...titleTokenDocFreq.entries()]
+      .filter(([, n]) => crawledPages.length >= 3 && n / crawledPages.length >= 0.5)
+      .map(([t]) => t)
+  );
+  for (const t of extractKeywordsFromText(brandName)) brandTokens.add(t);
+  const topicTokens = (title: string) => extractKeywordsFromText(title).filter((t) => !brandTokens.has(t));
+  // A shared phrase only signals competition when it has 2+ topical words
+  // (not stop words, not branding) — "your workflow" or "github code" do not count.
+  const topicPhrases = (title: string) =>
+    extractPhrases(title).filter(
+      (ph) =>
+        ph
+          .split(/\s+/)
+          .filter((w) => w.length > 2 && !STOP_WORDS.has(w) && !brandTokens.has(w)).length >= 2
+    );
+
   for (let i = 0; i < crawledPages.length; i++) {
     for (let j = i + 1; j < crawledPages.length; j++) {
       const pageA = crawledPages[i];
       const pageB = crawledPages[j];
+      if (!pageA.title || !pageB.title) continue;
+      if (pageA.lang && pageB.lang && pageA.lang.toLowerCase() !== pageB.lang.toLowerCase()) continue;
 
-      const tokensA = new Set(extractKeywordsFromText(pageA.title));
-      const tokensB = new Set(extractKeywordsFromText(pageB.title));
-      const phrasesA = extractPhrases(pageA.title);
-      const phrasesB = extractPhrases(pageB.title);
+      const tokensA = new Set(topicTokens(pageA.title));
+      const tokensB = new Set(topicTokens(pageB.title));
+      const phrasesA = topicPhrases(pageA.title);
+      const phrasesB = topicPhrases(pageB.title);
 
       const titleSimilarity = calculateJaccardSimilarity(tokensA, tokensB);
 
@@ -501,38 +439,6 @@ export async function auditKeywordCannibalization(
           sharedAnchors,
         });
       }
-    }
-  }
-
-  // If no candidates found from the live site (e.g. unique single page or distinct titles),
-  // craft 2-3 realistic domain-tailored clusters based on the site's primary topic so the user gets actionable insights
-  if (candidatePairs.length === 0 && crawledPages.length >= 2) {
-    const primaryP = crawledPages[0];
-    const secondaryP = crawledPages[1];
-    const topKeywords = extractKeywordsFromText(primaryP.title);
-    const kw = topKeywords.slice(0, 2).join(' ') || `${brandName.toLowerCase()} solutions`;
-
-    candidatePairs.push({
-      pageA: primaryP,
-      pageB: secondaryP,
-      focusKeyword: kw,
-      similarity: 68,
-      conflictType: 'title_keyword_overlap',
-      sharedAnchors: [kw, 'read more'],
-    });
-
-    if (crawledPages.length >= 4) {
-      const pageC = crawledPages[2];
-      const pageD = crawledPages[3];
-      const kw2 = new URL(pageC.url).pathname.replace(/[^a-zA-Z]/g, ' ').trim() || 'enterprise features';
-      candidatePairs.push({
-        pageA: pageC,
-        pageB: pageD,
-        focusKeyword: kw2,
-        similarity: 78,
-        conflictType: 'anchor_text_collision',
-        sharedAnchors: [kw2],
-      });
     }
   }
 

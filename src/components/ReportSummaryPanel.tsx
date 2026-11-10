@@ -249,7 +249,7 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
             <div className="py-12 text-center space-y-3">
               <Sparkles className="h-8 w-8 text-amber-500 animate-spin mx-auto" />
               <p className="text-xs font-bold text-[#141414]/80 uppercase">
-                Gemini 3.8 Flash is synthesizing audit findings and computing priorities...
+                Generating the executive summary from the audit findings...
               </p>
             </div>
           )}
@@ -264,8 +264,20 @@ export const ReportSummaryPanel: React.FC<ReportSummaryPanelProps> = ({
                     <FileText className="h-4 w-4 text-[#141414]" />
                     Executive Diagnostic Overview ({tone === 'executive' ? 'Business & ROI Focus' : 'Architecture & Infra Focus'})
                   </span>
-                  <span className="text-[10px] font-bold bg-[#141414] text-white px-2 py-0.5">
-                    OVERALL SCORE: {summaryData.overallScore}/100 [{summaryData.overallGrade}]
+                  <span className="flex items-center gap-1.5">
+                    {(summaryData)?.generatedBy === 'ai' ? (
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-violet-100 text-violet-800 border border-violet-300">AI · Gemini</span>
+                ) : (
+                  <span
+                    title="Gemini is not configured or the AI call failed; this text is a rule-based template built from the audit results."
+                    className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-neutral-100 text-neutral-700 border border-neutral-300"
+                  >
+                    Template · no AI
+                  </span>
+                )}
+                    <span className="text-[10px] font-bold bg-[#141414] text-white px-2 py-0.5">
+                      OVERALL SCORE: {summaryData.overallScore}/100 [{summaryData.overallGrade}]
+                    </span>
                   </span>
                 </div>
 
@@ -527,6 +539,7 @@ function generateClientFallback(
   }));
 
   return {
+    generatedBy: 'rules',
     targetUrl: report.targetUrl,
     analyzedAt: new Date().toISOString(),
     overallScore: report.overallScore,

@@ -142,7 +142,7 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
     setSendStatus(null);
 
     try {
-      // Direct POST or mock fallback
+      // Browser POST with no-cors: delivery can be sent but never confirmed from here
       await fetch(config.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -152,7 +152,8 @@ export const WebhookAlertModal: React.FC<WebhookAlertModalProps> = ({
 
       setSendStatus({
         type: 'success',
-        message: 'Test alert sent successfully! Check your Slack or Discord channel.',
+        message:
+          'Request sent. The browser cannot confirm delivery for cross-origin webhooks (no-cors), so check your Slack or Discord channel.',
       });
     } catch (err: any) {
       setSendStatus({

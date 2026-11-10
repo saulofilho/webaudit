@@ -21,6 +21,8 @@ export function CyberThreatIntelHubView() {
     fetchFeeds();
   }, []);
 
+  const [feedMeta, setFeedMeta] = useState<{ dataSource?: string; updatedAt?: string; total?: number } | null>(null);
+
   const fetchFeeds = async (searchQuery?: string) => {
     setIsLoading(true);
     try {
@@ -28,6 +30,7 @@ export function CyberThreatIntelHubView() {
       const resp = await fetch(`/api/secscan/threat-intel?query=${encodeURIComponent(q)}`);
       const data = await resp.json();
       setFeeds(data.feeds || []);
+      setFeedMeta({ dataSource: data.dataSource, updatedAt: data.updatedAt, total: data.total });
     } catch (e) {
       console.error(e);
     } finally {
@@ -45,7 +48,11 @@ export function CyberThreatIntelHubView() {
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-red-500/20 text-red-300 border border-red-400/30 flex items-center gap-1.5">
                 <Radio className="w-3.5 h-3.5" /> SecScan Engine: Threat Intel Hub & KEV
               </span>
-              <span className="text-xs text-slate-400">CISA Known Exploited Vulnerabilities</span>
+              <span className="text-xs text-slate-400">
+                CISA Known Exploited Vulnerabilities
+                {feedMeta?.dataSource === 'live' && ` • live feed, catalog ${String(feedMeta.updatedAt).slice(0, 10)} • ${feedMeta.total} matches`}
+                {feedMeta?.dataSource === 'snapshot' && ' • offline snapshot (live feed unreachable) — not current'}
+              </span>
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
               Radar de Inteligência de Ameaças Cibernéticas & CVEs
@@ -93,7 +100,7 @@ export function CyberThreatIntelHubView() {
                   {f.cve}
                 </span>
                 <span className="px-2 py-0.5 rounded text-xs font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
-                  CVSS {f.cvss} ({f.severity})
+                  {f.cvss != null ? `CVSS ${f.cvss} (${f.severity})` : 'Known Exploited (KEV)'}
                 </span>
                 {f.knownRansomwareUse === 'Known' && (
                   <span className="px-2 py-0.5 rounded text-xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center gap-1">

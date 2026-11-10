@@ -1,3 +1,4 @@
+import { extractMetaTags, hasAltAttribute } from '../utils/htmlMeta';
 import {
   AuditItem,
   AuditReport,
@@ -160,66 +161,7 @@ export function detectTechnologiesClient(headers: Record<string, string>, html: 
 }
 
 export function parseMetaClient(html: string): MetaTagsData {
-  const meta: MetaTagsData = {
-    openGraph: {},
-    twitter: {},
-    structuredDataTypes: [],
-  };
-
-  const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-  if (titleMatch && titleMatch[1]) {
-    meta.title = titleMatch[1].trim();
-    meta.titleLength = meta.title.length;
-  }
-
-  const descMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i) ||
-                    html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["']/i);
-  if (descMatch && descMatch[1]) {
-    meta.description = descMatch[1].trim();
-    meta.descriptionLength = meta.description.length;
-  }
-
-  const canonMatch = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']*)["']/i);
-  if (canonMatch && canonMatch[1]) meta.canonical = canonMatch[1].trim();
-
-  const robotsMatch = html.match(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']*)["']/i);
-  if (robotsMatch && robotsMatch[1]) meta.robots = robotsMatch[1].trim();
-
-  const vpMatch = html.match(/<meta[^>]+name=["']viewport["'][^>]+content=["']([^"']*)["']/i);
-  if (vpMatch && vpMatch[1]) meta.viewport = vpMatch[1].trim();
-
-  const langMatch = html.match(/<html[^>]+lang=["']([^"']*)["']/i);
-  if (langMatch && langMatch[1]) meta.language = langMatch[1].trim();
-
-  const charsetMatch = html.match(/<meta[^>]+charset=["']([^"']*)["']/i);
-  if (charsetMatch && charsetMatch[1]) meta.charset = charsetMatch[1].trim();
-
-  const ogTitle = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i);
-  if (ogTitle && ogTitle[1]) meta.openGraph.title = ogTitle[1].trim();
-
-  const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["']/i);
-  if (ogDesc && ogDesc[1]) meta.openGraph.description = ogDesc[1].trim();
-
-  const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']*)["']/i);
-  if (ogImage && ogImage[1]) meta.openGraph.image = ogImage[1].trim();
-
-  const twCard = html.match(/<meta[^>]+name=["']twitter:card["'][^>]+content=["']([^"']*)["']/i);
-  if (twCard && twCard[1]) meta.twitter.card = twCard[1].trim();
-
-  const ldJsonMatches = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-  for (const m of ldJsonMatches) {
-    try {
-      const parsed = JSON.parse(m[1].trim());
-      if (parsed['@type']) {
-        if (Array.isArray(parsed['@type'])) meta.structuredDataTypes.push(...parsed['@type']);
-        else meta.structuredDataTypes.push(parsed['@type']);
-      }
-    } catch {
-      meta.structuredDataTypes.push('Schema.org');
-    }
-  }
-
-  return meta;
+  return extractMetaTags(html);
 }
 
 export async function analyzeWebsiteClient(rawUrl: string): Promise<AuditReport> {
@@ -265,154 +207,141 @@ export async function analyzeWebsiteClient(rawUrl: string): Promise<AuditReport>
   let imagesMissingAlt = 0;
   for (const img of imgMatches) {
     const attrs = img[1] || '';
-    if (!attrs.match(/\balt\s*=\s*["'][^"']*["']/i)) imagesMissingAlt++;
+    if (!hasAltAttribute(attrs)) imagesMissingAlt++;
   }
 
   const linkMatches = [...html.matchAll(/<a\b([^>]*)>/gi)];
-  const isSelfAudit = /webauditpro|localhost|127\.0\.0\.1|\.run\.app/i.test(targetUrl);
+  // Static mode (no backend): the page is fetched through a public CORS proxy, so the
+  // site's real HTTP response headers are not available. Header checks are reported as
+  // "not checked" instead of guessed.
+  const securityHeaders: SecurityHeaderCheck[] = [];
 
-  const securityHeaders: SecurityHeaderCheck[] = [
-    {
-      header: 'Strict-Transport-Security (HSTS)',
-      status: isHttps || isSelfAudit ? 'present' : 'missing',
-      recommended: 'max-age=63072000; includeSubDomains; preload',
-      importance: 'critical',
-      description: 'Enforces HTTPS communication exclusively.',
-      fixSnippet: 'add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;',
-    },
-    {
-      header: 'Content-Security-Policy (CSP)',
-      status: isSelfAudit ? 'present' : 'missing',
-      recommended: "default-src 'self'; script-src 'self' 'unsafe-inline';",
-      importance: 'critical',
-      description: 'Protects against Cross-Site Scripting (XSS) attacks.',
-      fixSnippet: "add_header Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline';\" always;",
-    },
-    {
-      header: 'X-Frame-Options',
-      status: isSelfAudit ? 'present' : 'missing',
-      recommended: 'SAMEORIGIN or DENY',
-      importance: 'high',
-      description: 'Neutralizes Clickjacking attacks.',
-      fixSnippet: 'add_header X-Frame-Options "SAMEORIGIN" always;',
-    },
-    {
-      header: 'X-Content-Type-Options',
-      status: isSelfAudit ? 'present' : 'missing',
-      recommended: 'nosniff',
-      importance: 'high',
-      description: 'Prevents malicious MIME-sniffing.',
-      fixSnippet: 'add_header X-Content-Type-Options "nosniff" always;',
-    },
-  ];
+  const h1Count = h1Matches.length;
+  const titleLen = metaTags.titleLength || 0;
+  const descLen = metaTags.descriptionLength || 0;
 
   const items: AuditItem[] = [
     {
       id: 'sec-https',
       category: 'security',
-      title: isHttps || isSelfAudit ? 'HTTPS & TLS Encryption Active' : 'Insecure HTTP Traffic',
-      severity: isHttps || isSelfAudit ? 'good' : 'critical',
-      score: 100,
-      summary: 'Website uses encrypted SSL/TLS connection.',
-      impact: 'User privacy and data integrity preserved.',
+      title: isHttps ? 'HTTPS & TLS Encryption Active' : 'Insecure HTTP Traffic',
+      severity: isHttps ? 'good' : 'critical',
+      score: isHttps ? 100 : 20,
+      summary: isHttps ? 'The URL is served over HTTPS.' : 'The URL is served over plain HTTP.',
+      impact: isHttps ? 'User privacy and data integrity preserved.' : 'Traffic can be read or modified in transit.',
+    },
+    {
+      id: 'sec-headers-unchecked',
+      category: 'security',
+      title: 'Security Headers Not Checked (Static Mode)',
+      severity: 'info',
+      score: 50,
+      summary:
+        'This audit ran without the WebAudit server, through a public CORS proxy that does not expose the site\'s HTTP headers. HSTS, CSP, X-Frame-Options and other headers were not evaluated.',
+      impact: 'Run the tool with its Node server to audit security headers.',
     },
     {
       id: 'seo-title',
       category: 'seo',
-      title: `<title> Tag Present (${metaTags.titleLength || 45} characters)`,
-      severity: 'good',
-      score: 100,
-      summary: `Title: "${metaTags.title || 'WebAudit Pro — Website Analyzer & Audit Tool'}"`,
+      title: !metaTags.title
+        ? 'Missing <title> Tag'
+        : titleLen < 30 || titleLen > 60
+        ? `<title> Length Suboptimal (${titleLen} characters)`
+        : `<title> Tag Optimized (${titleLen} characters)`,
+      severity: !metaTags.title ? 'critical' : titleLen < 30 || titleLen > 60 ? 'warning' : 'good',
+      score: !metaTags.title ? 0 : titleLen < 30 || titleLen > 60 ? 70 : 100,
+      summary: metaTags.title ? `Title: "${metaTags.title}"` : 'No <title> element found.',
       impact: 'Crucial element for search engine ranking and SERP visibility.',
     },
     {
       id: 'seo-desc',
       category: 'seo',
-      title: 'Meta Description Present (Optimal)',
-      severity: 'good',
-      score: 100,
-      summary: `Description: "${metaTags.description || 'Professional website audit tool.'}"`,
-      impact: 'Controls snippet shown under link titles in search results.',
+      title: !metaTags.description
+        ? 'Missing Meta Description'
+        : descLen < 120 || descLen > 160
+        ? `Meta Description Length Suboptimal (${descLen} characters)`
+        : `Meta Description Optimized (${descLen} characters)`,
+      severity: !metaTags.description ? 'warning' : descLen < 120 || descLen > 160 ? 'info' : 'good',
+      score: !metaTags.description ? 40 : descLen < 120 || descLen > 160 ? 80 : 100,
+      summary: metaTags.description ? `Description: "${metaTags.description}"` : 'No meta description found.',
+      impact: 'Controls the snippet shown under the title in search results.',
     },
     {
       id: 'seo-h1',
       category: 'seo',
-      title: 'Single Defined <h1> Heading',
-      severity: 'good',
-      score: 100,
-      summary: 'Correct H1 semantic structure: "WebAudit Pro — All-in-One Website Audit & Security Analyzer"',
+      title: h1Count === 1 ? 'Single Defined <h1> Heading' : h1Count === 0 ? 'Missing <h1> Heading' : `Multiple <h1> Headings (${h1Count})`,
+      severity: h1Count === 1 ? 'good' : 'warning',
+      score: h1Count === 1 ? 100 : 60,
+      summary: h1Count > 0 ? `First H1: "${h1Matches[0].replace(/<[^>]+>/g, '').trim().slice(0, 120)}"` : 'No <h1> found in the HTML.',
       impact: 'Semantic signal for document content hierarchy.',
     },
     {
       id: 'bp-vp',
       category: 'best_practices',
-      title: 'Responsive Meta Viewport',
-      severity: 'good',
-      score: 100,
-      summary: 'Viewport configured for mobile devices.',
-      impact: 'Guarantees proper scaling across smartphones and tablets.',
+      title: metaTags.viewport ? 'Responsive Meta Viewport' : 'Missing Meta Viewport',
+      severity: metaTags.viewport ? 'good' : 'critical',
+      score: metaTags.viewport ? 100 : 20,
+      summary: metaTags.viewport ? `Viewport: "${metaTags.viewport}"` : 'No <meta name="viewport"> found.',
+      impact: 'Controls scaling on smartphones and tablets.',
+    },
+    {
+      id: 'bp-lang',
+      category: 'best_practices',
+      title: metaTags.language ? `Document Language Declared (lang="${metaTags.language}")` : 'Missing Document Language',
+      severity: metaTags.language ? 'good' : 'warning',
+      score: metaTags.language ? 100 : 60,
+      summary: metaTags.language ? 'The <html> element declares its language.' : 'The <html> element has no lang attribute.',
+      impact: 'Helps screen readers and search engines process the content correctly.',
     },
     {
       id: 'a11y-alt',
       category: 'performance_accessibility',
-      title: 'Images with Alt Descriptions',
-      severity: 'good',
-      score: 100,
-      summary: 'All images have descriptive alternative text.',
-      impact: 'Improves accessibility for screen reader users and image SEO.',
+      title:
+        imgMatches.length === 0
+          ? 'No Images Found'
+          : imagesMissingAlt === 0
+          ? `All ${imgMatches.length} Images Have alt Attributes`
+          : `${imagesMissingAlt} of ${imgMatches.length} Images Missing alt`,
+      severity: imagesMissingAlt === 0 ? 'good' : 'warning',
+      score: imgMatches.length === 0 ? 100 : Math.round(((imgMatches.length - imagesMissingAlt) / imgMatches.length) * 100),
+      summary:
+        imagesMissingAlt === 0
+          ? 'Every <img> has an alt attribute (empty alt marks decorative images).'
+          : `${imagesMissingAlt} <img> element(s) have no alt attribute.`,
+      impact: 'Screen reader users cannot understand images without alternative text.',
     },
   ];
 
-  const categories: Record<string, CategoryScore> = {
-    security: {
-      category: 'security',
-      name: 'Security',
-      score: isSelfAudit ? 100 : (isHttps ? 85 : 30),
-      grade: isSelfAudit ? 'A+' : calculateGrade(isHttps ? 85 : 30),
-      color: '#10b981',
-      passedCount: 1,
-      warningCount: 0,
-      criticalCount: 0,
-      totalCount: 1,
-      summary: 'Secure HTTPS and hardened defensive headers active',
-    },
-    seo: {
-      category: 'seo',
-      name: 'SEO & Visibility',
-      score: isSelfAudit ? 100 : (metaTags.title && metaTags.description ? 90 : 60),
-      grade: isSelfAudit ? 'A+' : calculateGrade(metaTags.title && metaTags.description ? 90 : 60),
-      color: '#3b82f6',
-      passedCount: 2,
-      warningCount: 0,
-      criticalCount: 0,
-      totalCount: 2,
-      summary: 'Metadata, canonical, JSON-LD schema, and H1 hierarchy fully optimized',
-    },
-    best_practices: {
-      category: 'best_practices',
-      name: 'Best Practices',
-      score: isSelfAudit ? 100 : (metaTags.viewport ? 90 : 50),
-      grade: isSelfAudit ? 'A+' : calculateGrade(metaTags.viewport ? 90 : 50),
-      color: '#8b5cf6',
-      passedCount: 1,
-      warningCount: 0,
-      criticalCount: 0,
-      totalCount: 1,
-      summary: 'Modern frontend development and responsive mobile standards',
-    },
-    performance_accessibility: {
-      category: 'performance_accessibility',
-      name: 'Performance & Accessibility',
-      score: isSelfAudit ? 100 : (imagesMissingAlt === 0 ? 95 : 70),
-      grade: isSelfAudit ? 'A+' : calculateGrade(imagesMissingAlt === 0 ? 95 : 70),
-      color: '#f59e0b',
-      passedCount: 1,
-      warningCount: 0,
-      criticalCount: 0,
-      totalCount: 1,
-      summary: 'Optimal response times and high accessibility compliance',
-    },
+  const CATEGORY_META: Record<string, { name: string; color: string }> = {
+    security: { name: 'Security', color: '#10b981' },
+    seo: { name: 'SEO & Visibility', color: '#3b82f6' },
+    best_practices: { name: 'Best Practices', color: '#8b5cf6' },
+    performance_accessibility: { name: 'Performance & Accessibility', color: '#f59e0b' },
   };
+  const categories: Record<string, CategoryScore> = {};
+  for (const [key, meta] of Object.entries(CATEGORY_META)) {
+    const catItems = items.filter((i) => i.category === key);
+    const score = Math.round(catItems.reduce((acc, i) => acc + i.score, 0) / Math.max(1, catItems.length));
+    const criticalCount = catItems.filter((i) => i.severity === 'critical').length;
+    const warningCount = catItems.filter((i) => i.severity === 'warning').length;
+    categories[key] = {
+      category: key as any,
+      name: meta.name,
+      score,
+      grade: calculateGrade(score),
+      color: meta.color,
+      passedCount: catItems.filter((i) => i.severity === 'good').length,
+      warningCount,
+      criticalCount,
+      totalCount: catItems.length,
+      summary:
+        key === 'security'
+          ? 'Static mode: only HTTPS was checked; HTTP headers are not available.'
+          : criticalCount + warningCount === 0
+          ? 'No issues found in the checks available in static mode.'
+          : `${criticalCount} critical and ${warningCount} warning issue(s) found.`,
+    };
+  }
 
   const overallScore = Math.round(
     (categories.security.score + categories.seo.score + categories.best_practices.score + categories.performance_accessibility.score) / 4
@@ -428,7 +357,7 @@ export async function analyzeWebsiteClient(rawUrl: string): Promise<AuditReport>
     contentLengthBytes: html.length,
     contentType: 'text/html',
     tlsVersion: isHttps ? 'HTTPS / TLS' : 'HTTP',
-    h1Count: h1Matches.length,
+    h1Count,
     h2Count: 0,
     h3Count: 0,
     imagesTotal: imgMatches.length,
@@ -453,16 +382,16 @@ export async function analyzeWebsiteClient(rawUrl: string): Promise<AuditReport>
     analyzedAt: new Date().toISOString(),
     overallScore,
     overallGrade: calculateGrade(overallScore),
-    aiExecutiveSummary: `Client-side audit for ${new URL(targetUrl).hostname}. Global score achieved: ${overallScore}/100 (Grade ${calculateGrade(overallScore)}).`,
+    aiExecutiveSummary: `Limited static-mode audit for ${new URL(targetUrl).hostname} (no server: HTTP headers and response details were not checked). Score from available checks: ${overallScore}/100 (Grade ${calculateGrade(overallScore)}).`,
     keyStrengths: [
       isHttps ? 'Encrypted HTTPS active' : 'Site reachable online',
       metaTags.title ? 'Site title tag defined' : 'HTML document structure detected',
       metaTags.viewport ? 'Responsive meta viewport present' : 'Web navigation ready',
     ],
     topPriorityFixes: [
-      !isHttps ? 'Enable SSL/TLS certificate for HTTPS' : 'Review HTTP security headers (HSTS, CSP)',
-      !metaTags.description ? 'Add meta description of 120-160 characters' : 'Optimize images with alt descriptions',
-    ],
+      ...items.filter((i) => i.severity === 'critical' || i.severity === 'warning').map((i) => `${i.title}: ${i.summary}`),
+      'Run the audit with the WebAudit server to check HTTP security headers.',
+    ].slice(0, 5),
     categories: categories as any,
     items,
     rawData,

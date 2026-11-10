@@ -71,6 +71,7 @@ export const SeoAiInsightPanel: React.FC<SeoAiInsightPanelProps> = ({
       const seoScore = report.categories?.seo?.score ?? 68;
 
       setInsights({
+        generatedBy: 'rules',
         targetUrl: report.targetUrl,
         analyzedAt: new Date().toISOString(),
         overallSeoScore: seoScore,
@@ -274,7 +275,16 @@ export const SeoAiInsightPanel: React.FC<SeoAiInsightPanelProps> = ({
                 </span>
               </div>
               <span className="text-[10px] text-neutral-500 font-mono">
-                Model: Gemini 3.8 Flash • {new Date(insights.analyzedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+{(insights as any)?.generatedBy === 'ai' ? (
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-violet-100 text-violet-800 border border-violet-300">AI · Gemini</span>
+                ) : (
+                  <span
+                    title="Gemini is not configured or the AI call failed; this text is a rule-based template built from the audit results."
+                    className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-neutral-100 text-neutral-700 border border-neutral-300"
+                  >
+                    Template · no AI
+                  </span>
+                )} • {new Date(insights.analyzedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
 

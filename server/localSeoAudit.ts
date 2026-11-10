@@ -1,13 +1,13 @@
 import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
-import fs from 'fs';
-import path from 'path';
 import {
   LocalSeoAuditData,
   NapEntity,
   CitationProfile,
   GoogleBusinessProfileAudit,
 } from '../src/types';
+
+const EMPTY_PHONE = { raw: '', formatted: '', telHref: undefined as string | undefined };
 
 function cleanDomain(rawUrl: string): string {
   try {
@@ -80,30 +80,9 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
   const domain = cleanDomain(targetUrl);
   const fallbackBrand = titleCaseDomain(domain);
 
-  let html: string | null = null;
-  const isSelf =
-    domain.includes('webauditpro') ||
-    domain.includes('localhost') ||
-    domain.includes('127.0.0.1') ||
-    domain.includes('run.app');
-
-  if (isSelf) {
-    try {
-      const idx = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(idx)) {
-        html = fs.readFileSync(idx, 'utf-8');
-      }
-    } catch {
-      // ignore
-    }
-  }
-
+  const html = await fetchPageHtml(targetUrl);
   if (!html) {
-    try {
-      html = await fetchPageHtml(targetUrl);
-    } catch (err) {
-      console.warn('Could not fetch HTML for local SEO check, using report fallback:', err);
-    }
+    throw new Error(`Could not load ${targetUrl} to check local SEO signals.`);
   }
 
   // 1. Extract Schema.org LocalBusiness / PostalAddress
@@ -145,7 +124,7 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
             const city = addressObj.addressLocality || '';
             const state = addressObj.addressRegion || '';
             const postalCode = addressObj.postalCode || '';
-            const country = addressObj.addressCountry || 'US';
+            const country = addressObj.addressCountry || '';
             const rawAddress = [street, city, state, postalCode].filter(Boolean).join(', ');
 
             if (item.geo) {
@@ -161,22 +140,21 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
                 ? item.openingHours.join(', ')
                 : typeof item.openingHours === 'string'
                 ? item.openingHours
-                : 'Mo-Fr 09:00-18:00, Sa 10:00-15:00';
+                : undefined;
             }
 
-            if (name || street || phone) {
-              const formattedPhone = formatPhoneNumber(phone || '(555) 019-2834');
+            if (item.name || street || phone) {
               schemaNap = {
-                name: name || `${fallbackBrand} HQ`,
+                name,
                 address: {
-                  street: street || '100 Innovation Way',
-                  city: city || 'San Francisco',
-                  state: state || 'CA',
-                  postalCode: postalCode || '94105',
-                  country: country || 'US',
-                  raw: rawAddress || '100 Innovation Way, San Francisco, CA 94105',
+                  street,
+                  city,
+                  state,
+                  postalCode,
+                  country: typeof country === 'string' ? country : country?.name || '',
+                  raw: rawAddress,
                 },
-                phone: formattedPhone,
+                phone: phone ? formatPhoneNumber(phone) : EMPTY_PHONE,
                 source: 'schema_markup',
                 confidence: street && phone ? 96 : 78,
               };
@@ -205,8 +183,8 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
   let hasGoogleMapsEmbed = false;
   let hasGeoMetaTags = false;
   let hasOpeningHoursOnPage = false;
-  let detectedCity = 'San Francisco';
-  let detectedState = 'CA';
+  const detectedCity = schemaNap?.address.city || '';
+  const detectedState = schemaNap?.address.state || '';
 
   if (html) {
     // Tel href
@@ -250,207 +228,124 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
     }
   }
 
-  // Fallbacks if not detected in HTML
-  const resolvedPhone = onPagePhone
-    ? formatPhoneNumber(onPagePhone)
-    : schemaNap?.phone || formatPhoneNumber('(415) 890-3420');
+  // On-page NAP: only what was actually found in the HTML. Nothing is invented.
+  const resolvedPhone = onPagePhone ? formatPhoneNumber(onPagePhone) : schemaNap?.phone || EMPTY_PHONE;
+  const hasOnPageContact = Boolean(onPagePhone);
 
   const onPageNap: NapEntity = {
-    name: schemaNap ? schemaNap.name : `${fallbackBrand}`,
-    address: {
-      street: schemaNap?.address.street || '100 Innovation Way, Suite 400',
-      city: schemaNap?.address.city || detectedCity,
-      state: schemaNap?.address.state || detectedState,
-      postalCode: schemaNap?.address.postalCode || '94105',
-      country: schemaNap?.address.country || 'US',
-      raw:
-        schemaNap?.address.raw ||
-        `100 Innovation Way, Suite 400, ${detectedCity}, ${detectedState} 94105`,
-    },
+    name: schemaNap?.name || '',
+    address: schemaNap
+      ? { ...schemaNap.address }
+      : { street: '', city: '', state: '', postalCode: '', country: '', raw: '' },
     phone: resolvedPhone,
-    source: onPageTelHref ? 'footer' : 'contact_page',
-    confidence: onPageTelHref ? 92 : 75,
+    source: onPageTelHref ? 'footer' : hasOnPageContact ? 'contact_page' : 'not_detected',
+    confidence: onPageTelHref ? 92 : hasOnPageContact ? 60 : 0,
   };
 
-  const footerNap: NapEntity = {
-    name: `${fallbackBrand}`,
-    address: {
-      street: onPageNap.address.street,
-      city: onPageNap.address.city,
-      state: onPageNap.address.state,
-      postalCode: onPageNap.address.postalCode,
-      country: onPageNap.address.country,
-      raw: onPageNap.address.raw,
-    },
-    phone: resolvedPhone,
-    source: 'footer',
-    confidence: 88,
-  };
+  // Footer NAP is the same on-page extraction; kept for API compatibility.
+  const footerNap: NapEntity = { ...onPageNap, address: { ...onPageNap.address } };
 
-  // Check consistency issues
+  // Check consistency issues (only between sources we actually read)
   const consistencyIssues: string[] = [];
   if (!hasLocalSchema) {
     consistencyIssues.push('Missing Schema.org LocalBusiness JSON-LD markup on target landing page.');
   }
   if (!hasGoogleMapsEmbed) {
-    consistencyIssues.push('No verified Google Maps interactive embed or Place link found in contact section.');
+    consistencyIssues.push('No Google Maps embed or Place link found on the page.');
   }
   if (!onPageTelHref) {
-    consistencyIssues.push('Phone number is missing actionable click-to-call HTML hyperlink (href="tel:...").');
+    consistencyIssues.push('No click-to-call phone link (href="tel:...") found on the page.');
   }
-  if (schemaNap && schemaNap.address.street !== onPageNap.address.street) {
-    consistencyIssues.push(
-      `Street address formatting variation between Schema ("${schemaNap.address.street}") and Footer ("${onPageNap.address.street}").`
-    );
+  if (schemaNap?.phone.raw && onPagePhone) {
+    const a = schemaNap.phone.raw.replace(/\D/g, '').slice(-10);
+    const b = onPagePhone.replace(/\D/g, '').slice(-10);
+    if (a && b && a !== b) {
+      consistencyIssues.push(`Phone in Schema ("${schemaNap.phone.formatted}") differs from the phone on the page ("${formatPhoneNumber(onPagePhone).formatted}").`);
+    }
   }
 
-  // Citations profiles
-  const canonicalName = schemaNap?.name || onPageNap.name;
-  const canonicalAddress = schemaNap?.address.raw || onPageNap.address.raw;
-  const canonicalPhone = resolvedPhone.formatted;
-
+  // Directory citations cannot be verified without each directory's API; provide
+  // search/claim links for a manual check instead of fabricated listing data.
+  const canonicalName = schemaNap?.name || fallbackBrand;
+  const canonicalCity = onPageNap.address.city;
+  const searchTerm = [canonicalName, canonicalCity].filter(Boolean).join(' ');
+  const notChecked = (platform: CitationProfile['platform'], id: string, directoryUrl: string, claimUrl: string): CitationProfile => ({
+    id,
+    platform,
+    directoryUrl,
+    claimUrl,
+    status: 'not_checked',
+    name: '',
+    address: '',
+    phone: '',
+    hasMismatch: false,
+    mismatchFields: [],
+    notes: 'Not verified automatically — open the directory link and compare the listing with your NAP.',
+  });
   const citations: CitationProfile[] = [
-    {
-      id: 'cit-gbp',
-      platform: 'Google Business Profile',
-      directoryUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        `${canonicalName} ${onPageNap.address.city}`
-      )}`,
-      claimUrl: 'https://business.google.com/create',
-      status: 'verified',
-      name: canonicalName,
-      address: canonicalAddress,
-      phone: canonicalPhone,
-      hasMismatch: false,
-      mismatchFields: [],
-      notes: 'Active Google Map Pack profile linked to target domain.',
-    },
-    {
-      id: 'cit-apple',
-      platform: 'Apple Maps',
-      directoryUrl: 'https://mapsconnect.apple.com/',
-      claimUrl: 'https://mapsconnect.apple.com/',
-      status: 'verified',
-      name: canonicalName,
-      address: canonicalAddress,
-      phone: canonicalPhone,
-      hasMismatch: false,
-      mismatchFields: [],
-      notes: 'Apple Business Connect place card verified with correct NAP.',
-    },
-    {
-      id: 'cit-bing',
-      platform: 'Bing Places',
-      directoryUrl: `https://www.bing.com/maps?q=${encodeURIComponent(canonicalName)}`,
-      claimUrl: 'https://www.bingplaces.com/',
-      status: 'verified',
-      name: canonicalName,
-      address: canonicalAddress,
-      phone: canonicalPhone,
-      hasMismatch: false,
-      mismatchFields: [],
-      notes: 'Synchronized via Google Business Profile import.',
-    },
-    {
-      id: 'cit-yelp',
-      platform: 'Yelp',
-      directoryUrl: `https://www.yelp.com/biz/${domain.replace(/\./g, '-')}`,
-      claimUrl: 'https://biz.yelp.com/',
-      status: 'mismatch',
-      name: `${canonicalName} Corp`,
-      address: canonicalAddress.replace('Suite 400', 'Ste 400'),
-      phone: canonicalPhone,
-      hasMismatch: true,
-      mismatchFields: ['name', 'address'],
-      notes: 'Name has trailing "Corp" and address uses abbreviated "Ste" instead of standardized "Suite 400".',
-    },
-    {
-      id: 'cit-fb',
-      platform: 'Facebook Places',
-      directoryUrl: `https://www.facebook.com/${domain.replace(/\./g, '')}`,
-      claimUrl: 'https://www.facebook.com/pages/create',
-      status: 'verified',
-      name: canonicalName,
-      address: canonicalAddress,
-      phone: canonicalPhone,
-      hasMismatch: false,
-      mismatchFields: [],
-      notes: 'Official Facebook Business Page location verified.',
-    },
-    {
-      id: 'cit-yellowpages',
-      platform: 'YellowPages',
-      directoryUrl: `https://www.yellowpages.com/search?search_terms=${encodeURIComponent(
-        canonicalName
-      )}&geo_location_terms=${encodeURIComponent(onPageNap.address.city)}`,
-      claimUrl: 'https://adsolutions.yp.com/free-listing',
-      status: 'unclaimed',
-      name: canonicalName,
-      address: canonicalAddress,
-      phone: canonicalPhone,
-      hasMismatch: false,
-      mismatchFields: [],
-      notes: 'Directory listing created automatically; requires claiming to safeguard NAP consistency.',
-    },
+    notChecked('Google Business Profile', 'cit-gbp', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchTerm)}`, 'https://business.google.com/create'),
+    notChecked('Apple Maps', 'cit-apple', `https://maps.apple.com/?q=${encodeURIComponent(searchTerm)}`, 'https://businessconnect.apple.com/'),
+    notChecked('Bing Places', 'cit-bing', `https://www.bing.com/maps?q=${encodeURIComponent(searchTerm)}`, 'https://www.bingplaces.com/'),
+    notChecked('Yelp', 'cit-yelp', `https://www.yelp.com/search?find_desc=${encodeURIComponent(canonicalName)}${canonicalCity ? `&find_loc=${encodeURIComponent(canonicalCity)}` : ''}`, 'https://biz.yelp.com/'),
+    notChecked('Facebook Places', 'cit-fb', `https://www.facebook.com/search/pages/?q=${encodeURIComponent(canonicalName)}`, 'https://www.facebook.com/pages/create'),
+    notChecked('YellowPages', 'cit-yellowpages', `https://www.yellowpages.com/search?search_terms=${encodeURIComponent(canonicalName)}${canonicalCity ? `&geo_location_terms=${encodeURIComponent(canonicalCity)}` : ''}`, 'https://adsolutions.yp.com/free-listing'),
   ];
 
-  // Google Business Profile Audit Data
-  const gbpRating = 4.8;
-  const gbpReviewsCount = 42;
-  const reviewResponseRatePercent = 89;
-  const hasOpeningHoursConfigured = true;
-
-  const gbpRecommendations = [
-    {
-      id: 'gbp-rec-1',
-      title: 'Sync Yelp Directory Name & Address',
-      impact: 'high' as const,
-      description:
-        'Yelp business listing displays "Ste 400" and trailing "Corp". Standardizing this prevents Google citation deduplication penalties.',
-      actionLabel: 'Update Yelp Listing',
-    },
-    {
-      id: 'gbp-rec-2',
-      title: 'Embed Google Maps Place Card on Contact Page',
-      impact: hasGoogleMapsEmbed ? ('low' as const) : ('high' as const),
-      description:
-        'Embedding the official Google Maps Place iFrame or CID link creates an explicit relational entity link between the domain and your Google Place ID.',
-      actionLabel: 'Copy Embed Code',
-    },
-    {
-      id: 'gbp-rec-3',
+  const gbpRecommendations: GoogleBusinessProfileAudit['recommendations'] = [];
+  if (!hasLocalSchema) {
+    gbpRecommendations.push({
+      id: 'gbp-rec-schema',
       title: 'Implement LocalBusiness JSON-LD Schema',
-      impact: hasLocalSchema ? ('low' as const) : ('critical' as const),
-      description:
-        'Add Schema.org LocalBusiness with postalAddress, telephone, priceRange, and geo coordinates directly in your HTML <head>.',
+      impact: 'critical',
+      description: 'Add Schema.org LocalBusiness with address, telephone, opening hours and geo coordinates to the page.',
       actionLabel: 'Generate Schema Markup',
-    },
-    {
-      id: 'gbp-rec-4',
-      title: 'Maintain 90%+ Review Response Rate',
-      impact: 'medium' as const,
-      description:
-        'Google algorithmically rewards local businesses that respond to customer reviews within 24 to 48 hours with higher Local 3-Pack placement.',
-      actionLabel: 'View GBP Review Guidelines',
-    },
-  ];
+    });
+  }
+  if (!hasGoogleMapsEmbed) {
+    gbpRecommendations.push({
+      id: 'gbp-rec-maps',
+      title: 'Link or Embed Your Google Maps Place',
+      impact: 'high',
+      description: 'A Google Maps embed or Place link on the contact page connects the domain with your Google Business Profile.',
+      actionLabel: 'Copy Embed Code',
+    });
+  }
+  if (!onPageTelHref) {
+    gbpRecommendations.push({
+      id: 'gbp-rec-tel',
+      title: 'Add a Click-to-Call Phone Link',
+      impact: 'medium',
+      description: 'Wrap the phone number in <a href="tel:..."> so mobile visitors can call directly.',
+      actionLabel: 'View Example',
+    });
+  }
+  gbpRecommendations.push({
+    id: 'gbp-rec-verify',
+    title: 'Verify Your Google Business Profile Manually',
+    impact: 'medium',
+    description: 'Rating, reviews and claim status are not checked by this tool. Confirm them in Google Business Profile.',
+    actionLabel: 'Open Google Business Profile',
+  });
 
-  // Calculate scores
-  let napScore = 90;
-  if (!hasLocalSchema) napScore -= 15;
-  if (!onPageTelHref) napScore -= 8;
-  if (citations.some((c) => c.hasMismatch)) napScore -= 12;
-  napScore = Math.max(35, Math.min(100, napScore));
+  // Scores from on-page signals only
+  let napScore = 100;
+  if (!hasLocalSchema) napScore -= 30;
+  if (!schemaNap?.address.street) napScore -= 15;
+  if (!onPageTelHref) napScore -= 15;
+  if (!onPagePhone && !schemaNap?.phone.raw) napScore -= 15;
+  if (consistencyIssues.some((i) => i.startsWith('Phone in Schema'))) napScore -= 10;
+  napScore = Math.max(0, Math.min(100, napScore));
 
-  let gbpScore = 85;
-  if (!hasGoogleMapsEmbed) gbpScore -= 10;
-  if (!hasLocalSchema) gbpScore -= 10;
-  if (reviewResponseRatePercent < 90) gbpScore -= 5;
-  gbpScore = Math.max(40, Math.min(98, gbpScore));
+  let gbpScore = 100;
+  if (!hasGoogleMapsEmbed) gbpScore -= 30;
+  if (!hasLocalSchema) gbpScore -= 25;
+  if (!geoCoordinates && !hasGeoMetaTags) gbpScore -= 15;
+  if (!openingHoursText && !hasOpeningHoursOnPage) gbpScore -= 15;
+  gbpScore = Math.max(0, Math.min(100, gbpScore));
 
-  const overallScore = Math.round((napScore * 0.55) + (gbpScore * 0.45));
+  const overallScore = Math.round(napScore * 0.55 + gbpScore * 0.45);
 
-  let grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' = 'B';
+  let grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
   if (overallScore >= 95) grade = 'A+';
   else if (overallScore >= 88) grade = 'A';
   else if (overallScore >= 75) grade = 'B';
@@ -458,38 +353,44 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
   else if (overallScore >= 45) grade = 'D';
   else grade = 'F';
 
-  const localKeywords = [
-    { keyword: `${onPageNap.address.city.toLowerCase()} services`, type: 'geo_city' as const, occurrences: 4 },
-    { keyword: `best ${titleCaseDomain(domain).toLowerCase()} near me`, type: 'intent' as const, occurrences: 2 },
-    { keyword: `${onPageNap.address.city.toLowerCase()} ${onPageNap.address.state.toLowerCase()}`, type: 'geo_city' as const, occurrences: 6 },
-    { keyword: `${domain.split('.')[0]} location`, type: 'service_niche' as const, occurrences: 3 },
-  ];
+  // Local keywords actually present in the visible text
+  const visibleText = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .toLowerCase();
+  const countOccurrences = (term: string) =>
+    term ? visibleText.split(term.toLowerCase()).length - 1 : 0;
+  const keywordCandidates: LocalSeoAuditData['localKeywordsDetected'] = [];
+  if (detectedCity) keywordCandidates.push({ keyword: detectedCity.toLowerCase(), type: 'geo_city', occurrences: countOccurrences(detectedCity) });
+  if (detectedState) keywordCandidates.push({ keyword: detectedState.toLowerCase(), type: 'geo_city', occurrences: countOccurrences(detectedState) });
+  for (const intent of ['near me', 'open now', 'directions']) {
+    keywordCandidates.push({ keyword: intent, type: 'intent', occurrences: countOccurrences(intent) });
+  }
+  const localKeywords = keywordCandidates.filter((k) => k.occurrences > 0);
 
   const gbpAudit: GoogleBusinessProfileAudit = {
-    status: gbpScore >= 85 ? 'optimized' : 'needs_attention',
-    profileFound: true,
+    status: 'not_checked',
+    profileFound: false,
     businessName: canonicalName,
-    placeId: `ChIJ_${domain.replace(/[^a-zA-Z0-9]/g, '')}_${onPageNap.address.city.replace(/\s+/g, '')}`,
-    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      `${canonicalName} ${onPageNap.address.city}`
-    )}`,
-    primaryCategory: 'Professional Service & Technology Company',
-    additionalCategories: ['Software Company', 'Corporate Headquarters', 'Consultant'],
-    isClaimedAndVerified: true,
-    rating: gbpRating,
-    reviewsCount: gbpReviewsCount,
-    reviewResponseRatePercent,
-    hasOpeningHours: hasOpeningHoursConfigured,
-    openingHoursFormatted: openingHoursText || 'Mon - Fri: 9:00 AM – 6:00 PM PST',
-    hasWebsiteBacklink: true,
-    hasGeoCoordinates: true,
-    latitude: geoCoordinates?.lat || 37.7749,
-    longitude: geoCoordinates?.lng || -122.4194,
-    hasLocalPhone: true,
-    hasServiceAreaConfigured: true,
-    hasRecentPosts: true,
-    descriptionStatus: 'optimized',
-    descriptionLength: 540,
+    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(searchTerm)}`,
+    primaryCategory: schemaTypeDetected || '',
+    additionalCategories: [],
+    isClaimedAndVerified: false,
+    rating: null,
+    reviewsCount: null,
+    reviewResponseRatePercent: null,
+    hasOpeningHours: Boolean(openingHoursText || hasOpeningHoursOnPage),
+    openingHoursFormatted: openingHoursText,
+    hasWebsiteBacklink: false,
+    hasGeoCoordinates: Boolean(geoCoordinates),
+    latitude: geoCoordinates?.lat,
+    longitude: geoCoordinates?.lng,
+    hasLocalPhone: Boolean(onPagePhone || schemaNap?.phone.raw),
+    hasServiceAreaConfigured: false,
+    hasRecentPosts: false,
+    descriptionStatus: 'missing',
+    descriptionLength: 0,
     optimizationScore: gbpScore,
     recommendations: gbpRecommendations,
   };
@@ -513,10 +414,10 @@ export async function auditLocalSeo(targetUrl: string, existingReport?: any): Pr
     googleBusinessProfile: gbpAudit,
     localRankingSignals: {
       hasLocalSchema,
-      schemaType: schemaTypeDetected || 'LocalBusiness',
+      schemaType: schemaTypeDetected,
       hasGoogleMapsEmbed,
       hasClickToCallPhone: Boolean(onPageTelHref),
-      hasCityInTitleOrH1: Boolean(html && html.includes(onPageNap.address.city)),
+      hasCityInTitleOrH1: Boolean(detectedCity && countOccurrences(detectedCity) > 0),
       hasGeoMetaTags,
       hasKmlOrGeoSitemap: false,
       hasOpeningHoursOnPage: hasOpeningHoursOnPage || Boolean(openingHoursText),

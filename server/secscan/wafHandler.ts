@@ -1,3 +1,4 @@
+import { sendError } from '../security/apiGuards';
 import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
@@ -156,6 +157,6 @@ export async function handleWafScan(req: Request, res: Response) {
         : 'Nenhum WAF de borda identificado nos cabeçalhos públicos. Recomendado ativar Cloudflare, AWS WAF ou Akamai para defesa contra ataques DDoS e injeções OWASP.'
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Falha ao identificar presença de WAF.' });
+    return sendError(res, err, 'Falha ao identificar presença de WAF.');
   }
 }

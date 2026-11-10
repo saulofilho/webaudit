@@ -22,6 +22,7 @@ import {
   rateLimit,
   requireActiveScanAccess,
   requireAdmin,
+  sendError,
   validateTargetUrls,
 } from './server/security/apiGuards';
 
@@ -198,9 +199,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(report);
     } catch (err: any) {
       console.error('Audit error:', err);
-      return res.status(500).json({
-        error: err.message || 'Internal failure while analyzing the provided website.',
-      });
+      return sendError(res, err, 'Internal failure while analyzing the provided website.');
     }
   });
 
@@ -214,9 +213,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(data);
     } catch (err: any) {
       console.error('Check links error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to check links for the specified website.',
-      });
+      return sendError(res, err, 'Failed to check links for the specified website.');
     }
   });
 
@@ -230,9 +227,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(data);
     } catch (err: any) {
       console.error('Crawl sitemap error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to crawl sitemap and discovered pages.',
-      });
+      return sendError(res, err, 'Failed to crawl sitemap and discovered pages.');
     }
   });
 
@@ -246,9 +241,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(data);
     } catch (err: any) {
       console.error('Cannibalization audit error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to audit keyword cannibalization.',
-      });
+      return sendError(res, err, 'Failed to audit keyword cannibalization.');
     }
   });
 
@@ -262,9 +255,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(data);
     } catch (err: any) {
       console.error('Content gap analysis error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to analyze content gap against top competitors.',
-      });
+      return sendError(res, err, 'Failed to analyze content gap against top competitors.');
     }
   });
 
@@ -278,9 +269,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(data);
     } catch (err: any) {
       console.error('Local SEO check error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to check local SEO, NAP consistency, and Google Business Profile.',
-      });
+      return sendError(res, err, 'Failed to check local SEO, NAP consistency, and Google Business Profile.');
     }
   });
 
@@ -298,9 +287,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(data);
     } catch (err: any) {
       console.error('Image audit error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to scan images and analyze accessibility.',
-      });
+      return sendError(res, err, 'Failed to scan images and analyze accessibility.');
     }
   });
 
@@ -407,9 +394,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(fix);
     } catch (err: any) {
       console.error('AI Fix error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to generate intelligent fix guide.',
-      });
+      return sendError(res, err, 'Failed to generate intelligent fix guide.');
     }
   });
 
@@ -424,9 +409,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(summary);
     } catch (err: any) {
       console.error('AI Summary error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to generate executive summary with AI.',
-      });
+      return sendError(res, err, 'Failed to generate executive summary with AI.');
     }
   });
 
@@ -441,9 +424,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json(insights);
     } catch (err: any) {
       console.error('AI SEO Insights error:', err);
-      return res.status(500).json({
-        error: err.message || 'Failed to generate SEO AI insights.',
-      });
+      return sendError(res, err, 'Failed to generate SEO AI insights.');
     }
   });
 

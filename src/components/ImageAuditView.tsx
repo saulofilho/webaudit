@@ -64,7 +64,8 @@ export const ImageAuditView: React.FC<ImageAuditViewProps> = ({ report, targetUr
       });
 
       if (!res.ok) {
-        throw new Error(`Server returned HTTP ${res.status}`);
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Server returned HTTP ${res.status}`);
       }
 
       const auditData: ImageAuditSummary = await res.json();
@@ -75,153 +76,12 @@ export const ImageAuditView: React.FC<ImageAuditViewProps> = ({ report, targetUr
       );
       setSelectedIds(defectiveIds);
     } catch (err: any) {
-      console.warn('Backend image audit failed, fallback to client synthesis:', err);
-      // Client-side fallback synthesizer using report data
-      synthesizeFallbackData();
+      console.warn('Image audit failed:', err);
+      setData(null);
+      setError(err?.message || 'Image audit is unavailable (server not reachable).');
     } finally {
       setLoading(false);
     }
-  };
-
-  const synthesizeFallbackData = () => {
-    const rawImagesTotal = report.rawData?.imagesTotal || 6;
-    const rawMissingAlt = report.rawData?.imagesMissingAlt || 2;
-    const urlObj = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
-    const host = urlObj.hostname;
-
-    const sampleImages: ImageAuditItem[] = [
-      {
-        id: 'img-fb-1',
-        url: `${targetUrl.replace(/\/$/, '')}/images/brand-logo.svg`,
-        pageUrl: targetUrl,
-        alt: null,
-        status: 'missing',
-        suggestedAlt: `${host.split('.')[0].toUpperCase()} brand logo`,
-        remediatedAlt: `${host.split('.')[0].toUpperCase()} brand logo`,
-        isDecorative: false,
-        format: 'svg',
-        contextRole: 'brand_logo',
-        parentTag: 'a',
-        parentTextContext: '',
-        filename: 'brand-logo.svg',
-        dimensions: { width: 180, height: 48 },
-        loadingAttr: 'eager',
-        issues: [
-          'Missing "alt" attribute completely.',
-          'Enclosed in clickable home link <a> with no accessible text name.',
-        ],
-        wcagCriteriaViolated: [
-          'WCAG 2.1 - 1.1.1 Non-Text Content (Level A)',
-          'WCAG 2.1 - 2.4.4 Link Purpose (In Context)',
-        ],
-        remediationSnippet: `<img src="/images/brand-logo.svg" alt="${host.split('.')[0].toUpperCase()} brand logo" width="180" height="48" />`,
-      },
-      {
-        id: 'img-fb-2',
-        url: `${targetUrl.replace(/\/$/, '')}/assets/hero-banner-main.webp`,
-        pageUrl: targetUrl,
-        alt: 'banner.jpg',
-        status: 'low_quality',
-        suggestedAlt: 'Platform dashboard overview highlighting performance analytics',
-        remediatedAlt: 'Platform dashboard overview highlighting performance analytics',
-        isDecorative: false,
-        format: 'webp',
-        contextRole: 'hero',
-        parentTag: 'div',
-        parentTextContext: 'Accelerate your digital workflow with confidence',
-        filename: 'hero-banner-main.webp',
-        dimensions: { width: 1200, height: 630 },
-        loadingAttr: 'eager',
-        issues: [
-          'Alt text contains raw file extension ("banner.jpg").',
-          'Does not convey the visual content of the hero showcase.',
-        ],
-        wcagCriteriaViolated: ['WCAG 2.1 - 1.1.1 Non-Text Content'],
-        remediationSnippet: `<img src="/assets/hero-banner-main.webp" alt="Platform dashboard overview highlighting performance analytics" />`,
-      },
-      {
-        id: 'img-fb-3',
-        url: `${targetUrl.replace(/\/$/, '')}/static/icon-checkmark.svg`,
-        pageUrl: targetUrl,
-        alt: '',
-        status: 'empty',
-        suggestedAlt: '',
-        remediatedAlt: '',
-        isDecorative: true,
-        format: 'svg',
-        contextRole: 'icon',
-        parentTag: 'div',
-        parentTextContext: 'Full enterprise data compliance',
-        filename: 'icon-checkmark.svg',
-        dimensions: { width: 24, height: 24 },
-        loadingAttr: 'lazy',
-        issues: ['Explicitly marked empty (decorative icon).'],
-        wcagCriteriaViolated: [],
-        remediationSnippet: `<img src="/static/icon-checkmark.svg" alt="" aria-hidden="true" width="24" height="24" />`,
-      },
-      {
-        id: 'img-fb-4',
-        url: `${targetUrl.replace(/\/$/, '')}/team/maria-silva-security-lead.png`,
-        pageUrl: `${targetUrl.replace(/\/$/, '')}/about`,
-        alt: null,
-        status: 'missing',
-        suggestedAlt: 'Maria Silva, Lead Security Architect',
-        remediatedAlt: 'Maria Silva, Lead Security Architect',
-        isDecorative: false,
-        format: 'png',
-        contextRole: 'avatar',
-        parentTag: 'figure',
-        parentTextContext: 'Maria Silva - Head of Cybersecurity',
-        filename: 'maria-silva-security-lead.png',
-        dimensions: { width: 300, height: 300 },
-        loadingAttr: 'lazy',
-        issues: ['Missing "alt" attribute on team portrait figure.'],
-        wcagCriteriaViolated: ['WCAG 2.1 - 1.1.1 Non-Text Content (Level A)'],
-        remediationSnippet: `<img src="/team/maria-silva-security-lead.png" alt="Maria Silva, Lead Security Architect" width="300" height="300" />`,
-      },
-      {
-        id: 'img-fb-5',
-        url: `${targetUrl.replace(/\/$/, '')}/blog/cyber-threat-landscape-2026.webp`,
-        pageUrl: `${targetUrl.replace(/\/$/, '')}/blog`,
-        alt: 'Cybersecurity trends and vulnerability intelligence map for 2026',
-        status: 'compliant',
-        suggestedAlt: 'Cybersecurity trends and vulnerability intelligence map for 2026',
-        remediatedAlt: 'Cybersecurity trends and vulnerability intelligence map for 2026',
-        isDecorative: false,
-        format: 'webp',
-        contextRole: 'article',
-        parentTag: 'a',
-        parentTextContext: 'Read our comprehensive 2026 threat report',
-        filename: 'cyber-threat-landscape-2026.webp',
-        dimensions: { width: 800, height: 450 },
-        loadingAttr: 'lazy',
-        issues: [],
-        wcagCriteriaViolated: [],
-        remediationSnippet: `<img src="/blog/cyber-threat-landscape-2026.webp" alt="Cybersecurity trends and vulnerability intelligence map for 2026" />`,
-      },
-    ];
-
-    const fallbackSummary: ImageAuditSummary = {
-      targetUrl,
-      totalImages: sampleImages.length,
-      missingAltCount: sampleImages.filter((i) => i.status === 'missing').length,
-      emptyAltCount: sampleImages.filter((i) => i.status === 'empty').length,
-      lowQualityCount: sampleImages.filter((i) => i.status === 'low_quality').length,
-      compliantCount: sampleImages.filter((i) => i.status === 'compliant').length,
-      wcag111Score: 68,
-      wcagGrade: 'C',
-      pagesAnalyzedCount: 3,
-      formatDistribution: { svg: 2, webp: 2, png: 1 },
-      images: sampleImages,
-      quickWins: [
-        'Add descriptive alt text to the brand logo link to satisfy WCAG 1.1.1 and 2.4.4 accessible name rules.',
-        'Replace raw filename ("banner.jpg") with descriptive hero showcase caption.',
-        'Provide team member portrait alt text on the /about page.',
-      ],
-    };
-
-    setData(fallbackSummary);
-    setSelectedIds(new Set(['img-fb-1', 'img-fb-2', 'img-fb-4']));
   };
 
   useEffect(() => {
@@ -754,7 +614,14 @@ export const ImageAuditView: React.FC<ImageAuditViewProps> = ({ report, targetUr
           </div>
         )}
 
-        {!loading && filteredImages.length === 0 && (
+        {!loading && error && (
+          <div role="alert" className="border-2 border-rose-500 bg-rose-50 p-4 text-sm text-rose-900">
+            <p className="font-black uppercase text-xs mb-1">Image audit failed</p>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && filteredImages.length === 0 && (
           <div className="border-2 border-[#141414] bg-white p-8 text-center shadow-[2px_2px_0px_#141414]">
             <CheckCircle2 className="h-8 w-8 mx-auto text-emerald-600 mb-2" />
             <h4 className="font-black text-sm uppercase">NO IMAGES MATCH CURRENT FILTERS</h4>

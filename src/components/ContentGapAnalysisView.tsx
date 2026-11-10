@@ -88,290 +88,32 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
       });
 
       if (!res.ok) {
-        throw new Error(`Server returned HTTP ${res.status}`);
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Server returned HTTP ${res.status}`);
       }
 
       const result: ContentGapAnalysisData = await res.json();
       setData(result);
-      if (result.competitors.length >= 3) {
-        setCustomComp1(result.competitors[0].url);
-        setCustomComp2(result.competitors[1].url);
-        setCustomComp3(result.competitors[2].url);
-      }
       if (result.primaryNicheQuery) {
         setCustomNicheQuery(result.primaryNicheQuery);
       }
     } catch (err: any) {
-      console.warn('Backend fetch failed, utilizing client-side synthesized gap analysis:', err);
-      // Fallback synthesis
-      const synthesized = synthesizeClientData(effectiveUrl, report, competitorsOverride, queryOverride);
-      setData(synthesized);
-      if (synthesized.competitors.length >= 3) {
-        setCustomComp1(synthesized.competitors[0].url);
-        setCustomComp2(synthesized.competitors[1].url);
-        setCustomComp3(synthesized.competitors[2].url);
-      }
-      if (synthesized.primaryNicheQuery) {
-        setCustomNicheQuery(synthesized.primaryNicheQuery);
-      }
+      console.warn('Content gap analysis failed:', err);
+      setData(null);
+      setError(err?.message || 'Content gap analysis is unavailable (server not reachable).');
     } finally {
       setLoading(false);
     }
   };
 
+  // Competitors are chosen by the user (no SERP data source), so nothing runs automatically.
   useEffect(() => {
-    fetchContentGap();
+    setData(null);
+    setError(null);
   }, [effectiveUrl]);
 
-  // Client fallback generator
-  const synthesizeClientData = (
-    url: string,
-    rep?: AuditReport,
-    customComps?: string[],
-    customQ?: string
-  ): ContentGapAnalysisData => {
-    const raw = rep?.rawData;
-    const domain = url.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
-    const title = raw?.metaTags?.title || `${domain} Platform`;
-    const nicheQuery = customQ || title.split(/[-|–—:]/)[0].trim().toLowerCase() || domain.split('.')[0];
+  const selectedCompetitors = () => [customComp1, customComp2, customComp3].map((c) => c.trim()).filter(Boolean);
 
-    const targetWords = raw?.contentLengthBytes ? Math.round(raw.contentLengthBytes / 45) : 820;
-    const comp1Words = Math.round(targetWords * 2.8);
-    const comp2Words = Math.round(targetWords * 2.4);
-    const comp3Words = Math.round(targetWords * 2.0);
-    const compAvgWords = Math.round((comp1Words + comp2Words + comp3Words) / 3);
-
-    const competitors: CompetitorContentProfile[] = [
-      {
-        id: 'comp-1',
-        url: customComps?.[0] || `https://${nicheQuery}-leader.com`,
-        domain: customComps?.[0]?.replace(/^https?:\/\//, '').split('/')[0] || `${nicheQuery}-leader.com`,
-        serpRank: 1,
-        title: `Complete ${nicheQuery.toUpperCase()} Guide & Architecture (${new Date().getFullYear()})`,
-        description: `Top ranked industry guide covering all aspects, performance benchmarks, and implementation.`,
-        wordCount: comp1Words,
-        readingTimeMin: Math.ceil(comp1Words / 200),
-        headingCounts: { h1: 1, h2: 12, h3: 16 },
-        imageCount: 9,
-        domainAuthority: 84,
-        topKeywords: [`${nicheQuery} best practices`, `${nicheQuery} pricing`, 'enterprise architecture'],
-      },
-      {
-        id: 'comp-2',
-        url: customComps?.[1] || `https://authority-${nicheQuery}.org`,
-        domain: customComps?.[1]?.replace(/^https?:\/\//, '').split('/')[0] || `authority-${nicheQuery}.org`,
-        serpRank: 2,
-        title: `${nicheQuery.toUpperCase()} Benchmarks, Features, and Comparisons`,
-        description: `Comprehensive comparison matrix and deep-dive technical benchmarks.`,
-        wordCount: comp2Words,
-        readingTimeMin: Math.ceil(comp2Words / 200),
-        headingCounts: { h1: 1, h2: 9, h3: 12 },
-        imageCount: 7,
-        domainAuthority: 79,
-        topKeywords: [`${nicheQuery} integration`, 'speed benchmarks', 'security protocols'],
-      },
-      {
-        id: 'comp-3',
-        url: customComps?.[2] || `https://next-${nicheQuery}.io`,
-        domain: customComps?.[2]?.replace(/^https?:\/\//, '').split('/')[0] || `next-${nicheQuery}.io`,
-        serpRank: 3,
-        title: `Modern ${nicheQuery.toUpperCase()} Solutions & Case Studies`,
-        description: `In-depth case studies, tutorials, and implementation roadmap.`,
-        wordCount: comp3Words,
-        readingTimeMin: Math.ceil(comp3Words / 200),
-        headingCounts: { h1: 1, h2: 7, h3: 10 },
-        imageCount: 6,
-        domainAuthority: 73,
-        topKeywords: [`${nicheQuery} tutorial`, 'api documentation', 'roi calculator'],
-      },
-    ];
-
-    const keywords: KeywordGapItem[] = [
-      {
-        id: 'gap-1',
-        keyword: `${nicheQuery} pricing comparison`,
-        searchVolume: 6400,
-        difficulty: 62,
-        intent: 'Commercial',
-        relevanceScore: 94,
-        targetFrequency: 0,
-        competitorFrequencies: [14, 11, 8],
-        competitorAverageFrequency: 11,
-        status: 'missing',
-        priority: 'Critical',
-        recommendedPlacement: 'H2 Heading',
-      },
-      {
-        id: 'gap-2',
-        keyword: `${nicheQuery} architecture & security`,
-        searchVolume: 4200,
-        difficulty: 55,
-        intent: 'Informational',
-        relevanceScore: 91,
-        targetFrequency: 0,
-        competitorFrequencies: [12, 9, 7],
-        competitorAverageFrequency: 9.3,
-        status: 'missing',
-        priority: 'Critical',
-        recommendedPlacement: 'H2 Heading',
-      },
-      {
-        id: 'gap-3',
-        keyword: `${nicheQuery} integration api tutorial`,
-        searchVolume: 3800,
-        difficulty: 48,
-        intent: 'Informational',
-        relevanceScore: 88,
-        targetFrequency: 0,
-        competitorFrequencies: [9, 8, 5],
-        competitorAverageFrequency: 7.3,
-        status: 'missing',
-        priority: 'High',
-        recommendedPlacement: 'Body Copy',
-      },
-      {
-        id: 'gap-4',
-        keyword: `enterprise scalability benchmarks`,
-        searchVolume: 2900,
-        difficulty: 59,
-        intent: 'Commercial',
-        relevanceScore: 85,
-        targetFrequency: 1,
-        competitorFrequencies: [8, 6, 6],
-        competitorAverageFrequency: 6.7,
-        status: 'weak',
-        priority: 'High',
-        recommendedPlacement: 'H2 Heading',
-      },
-      {
-        id: 'gap-5',
-        keyword: `frequently asked questions faq`,
-        searchVolume: 5100,
-        difficulty: 40,
-        intent: 'Informational',
-        relevanceScore: 82,
-        targetFrequency: 0,
-        competitorFrequencies: [7, 5, 4],
-        competitorAverageFrequency: 5.3,
-        status: 'missing',
-        priority: 'High',
-        recommendedPlacement: 'FAQ Section',
-      },
-      {
-        id: 'gap-6',
-        keyword: `customer case studies & roi`,
-        searchVolume: 2400,
-        difficulty: 51,
-        intent: 'Commercial',
-        relevanceScore: 79,
-        targetFrequency: 1,
-        competitorFrequencies: [6, 7, 3],
-        competitorAverageFrequency: 5.3,
-        status: 'weak',
-        priority: 'Medium',
-        recommendedPlacement: 'Body Copy',
-      },
-      {
-        id: 'gap-7',
-        keyword: `step by step setup guide`,
-        searchVolume: 3200,
-        difficulty: 44,
-        intent: 'Informational',
-        relevanceScore: 78,
-        targetFrequency: 0,
-        competitorFrequencies: [5, 4, 4],
-        competitorAverageFrequency: 4.3,
-        status: 'missing',
-        priority: 'Medium',
-        recommendedPlacement: 'Intro Paragraph',
-      },
-      {
-        id: 'gap-8',
-        keyword: `platform overview`,
-        searchVolume: 1800,
-        difficulty: 35,
-        intent: 'Navigational',
-        relevanceScore: 70,
-        targetFrequency: 4,
-        competitorFrequencies: [4, 5, 3],
-        competitorAverageFrequency: 4.0,
-        status: 'shared',
-        priority: 'Low',
-        recommendedPlacement: 'Intro Paragraph',
-      },
-      {
-        id: 'gap-9',
-        keyword: `cloud features`,
-        searchVolume: 1600,
-        difficulty: 38,
-        intent: 'Informational',
-        relevanceScore: 68,
-        targetFrequency: 3,
-        competitorFrequencies: [3, 4, 3],
-        competitorAverageFrequency: 3.3,
-        status: 'shared',
-        priority: 'Low',
-        recommendedPlacement: 'Body Copy',
-      },
-    ];
-
-    const missingCount = keywords.filter((k) => k.status === 'missing').length;
-    const weakCount = keywords.filter((k) => k.status === 'weak').length;
-    const sharedCount = keywords.filter((k) => k.status === 'shared').length;
-    const wordCountGap = targetWords - compAvgWords;
-
-    return {
-      targetUrl: url,
-      analyzedAt: new Date().toISOString(),
-      primaryNicheQuery: nicheQuery,
-      targetProfile: {
-        url,
-        domain,
-        title,
-        wordCount: targetWords,
-        readingTimeMin: Math.ceil(targetWords / 200),
-        headingCounts: {
-          h1: raw?.h1Count || 1,
-          h2: raw?.h2Count || 3,
-          h3: raw?.h3Count || 4,
-        },
-        imageCount: 5,
-      },
-      competitors,
-      benchmarkStats: {
-        competitorAverageWordCount: compAvgWords,
-        wordCountGap,
-        wordCountGapPercent: Math.round((wordCountGap / compAvgWords) * 100),
-        competitorAverageH2Count: 9,
-        competitorAverageImages: 7,
-        totalKeywordsAnalyzed: keywords.length,
-        missingKeywordsCount: missingCount,
-        weakKeywordsCount: weakCount,
-        sharedKeywordsCount: sharedCount,
-        contentScore: 48,
-        competitorAverageContentScore: 88,
-      },
-      keywordGaps: keywords,
-      actionPlan: {
-        recommendedWordAddition: Math.abs(wordCountGap) + 200,
-        topMissingKeywordsToInclude: keywords
-          .filter((k) => k.status === 'missing')
-          .slice(0, 5)
-          .map((k) => k.keyword),
-        suggestedHeadings: [
-          `How ${nicheQuery.toUpperCase()} Works: In-Depth Architecture Overview`,
-          `Pricing Comparison: Total Cost of Ownership vs Competitors`,
-          `Step-by-Step Integration & API Tutorial`,
-          `Frequently Asked Questions (FAQ)`,
-        ],
-        quickWins: [
-          `Add ${Math.abs(wordCountGap) + 200} words of authoritative content to eliminate the ${Math.abs(Math.round((wordCountGap / compAvgWords) * 100))}% deficit.`,
-          `Inject top missing keywords into 4 new H2 subheadings to capture missed search impressions.`,
-          `Add structured comparison tables and FAQ schema to improve SERP click-through rates.`,
-        ],
-      },
-    };
-  };
 
   // Filtered keyword gap list
   const filteredKeywords = useMemo(() => {
@@ -438,8 +180,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
   const handleSaveCompetitors = (e: React.FormEvent) => {
     e.preventDefault();
     setShowConfigModal(false);
-    const comps = [customComp1, customComp2, customComp3].filter((c) => c && c.trim());
-    fetchContentGap(comps.length >= 3 ? comps : undefined, customNicheQuery);
+    fetchContentGap(selectedCompetitors(), customNicheQuery);
   };
 
   // Copy Missing Keywords
@@ -496,8 +237,8 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
       g.status,
       g.priority,
       g.intent,
-      g.searchVolume,
-      g.difficulty,
+      g.searchVolume ?? '',
+      g.difficulty ?? '',
       g.targetFrequency,
       g.competitorFrequencies[0],
       g.competitorFrequencies[1],
@@ -516,13 +257,70 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
     document.body.removeChild(link);
   };
 
+  const competitorFormFields = (
+    <>
+              <div>
+                <label className="block font-bold uppercase mb-1">
+                  Primary Niche / Search Query:
+                </label>
+                <input
+                  type="text"
+                  value={customNicheQuery}
+                  onChange={(e) => setCustomNicheQuery(e.target.value)}
+                  placeholder="e.g. enterprise cloud cdn"
+                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold uppercase mb-1">
+                  Competitor #1 URL (required):
+                </label>
+                <input
+                  type="text"
+                  value={customComp1}
+                  onChange={(e) => setCustomComp1(e.target.value)}
+                  placeholder="https://competitor-one.com"
+                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold uppercase mb-1">
+                  Competitor #2 URL (optional):
+                </label>
+                <input
+                  type="text"
+                  value={customComp2}
+                  onChange={(e) => setCustomComp2(e.target.value)}
+                  placeholder="https://competitor-two.com"
+                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold uppercase mb-1">
+                  Competitor #3 URL (optional):
+                </label>
+                <input
+                  type="text"
+                  value={customComp3}
+                  onChange={(e) => setCustomComp3(e.target.value)}
+                  placeholder="https://competitor-three.com"
+                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
+                />
+              </div>
+
+    </>
+  );
+
   if (loading && !data) {
     return (
       <div className="border-2 border-[#141414] bg-white p-8 sm:p-12 shadow-[4px_4px_0px_#141414] font-mono text-center space-y-4">
         <RefreshCw className="h-9 w-9 animate-spin text-[#141414] mx-auto" />
         <div className="space-y-1">
           <h3 className="font-black text-sm uppercase text-[#141414]">
-            Scanning SERP Competitors & Analyzing Content Gap...
+            Fetching competitor pages & analyzing content gap...
           </h3>
           <p className="text-xs text-neutral-600 max-w-lg mx-auto">
             Comparing <span className="font-bold">{effectiveUrl}</span> against top 3 organic search competitors to identify missing semantic keywords and word length deficits.
@@ -534,19 +332,36 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
 
   if (!data) {
     return (
-      <div className="border-2 border-[#141414] bg-rose-50 p-6 shadow-[4px_4px_0px_#141414] font-mono text-rose-950 space-y-3">
-        <div className="flex items-center gap-2 font-black text-sm uppercase">
-          <AlertTriangle className="h-5 w-5 text-rose-700" />
-          <span>Failed to load content gap analysis</span>
+      <div className="border-2 border-[#141414] bg-white p-5 shadow-[4px_4px_0px_#141414] font-mono text-[#141414] space-y-4">
+        <div className="space-y-1">
+          <h3 className="font-black text-sm uppercase">Content Gap Analysis</h3>
+          <p className="text-xs text-neutral-600">
+            Enter 1 to 3 competitor pages that rank for your target query. Their real content is compared with{' '}
+            <strong>{effectiveUrl}</strong> — no competitors or keyword volumes are guessed.
+          </p>
         </div>
-        <p className="text-xs">{error || 'Unable to scan target URL and competitor SERPs.'}</p>
-        <button
-          type="button"
-          onClick={() => fetchContentGap()}
-          className="px-3.5 py-1.5 bg-[#141414] text-white font-black uppercase text-xs hover:bg-neutral-800 cursor-pointer border border-[#141414]"
+        {error && (
+          <div role="alert" className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-400 text-xs text-rose-900">
+            <AlertTriangle className="h-4 w-4 text-rose-700 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            fetchContentGap(selectedCompetitors(), customNicheQuery);
+          }}
+          className="space-y-3 text-xs"
         >
-          Retry Scan
-        </button>
+          {competitorFormFields}
+          <button
+            type="submit"
+            disabled={selectedCompetitors().length === 0}
+            className="px-4 py-1.5 bg-[#141414] text-white uppercase font-black hover:bg-neutral-800 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Analyze Gap
+          </button>
+        </form>
       </div>
     );
   }
@@ -565,14 +380,14 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
               CONTENT GAP ANALYSIS
             </span>
             <span className="bg-[#141414] text-white px-2 py-0.5 text-xs font-black uppercase">
-              TOP 3 SERP COMPETITORS
+              SELECTED COMPETITORS
             </span>
             <span className="text-xs text-neutral-500 font-sans">
               Query: <strong className="text-[#141414] font-mono">"{data.primaryNicheQuery}"</strong>
             </span>
           </div>
           <h3 className="text-base sm:text-lg font-black uppercase tracking-tight text-[#141414]">
-            Target URL vs Top 3 Organic Search Competitors
+            Target URL vs Selected Competitor Pages
           </h3>
           <p className="text-xs text-neutral-600 font-sans max-w-3xl">
             Audit content depth, word count deficits, and missing high-impact semantic keywords that top-ranking competitors are targeting but your page is missing.
@@ -665,7 +480,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
               {benchmarkStats.contentScore}
             </span>
             <span className="text-xs font-bold text-blue-800">
-              / 100 PTS (Top 3 Avg: {benchmarkStats.competitorAverageContentScore})
+              / 100 PTS (Competitors Avg: {benchmarkStats.competitorAverageContentScore})
             </span>
           </div>
           <div className="w-full bg-blue-200 h-2 border border-[#141414]">
@@ -701,7 +516,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#141414]/20 pb-2">
           <span className="text-xs font-black uppercase text-[#141414] flex items-center gap-1.5">
             <Globe className="h-3.5 w-3.5" />
-            BENCHMARKED SEARCH RESULTS (SERP RANK 1 - 3):
+            BENCHMARKED COMPETITOR PAGES:
           </span>
           <span className="text-[11px] text-neutral-500 font-sans">
             Competitor data retrieved from live search rankings or custom overrides
@@ -716,11 +531,11 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
             >
               <div className="flex items-center justify-between">
                 <span className="bg-[#141414] text-white px-1.5 py-0.2 text-[10px] font-black uppercase">
-                  RANK #{comp.serpRank}
+                  COMPETITOR #{comp.serpRank}
                 </span>
-                <span className="text-[10px] font-bold text-neutral-500 uppercase">
-                  DA {comp.domainAuthority}
-                </span>
+                {comp.domainAuthority != null && (
+                  <span className="text-[10px] font-bold text-neutral-500 uppercase">DA {comp.domainAuthority}</span>
+                )}
               </div>
               <div className="font-black text-xs text-[#141414] truncate" title={comp.domain}>
                 {comp.domain}
@@ -776,7 +591,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
           }`}
         >
           <Globe className="h-3.5 w-3.5" />
-          <span>COMPETITOR SERP PROFILES</span>
+          <span>COMPETITOR PROFILES</span>
         </button>
 
         <button
@@ -844,7 +659,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
               {simulatedStats.addedCount > 0 && (
                 <div className="flex items-center justify-between text-[11px] text-neutral-300 pt-1">
                   <span>
-                    💡 Injected {simulatedStats.addedCount} missing topics will elevate this page to match SERP Rank #1 topical depth.
+                    💡 Injected {simulatedStats.addedCount} missing topics would bring this page closer to the competitors' topical depth.
                   </span>
                   <button
                     type="button"
@@ -998,8 +813,12 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
 
                         {/* Vol / KD */}
                         <td className="p-2.5 text-right whitespace-nowrap font-mono">
-                          <div>{item.searchVolume.toLocaleString()}</div>
-                          <div className="text-[10px] text-neutral-500">KD {item.difficulty}%</div>
+                          <div title="No keyword-volume data source connected">
+                            {item.searchVolume != null ? item.searchVolume.toLocaleString() : '—'}
+                          </div>
+                          <div className="text-[10px] text-neutral-500">
+                            {item.difficulty != null ? `KD ${item.difficulty}%` : 'KD —'}
+                          </div>
                         </td>
 
                         {/* Status */}
@@ -1118,7 +937,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
                   TOP 3 COMPETITOR AVERAGE
                 </span>
                 <span className="text-xs font-bold text-neutral-600">
-                  Google Top 3 Benchmark
+                  Competitor Benchmark
                 </span>
               </div>
 
@@ -1152,7 +971,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
               <div className="p-3 border border-neutral-300 bg-neutral-50 text-neutral-800 text-xs">
                 <strong>Benchmark Recommendation:</strong> Target at least{' '}
                 <strong>{benchmarkStats.competitorAverageWordCount + 200} words</strong> and{' '}
-                <strong>{benchmarkStats.competitorAverageH2Count} H2 headings</strong> to achieve parity with the top organic SERP results.
+                <strong>{benchmarkStats.competitorAverageH2Count} H2 headings</strong> to match the selected competitors.
               </div>
             </div>
           </div>
@@ -1160,7 +979,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
           {/* Visual Progress Bar Breakdown */}
           <div className="border-2 border-[#141414] bg-white p-4 sm:p-5 shadow-[3px_3px_0px_#141414] space-y-4">
             <h4 className="text-xs font-black uppercase text-[#141414]">
-              Visual Content Length Benchmark vs Top 3 Competitors
+              Content Length vs Selected Competitors
             </h4>
 
             {/* Target Bar */}
@@ -1189,7 +1008,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
               <div key={comp.id} className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-neutral-700">
                   <span>
-                    Rank #{comp.serpRank} Competitor ({comp.domain})
+                    Competitor #{comp.serpRank} ({comp.domain})
                   </span>
                   <span>{comp.wordCount.toLocaleString()} words</span>
                 </div>
@@ -1209,7 +1028,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
                       )}%`,
                     }}
                   >
-                    RANK #{comp.serpRank}
+                    #{comp.serpRank}
                   </div>
                 </div>
               </div>
@@ -1230,11 +1049,11 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="bg-[#141414] text-white px-2 py-0.5 text-xs font-black uppercase">
-                      SERP RANK #{comp.serpRank}
+                      COMPETITOR #{comp.serpRank}
                     </span>
-                    <span className="text-xs font-bold text-neutral-600">
-                      DA {comp.domainAuthority} / 100
-                    </span>
+                    {comp.domainAuthority != null && (
+                      <span className="text-xs font-bold text-neutral-600">DA {comp.domainAuthority} / 100</span>
+                    )}
                   </div>
 
                   <h4 className="font-black text-sm text-[#141414] truncate" title={comp.domain}>
@@ -1383,7 +1202,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
             <div className="flex items-center justify-between border-b-2 border-[#141414] pb-2">
               <h4 className="text-sm font-black uppercase text-[#141414] flex items-center gap-2">
                 <Sliders className="h-4 w-4" />
-                Customize Top 3 SERP Competitors
+                Choose Competitor Pages (1–3)
               </h4>
               <button
                 type="button"
@@ -1395,57 +1214,7 @@ export const ContentGapAnalysisView: React.FC<ContentGapAnalysisViewProps> = ({
             </div>
 
             <form onSubmit={handleSaveCompetitors} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-bold uppercase mb-1">
-                  Primary Niche / Search Query:
-                </label>
-                <input
-                  type="text"
-                  value={customNicheQuery}
-                  onChange={(e) => setCustomNicheQuery(e.target.value)}
-                  placeholder="e.g. enterprise cloud cdn"
-                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold uppercase mb-1">
-                  Competitor #1 URL (Google Rank 1):
-                </label>
-                <input
-                  type="text"
-                  value={customComp1}
-                  onChange={(e) => setCustomComp1(e.target.value)}
-                  placeholder="https://competitor-one.com"
-                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold uppercase mb-1">
-                  Competitor #2 URL (Google Rank 2):
-                </label>
-                <input
-                  type="text"
-                  value={customComp2}
-                  onChange={(e) => setCustomComp2(e.target.value)}
-                  placeholder="https://competitor-two.com"
-                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold uppercase mb-1">
-                  Competitor #3 URL (Google Rank 3):
-                </label>
-                <input
-                  type="text"
-                  value={customComp3}
-                  onChange={(e) => setCustomComp3(e.target.value)}
-                  placeholder="https://competitor-three.com"
-                  className="w-full p-2 bg-white border-2 border-[#141414] focus:outline-none font-mono"
-                />
-              </div>
+              {competitorFormFields}
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-200">
                 <button

@@ -1,6 +1,8 @@
+import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
-const MOCK_FEEDS = [
+/** Offline snapshot used only when the live CISA KEV feed is unreachable. */
+const SNAPSHOT_FEEDS: ThreatFeed[] = [
   {
     cve: 'CVE-2024-3400',
     title: 'Palo Alto Networks PAN-OS Command Injection',
@@ -63,11 +65,65 @@ const MOCK_FEEDS = [
   }
 ];
 
+interface ThreatFeed {
+  cve: string;
+  title: string;
+  vendor: string;
+  product: string;
+  /** KEV does not publish CVSS; null when unknown */
+  severity: string;
+  cvss: number | null;
+  dateAdded: string;
+  dueAction: string;
+  knownRansomwareUse: string;
+  source: string;
+}
+
+const KEV_URL = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json';
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+let kevCache: { at: number; catalogDate: string; feeds: ThreatFeed[] } | null = null;
+
+async function loadKev(): Promise<{ catalogDate: string; feeds: ThreatFeed[] }> {
+  if (kevCache && Date.now() - kevCache.at < CACHE_TTL_MS) return kevCache;
+  const res = await safeFetch(KEV_URL, { timeoutMs: 10000, maxBytes: 20 * 1024 * 1024, headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`CISA KEV feed returned HTTP ${res.status}`);
+  const data = (await res.json()) as { dateReleased?: string; vulnerabilities?: any[] };
+  const feeds: ThreatFeed[] = (data.vulnerabilities || [])
+    .map((v) => ({
+      cve: String(v.cveID || ''),
+      title: String(v.vulnerabilityName || ''),
+      vendor: String(v.vendorProject || ''),
+      product: String(v.product || ''),
+      severity: 'KEV',
+      cvss: null,
+      dateAdded: String(v.dateAdded || ''),
+      dueAction: String(v.requiredAction || ''),
+      knownRansomwareUse: v.knownRansomwareCampaignUse === 'Known' ? 'Known' : 'Unknown',
+      source: 'CISA KEV Catalog',
+    }))
+    .sort((a, b) => b.dateAdded.localeCompare(a.dateAdded));
+  kevCache = { at: Date.now(), catalogDate: data.dateReleased || new Date().toISOString(), feeds };
+  return kevCache;
+}
+
 export async function handleThreatIntel(req: Request, res: Response) {
   try {
     const { query } = req.query;
 
-    let items = MOCK_FEEDS;
+    let items: ThreatFeed[];
+    let dataSource: 'live' | 'snapshot' = 'live';
+    let updatedAt: string;
+    try {
+      const kev = await loadKev();
+      items = kev.feeds;
+      updatedAt = kev.catalogDate;
+    } catch (err) {
+      console.warn('CISA KEV feed unavailable, serving offline snapshot:', err);
+      items = SNAPSHOT_FEEDS;
+      dataSource = 'snapshot';
+      updatedAt = '2024-04-12';
+    }
+
     if (query && typeof query === 'string') {
       const q = query.toLowerCase();
       items = items.filter(
@@ -81,8 +137,9 @@ export async function handleThreatIntel(req: Request, res: Response) {
 
     return res.json({
       total: items.length,
-      updatedAt: new Date().toISOString(),
-      feeds: items
+      updatedAt,
+      dataSource,
+      feeds: items.slice(0, 30),
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || 'Falha ao buscar feeds de Threat Intel.' });

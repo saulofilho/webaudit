@@ -35,6 +35,11 @@ import {
   GoogleBusinessProfileAudit,
 } from '../types';
 
+const NOT_VERIFIED = 'Not verified';
+const gbpChecked = (g: GoogleBusinessProfileAudit) => g.status !== 'not_checked';
+const fmtRating = (g: GoogleBusinessProfileAudit) => (g.rating == null ? NOT_VERIFIED : `★ ${g.rating} / 5.0`);
+const fmtPct = (v: number | null) => (v == null ? NOT_VERIFIED : `${v}%`);
+
 interface LocalSeoCheckViewProps {
   report?: AuditReport;
   targetUrl?: string;
@@ -69,214 +74,6 @@ export const LocalSeoCheckView: React.FC<LocalSeoCheckViewProps> = ({
   const [copiedSchema, setCopiedSchema] = useState<boolean>(false);
   const [copiedReport, setCopiedReport] = useState<boolean>(false);
 
-  // Client-side synthesis fallback if backend endpoint fails
-  const synthesizeClientLocalData = (url: string, baseReport?: AuditReport): LocalSeoAuditData => {
-    let domain = 'example.com';
-    try {
-      domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace(/^www\./, '');
-    } catch {
-      domain = url.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
-    }
-
-    const brandName = domain
-      .split('.')[0]
-      .replace(/[-_]/g, ' ')
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-
-    const hasStructuredData = Boolean(
-      baseReport?.rawData?.metaTags?.structuredDataTypes &&
-        baseReport.rawData.metaTags.structuredDataTypes.some((t) =>
-          /LocalBusiness|Organization|Store|Restaurant/i.test(t)
-        )
-    );
-
-    const schemaNap: NapEntity = {
-      name: `${brandName} Technologies`,
-      address: {
-        street: '100 Innovation Way, Suite 400',
-        city: 'San Francisco',
-        state: 'CA',
-        postalCode: '94105',
-        country: 'US',
-        raw: '100 Innovation Way, Suite 400, San Francisco, CA 94105',
-      },
-      phone: {
-        raw: '(415) 890-3420',
-        formatted: '(415) 890-3420',
-        telHref: 'tel:+14158903420',
-      },
-      source: hasStructuredData ? 'schema_markup' : 'footer',
-      confidence: hasStructuredData ? 95 : 82,
-    };
-
-    const citations: CitationProfile[] = [
-      {
-        id: 'cit-1',
-        platform: 'Google Business Profile',
-        directoryUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${brandName} San Francisco`)}`,
-        claimUrl: 'https://business.google.com/create',
-        status: 'verified',
-        name: `${brandName} Technologies`,
-        address: '100 Innovation Way, Suite 400, San Francisco, CA 94105',
-        phone: '(415) 890-3420',
-        hasMismatch: false,
-        mismatchFields: [],
-        notes: 'Primary Google Business Profile verified and linked.',
-      },
-      {
-        id: 'cit-2',
-        platform: 'Apple Maps',
-        directoryUrl: 'https://mapsconnect.apple.com/',
-        claimUrl: 'https://mapsconnect.apple.com/',
-        status: 'verified',
-        name: `${brandName} Technologies`,
-        address: '100 Innovation Way, Suite 400, San Francisco, CA 94105',
-        phone: '(415) 890-3420',
-        hasMismatch: false,
-        mismatchFields: [],
-        notes: 'Verified via Apple Business Connect place card.',
-      },
-      {
-        id: 'cit-3',
-        platform: 'Bing Places',
-        directoryUrl: `https://www.bing.com/maps?q=${encodeURIComponent(brandName)}`,
-        claimUrl: 'https://www.bingplaces.com/',
-        status: 'verified',
-        name: `${brandName} Technologies`,
-        address: '100 Innovation Way, Suite 400, San Francisco, CA 94105',
-        phone: '(415) 890-3420',
-        hasMismatch: false,
-        mismatchFields: [],
-        notes: 'Auto-synced from Google Business Profile.',
-      },
-      {
-        id: 'cit-4',
-        platform: 'Yelp',
-        directoryUrl: `https://www.yelp.com/biz/${domain.replace(/\./g, '-')}`,
-        claimUrl: 'https://biz.yelp.com/',
-        status: 'mismatch',
-        name: `${brandName} Technologies Inc`,
-        address: '100 Innovation Way, Ste 400, San Francisco, CA 94105',
-        phone: '(415) 890-3420',
-        hasMismatch: true,
-        mismatchFields: ['name', 'address'],
-        notes: 'Discrepancy: Includes "Inc" suffix and abbreviates "Suite 400" to "Ste 400".',
-      },
-      {
-        id: 'cit-5',
-        platform: 'Facebook Places',
-        directoryUrl: `https://www.facebook.com/${domain.replace(/\./g, '')}`,
-        claimUrl: 'https://www.facebook.com/pages/create',
-        status: 'verified',
-        name: `${brandName} Technologies`,
-        address: '100 Innovation Way, Suite 400, San Francisco, CA 94105',
-        phone: '(415) 890-3420',
-        hasMismatch: false,
-        mismatchFields: [],
-        notes: 'Matched with official Facebook Business Page.',
-      },
-      {
-        id: 'cit-6',
-        platform: 'YellowPages',
-        directoryUrl: `https://www.yellowpages.com/search?search_terms=${encodeURIComponent(brandName)}&geo_location_terms=San+Francisco`,
-        claimUrl: 'https://adsolutions.yp.com/free-listing',
-        status: 'unclaimed',
-        name: `${brandName} Technologies`,
-        address: '100 Innovation Way, Suite 400, San Francisco, CA 94105',
-        phone: '(415) 890-3420',
-        hasMismatch: false,
-        mismatchFields: [],
-        notes: 'Auto-generated directory citation. Not yet claimed by owner.',
-      },
-    ];
-
-    const gbpAudit: GoogleBusinessProfileAudit = {
-      status: 'optimized',
-      profileFound: true,
-      businessName: `${brandName} Technologies`,
-      placeId: `ChIJ_${domain.replace(/[^a-zA-Z0-9]/g, '')}_SF`,
-      mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${brandName} San Francisco`)}`,
-      primaryCategory: 'Professional Service & Technology HQ',
-      additionalCategories: ['Software Company', 'Corporate Headquarters'],
-      isClaimedAndVerified: true,
-      rating: 4.9,
-      reviewsCount: 38,
-      reviewResponseRatePercent: 92,
-      hasOpeningHours: true,
-      openingHoursFormatted: 'Mon - Fri: 9:00 AM – 6:00 PM PST',
-      hasWebsiteBacklink: true,
-      hasGeoCoordinates: true,
-      latitude: 37.7749,
-      longitude: -122.4194,
-      hasLocalPhone: true,
-      hasServiceAreaConfigured: true,
-      hasRecentPosts: true,
-      descriptionStatus: 'optimized',
-      descriptionLength: 580,
-      optimizationScore: 88,
-      recommendations: [
-        {
-          id: 'rec-1',
-          title: 'Resolve Yelp NAP Discrepancy',
-          impact: 'high',
-          description: 'Standardize "Ste 400" to "Suite 400" and remove redundant legal suffix "Inc" on Yelp.',
-          actionLabel: 'Update Yelp Listing',
-        },
-        {
-          id: 'rec-2',
-          title: 'Add Interactive Google Maps Embed to Contact Page',
-          impact: 'medium',
-          description: 'Include an iframe embed linking to your verified Google Place ID to reinforce local relevance.',
-          actionLabel: 'Copy Embed Snippet',
-        },
-        {
-          id: 'rec-3',
-          title: 'Deploy Schema.org LocalBusiness JSON-LD Markup',
-          impact: hasStructuredData ? 'low' : 'critical',
-          description: 'Provide search engine crawlers with explicit PostalAddress and geo coordinate metadata.',
-          actionLabel: 'Generate Schema Markup',
-        },
-      ],
-    };
-
-    return {
-      targetUrl: url,
-      analyzedAt: new Date().toISOString(),
-      overallLocalScore: 86,
-      napConsistencyScore: 89,
-      gbpOptimizationScore: 88,
-      localPackReadinessGrade: 'A',
-      detectedNap: {
-        schema: hasStructuredData ? schemaNap : undefined,
-        onPage: schemaNap,
-        footer: schemaNap,
-        isConsistent: false,
-        consistencyIssues: [
-          'Yelp citation has minor variation ("Ste 400" vs canonical "Suite 400").',
-          'YellowPages listing is currently unclaimed.',
-        ],
-        canonicalNap: schemaNap,
-      },
-      citations,
-      googleBusinessProfile: gbpAudit,
-      localRankingSignals: {
-        hasLocalSchema: hasStructuredData,
-        schemaType: hasStructuredData ? 'LocalBusiness' : undefined,
-        hasGoogleMapsEmbed: true,
-        hasClickToCallPhone: true,
-        hasCityInTitleOrH1: true,
-        hasGeoMetaTags: false,
-        hasKmlOrGeoSitemap: false,
-        hasOpeningHoursOnPage: true,
-      },
-      localKeywordsDetected: [
-        { keyword: 'san francisco services', type: 'geo_city', occurrences: 5 },
-        { keyword: `${brandName.toLowerCase()} headquarters`, type: 'service_niche', occurrences: 3 },
-        { keyword: 'near me local consultation', type: 'intent', occurrences: 2 },
-      ],
-    };
-  };
-
   const fetchLocalSeo = async () => {
     if (!effectiveUrl) return;
     setLoading(true);
@@ -290,17 +87,17 @@ export const LocalSeoCheckView: React.FC<LocalSeoCheckViewProps> = ({
       });
 
       if (!res.ok) {
-        throw new Error(`Server returned HTTP ${res.status}`);
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `Server returned HTTP ${res.status}`);
       }
 
       const result: LocalSeoAuditData = await res.json();
       setData(result);
       initializeEditorState(result.detectedNap.canonicalNap);
     } catch (err: any) {
-      console.warn('Backend fetch failed, utilizing synthesized local SEO data:', err);
-      const fallback = synthesizeClientLocalData(effectiveUrl, report);
-      setData(fallback);
-      initializeEditorState(fallback.detectedNap.canonicalNap);
+      console.warn('Local SEO check failed:', err);
+      setData(null);
+      setError(err?.message || 'Local SEO check is unavailable (server not reachable).');
     } finally {
       setLoading(false);
     }
@@ -343,6 +140,7 @@ export const LocalSeoCheckView: React.FC<LocalSeoCheckViewProps> = ({
 
     // Recalculate citations mismatch
     const updatedCitations = data.citations.map((c) => {
+      if (c.status === 'not_checked') return c;
       const mismatches: ('name' | 'address' | 'phone')[] = [];
       if (c.name.trim().toLowerCase() !== customName.trim().toLowerCase()) mismatches.push('name');
       if (
@@ -390,9 +188,9 @@ export const LocalSeoCheckView: React.FC<LocalSeoCheckViewProps> = ({
     const canonical = data?.detectedNap.canonicalNap;
     const name = canonical?.name || customName || 'Business Name';
     const street = canonical?.address.street || customStreet || '123 Main Street';
-    const city = canonical?.address.city || customCity || 'San Francisco';
-    const state = canonical?.address.state || customState || 'CA';
-    const zip = canonical?.address.postalCode || customZip || '94105';
+    const city = canonical?.address.city || customCity || 'Your City';
+    const state = canonical?.address.state || customState || 'ST';
+    const zip = canonical?.address.postalCode || customZip || '00000';
     const phone = canonical?.phone.formatted || customPhone || '(555) 000-0000';
     const mapsUrl = data?.googleBusinessProfile.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} ${city}`)}`;
 
@@ -413,11 +211,15 @@ export const LocalSeoCheckView: React.FC<LocalSeoCheckViewProps> = ({
         postalCode: zip,
         addressCountry: 'US',
       },
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: data?.googleBusinessProfile.latitude || 37.7749,
-        longitude: data?.googleBusinessProfile.longitude || -122.4194,
-      },
+      ...(data?.googleBusinessProfile.latitude != null && data?.googleBusinessProfile.longitude != null
+        ? {
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: data.googleBusinessProfile.latitude,
+              longitude: data.googleBusinessProfile.longitude,
+            },
+          }
+        : {}),
       openingHoursSpecification: [
         {
           '@type': 'OpeningHoursSpecification',
@@ -466,19 +268,19 @@ export const LocalSeoCheckView: React.FC<LocalSeoCheckViewProps> = ({
 ${data.citations
   .map(
     (c) =>
-      `- [${c.platform}] ${c.name} | ${c.address} | ${c.phone} => Status: ${c.status.toUpperCase()}${
+      `- [${c.platform}] ${c.status === 'not_checked' ? `not checked automatically — verify at ${c.directoryUrl}` : `${c.name} | ${c.address} | ${c.phone}`} => Status: ${c.status.toUpperCase()}${
         c.hasMismatch ? ` (Mismatch in: ${c.mismatchFields.join(', ')})` : ''
       }`
   )
   .join('\n')}
 
 ## 3. Google Business Profile Optimization Status
-- **Claimed & Verified**: ${data.googleBusinessProfile.isClaimedAndVerified ? 'Yes' : 'No'}
-- **Primary Category**: ${data.googleBusinessProfile.primaryCategory}
-- **Rating**: ${data.googleBusinessProfile.rating} / 5.0 (${data.googleBusinessProfile.reviewsCount} verified reviews)
-- **Review Response Rate**: ${data.googleBusinessProfile.reviewResponseRatePercent}%
-- **Business Hours**: ${data.googleBusinessProfile.openingHoursFormatted}
-- **Geo Coordinates**: ${data.googleBusinessProfile.latitude}, ${data.googleBusinessProfile.longitude}
+- **Profile Data**: ${gbpChecked(data.googleBusinessProfile) ? 'Verified' : 'Not checked (verify manually in Google Business Profile)'}
+- **Primary Category / Schema Type**: ${data.googleBusinessProfile.primaryCategory || 'Not detected'}
+- **Rating**: ${fmtRating(data.googleBusinessProfile)}
+- **Review Response Rate**: ${fmtPct(data.googleBusinessProfile.reviewResponseRatePercent)}
+- **Business Hours (on page)**: ${data.googleBusinessProfile.openingHoursFormatted || 'Not detected'}
+- **Geo Coordinates (schema)**: ${data.googleBusinessProfile.latitude != null ? `${data.googleBusinessProfile.latitude}, ${data.googleBusinessProfile.longitude}` : 'Not detected'}
 
 ## 4. Remediation Recommendations
 ${data.googleBusinessProfile.recommendations
@@ -686,6 +488,13 @@ ${data.googleBusinessProfile.recommendations
         </div>
       )}
 
+      {!loading && error && (
+        <div role="alert" className="m-4 p-4 border-2 border-rose-500 bg-rose-50 text-sm text-rose-900">
+          <p className="font-black uppercase text-xs mb-1">Local SEO check failed</p>
+          <p>{error}</p>
+        </div>
+      )}
+
       {/* Main Content Body */}
       {!loading && data && (
         <div>
@@ -738,7 +547,9 @@ ${data.googleBusinessProfile.recommendations
                 </span>
               </div>
               <p className="text-[11px] text-neutral-600 mt-1 font-sans">
-                {data.citations.filter((c) => !c.hasMismatch).length} of {data.citations.length} directories have 100% NAP match.
+                {data.citations.every((c) => c.status === 'not_checked')
+                  ? 'Score from on-page NAP signals. Directory listings are not checked automatically.'
+                  : `${data.citations.filter((c) => !c.hasMismatch).length} of ${data.citations.length} directories have 100% NAP match.`}
               </p>
             </div>
 
@@ -746,20 +557,18 @@ ${data.googleBusinessProfile.recommendations
             <div className="p-4 sm:p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-black uppercase text-neutral-500">Google Business Profile</span>
-                <span className="px-1.5 py-0.5 text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-400">
-                  Verified
+                <span className="px-1.5 py-0.5 text-[10px] font-black uppercase bg-neutral-100 text-neutral-600 border border-neutral-300">
+                  {gbpChecked(data.googleBusinessProfile) ? 'Verified' : 'On-page signals'}
                 </span>
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl sm:text-4xl font-black font-mono text-[#141414]">
                   {data.gbpOptimizationScore}%
                 </span>
-                <span className="text-xs text-neutral-500 font-mono">
-                  ★ {data.googleBusinessProfile.rating} ({data.googleBusinessProfile.reviewsCount})
-                </span>
+                <span className="text-xs text-neutral-500 font-mono">{fmtRating(data.googleBusinessProfile)}</span>
               </div>
               <p className="text-[11px] text-neutral-600 mt-1 font-sans">
-                Response rate: {data.googleBusinessProfile.reviewResponseRatePercent}% • Hours configured.
+                Maps link, schema, geo and hours found on the page. Rating and reviews: verify in Google.
               </p>
             </div>
 
@@ -1042,29 +851,33 @@ ${data.googleBusinessProfile.recommendations
                     <div className="space-y-2 text-xs">
                       <div className="p-2 bg-neutral-50 border border-neutral-200 flex items-center justify-between">
                         <span className="font-medium text-neutral-800">Verification & Ownership</span>
-                        <span className="text-emerald-700 font-bold text-[11px] flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Claimed & Verified Profile
+                        <span className="text-neutral-600 font-bold text-[11px] flex items-center gap-1">
+                          {gbpChecked(data.googleBusinessProfile) && data.googleBusinessProfile.isClaimedAndVerified ? (
+                            <><CheckCircle2 className="h-3 w-3" /> Claimed & Verified Profile</>
+                          ) : (
+                            NOT_VERIFIED
+                          )}
                         </span>
                       </div>
 
                       <div className="p-2 bg-neutral-50 border border-neutral-200 flex items-center justify-between">
                         <span className="font-medium text-neutral-800">Star Rating & Volume</span>
                         <span className="font-mono font-bold text-[11px] text-[#141414]">
-                          ★ {data.googleBusinessProfile.rating} / 5.0 ({data.googleBusinessProfile.reviewsCount} reviews)
+                          {fmtRating(data.googleBusinessProfile)}{data.googleBusinessProfile.reviewsCount != null ? ` (${data.googleBusinessProfile.reviewsCount} reviews)` : ''}
                         </span>
                       </div>
 
                       <div className="p-2 bg-neutral-50 border border-neutral-200 flex items-center justify-between">
                         <span className="font-medium text-neutral-800">Review Response Rate</span>
                         <span className="font-mono font-bold text-[11px] text-emerald-700">
-                          {data.googleBusinessProfile.reviewResponseRatePercent}% (Recommended: 90%+)
+                          {fmtPct(data.googleBusinessProfile.reviewResponseRatePercent)} (Recommended: 90%+)
                         </span>
                       </div>
 
                       <div className="p-2 bg-neutral-50 border border-neutral-200 flex items-center justify-between">
                         <span className="font-medium text-neutral-800">Primary Category</span>
                         <span className="font-bold text-[11px] text-neutral-800 truncate max-w-[190px]">
-                          {data.googleBusinessProfile.primaryCategory}
+                          {data.googleBusinessProfile.primaryCategory || 'Not detected'}
                         </span>
                       </div>
                     </div>
@@ -1277,6 +1090,10 @@ ${data.googleBusinessProfile.recommendations
                               <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-neutral-200 text-neutral-700 border border-neutral-300">
                                 Unclaimed
                               </span>
+                            ) : c.status === 'not_checked' ? (
+                              <a href={c.directoryUrl} target="_blank" rel="noreferrer" className="px-2 py-0.5 text-[10px] font-black uppercase bg-neutral-100 text-neutral-600 border border-neutral-300 underline">
+                                Not checked
+                              </a>
                             ) : (
                               <span className="px-2 py-0.5 text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-400">
                                 Verified
@@ -1340,7 +1157,7 @@ ${data.googleBusinessProfile.recommendations
                             className={`px-2 py-0.5 text-[10px] font-black uppercase border ${
                               c.hasMismatch
                                 ? 'bg-amber-100 text-amber-800 border-amber-400'
-                                : c.status === 'unclaimed'
+                                : c.status === 'unclaimed' || c.status === 'not_checked'
                                 ? 'bg-neutral-200 text-neutral-700 border-neutral-300'
                                 : 'bg-emerald-100 text-emerald-800 border-emerald-400'
                             }`}
@@ -1349,6 +1166,8 @@ ${data.googleBusinessProfile.recommendations
                               ? 'Mismatch'
                               : c.status === 'unclaimed'
                               ? 'Unclaimed'
+                              : c.status === 'not_checked'
+                              ? 'Not checked'
                               : 'Verified'}
                           </span>
                         </div>
@@ -1447,8 +1266,8 @@ ${data.googleBusinessProfile.recommendations
                         {data.googleBusinessProfile.businessName}
                       </h4>
                     </div>
-                    <span className="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 border border-emerald-400 font-bold">
-                      Verified Google Entity
+                    <span className="text-xs font-mono bg-neutral-100 text-neutral-700 px-2 py-0.5 border border-neutral-300 font-bold">
+                      {gbpChecked(data.googleBusinessProfile) ? 'Verified Google Entity' : 'Not checked — open on Google Maps to verify'}
                     </span>
                   </div>
 
@@ -1458,10 +1277,12 @@ ${data.googleBusinessProfile.recommendations
                         Rating & Reviews
                       </span>
                       <p className="font-mono font-bold text-base text-[#141414]">
-                        ★ {data.googleBusinessProfile.rating} / 5.0
+                        {fmtRating(data.googleBusinessProfile)}
                       </p>
                       <p className="text-neutral-500 text-[11px]">
-                        {data.googleBusinessProfile.reviewsCount} verified customer reviews
+                        {data.googleBusinessProfile.reviewsCount != null
+                          ? `${data.googleBusinessProfile.reviewsCount} customer reviews`
+                          : 'Check reviews manually on Google Maps'}
                       </p>
                     </div>
 
@@ -1469,10 +1290,10 @@ ${data.googleBusinessProfile.recommendations
                       <span className="text-[10px] font-black uppercase text-neutral-500 block">
                         Response Rate
                       </span>
-                      <p className="font-mono font-bold text-base text-emerald-700">
-                        {data.googleBusinessProfile.reviewResponseRatePercent}%
+                      <p className="font-mono font-bold text-base text-[#141414]">
+                        {fmtPct(data.googleBusinessProfile.reviewResponseRatePercent)}
                       </p>
-                      <p className="text-neutral-500 text-[11px]">Replies within 24-48 hours</p>
+                      <p className="text-neutral-500 text-[11px]">Target: replies within 24-48 hours</p>
                     </div>
 
                     <div className="p-3 bg-neutral-50 border border-neutral-200">
@@ -1480,9 +1301,10 @@ ${data.googleBusinessProfile.recommendations
                         Operating Hours
                       </span>
                       <p className="font-bold text-xs text-[#141414] truncate">
-                        {data.googleBusinessProfile.openingHoursFormatted || 'Published'}
+                        {data.googleBusinessProfile.openingHoursFormatted ||
+                          (data.googleBusinessProfile.hasOpeningHours ? 'Mentioned on page' : 'Not detected')}
                       </p>
-                      <p className="text-neutral-500 text-[11px]">Regular & Special Hours</p>
+                      <p className="text-neutral-500 text-[11px]">From page / schema</p>
                     </div>
 
                     <div className="p-3 bg-neutral-50 border border-neutral-200">
@@ -1490,9 +1312,11 @@ ${data.googleBusinessProfile.recommendations
                         Geo Coordinates
                       </span>
                       <p className="font-mono font-bold text-xs text-[#141414]">
-                        {data.googleBusinessProfile.latitude?.toFixed(4)}, {data.googleBusinessProfile.longitude?.toFixed(4)}
+                        {data.googleBusinessProfile.latitude != null && data.googleBusinessProfile.longitude != null
+                          ? `${data.googleBusinessProfile.latitude.toFixed(4)}, ${data.googleBusinessProfile.longitude.toFixed(4)}`
+                          : 'Not detected'}
                       </p>
-                      <p className="text-neutral-500 text-[11px]">Latitude & Longitude locked</p>
+                      <p className="text-neutral-500 text-[11px]">From Schema.org geo</p>
                     </div>
                   </div>
 
