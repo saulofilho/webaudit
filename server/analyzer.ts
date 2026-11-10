@@ -1,3 +1,4 @@
+import { safeFetch } from './security/safeFetch';
 import { GoogleGenAI, Type } from '@google/genai';
 import {
   AuditItem,
@@ -365,7 +366,7 @@ export async function analyzeWebsite(rawUrl: string): Promise<AuditReport> {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 12000);
 
-      response = await fetch(targetUrl, {
+      response = await safeFetch(targetUrl, {
         signal: controller.signal,
         redirect: 'follow',
         headers: {

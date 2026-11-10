@@ -17,6 +17,13 @@ import { handleNiktoScan } from './server/secscan/niktoHandler';
 import { handleWafScan } from './server/secscan/wafHandler';
 import { handleDastFuzz } from './server/secscan/dastHandler';
 import { handleThreatIntel } from './server/secscan/threatIntelHandler';
+import {
+  clampInt,
+  rateLimit,
+  requireActiveScanAccess,
+  requireAdmin,
+  validateTargetUrls,
+} from './server/security/apiGuards';
 
 async function startServer() {
   const app = express();
@@ -29,6 +36,13 @@ async function startServer() {
 
   // Security Hardening: Disable Express fingerprinting
   app.disable('x-powered-by');
+
+  // Behind a reverse proxy (Cloud Run, Nginx), set TRUST_PROXY to the number of hops
+  // so req.ip — used by the rate limiter — is the real client address.
+  if (process.env.TRUST_PROXY) {
+    const hops = Number(process.env.TRUST_PROXY);
+    app.set('trust proxy', Number.isFinite(hops) ? hops : process.env.TRUST_PROXY);
+  }
 
   // Global Security Headers Middleware
   app.use((_req, res, next) => {
@@ -47,7 +61,10 @@ async function startServer() {
   });
 
   // Middleware for API routes
-  app.use('/api', express.json({ limit: '10mb' }));
+  app.use('/api', express.json({ limit: '2mb' }));
+  app.use('/api', rateLimit({ name: 'api', windowMs: 60_000, max: 60 }));
+  // Reject internal/reserved targets up front (handlers re-check every hop via safeFetch)
+  app.use('/api', validateTargetUrls);
 
   // In-memory or env storage for Google Search Console verification
   let googleVerificationCode = process.env.GOOGLE_SITE_VERIFICATION || '';
@@ -161,12 +178,13 @@ Sitemap: ${proto}://${host}/sitemap.xml
     res.json({ verificationCode: googleVerificationCode });
   });
 
-  app.post('/api/google-verification', (req, res) => {
+  app.post('/api/google-verification', requireAdmin, (req, res) => {
     const { verificationCode } = req.body || {};
-    if (typeof verificationCode === 'string') {
-      googleVerificationCode = verificationCode.trim();
+    if (typeof verificationCode !== 'string' || !/^[A-Za-z0-9_-]{0,128}$/.test(verificationCode.trim())) {
+      return res.status(400).json({ error: 'Invalid verification code.' });
     }
-    res.json({ success: true, verificationCode: googleVerificationCode });
+    googleVerificationCode = verificationCode.trim();
+    return res.json({ success: true, verificationCode: googleVerificationCode });
   });
 
   app.post('/api/analyze', async (req, res) => {
@@ -192,7 +210,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       if (!url || typeof url !== 'string') {
         return res.status(400).json({ error: 'A valid URL is required to inspect page links.' });
       }
-      const data = await checkPageLinks(url, typeof maxLinks === 'number' ? maxLinks : 35);
+      const data = await checkPageLinks(url, clampInt(maxLinks, 35, 1, 100));
       return res.json(data);
     } catch (err: any) {
       console.error('Check links error:', err);
@@ -208,7 +226,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       if (!url || typeof url !== 'string') {
         return res.status(400).json({ error: 'A valid URL is required to crawl the sitemap.' });
       }
-      const data = await crawlSitemapAndPages(url, typeof maxPages === 'number' ? maxPages : 10);
+      const data = await crawlSitemapAndPages(url, clampInt(maxPages, 10, 1, 30));
       return res.json(data);
     } catch (err: any) {
       console.error('Crawl sitemap error:', err);
@@ -224,7 +242,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       if (!url || typeof url !== 'string') {
         return res.status(400).json({ error: 'A valid URL is required to audit keyword cannibalization.' });
       }
-      const data = await auditKeywordCannibalization(url, typeof maxPages === 'number' ? maxPages : 15);
+      const data = await auditKeywordCannibalization(url, clampInt(maxPages, 15, 1, 30));
       return res.json(data);
     } catch (err: any) {
       console.error('Cannibalization audit error:', err);
@@ -300,6 +318,19 @@ Sitemap: ${proto}://${host}/sitemap.xml
         parsedOrigin = 'https://example.com';
       }
 
+      if (Array.isArray(pages) && pages.length > 5000) {
+        return res.status(400).json({ error: 'Too many pages (max 5000).' });
+      }
+      const xmlEscape = (v: unknown) =>
+        String(v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
+      const isHttpUrl = (v: unknown) => typeof v === 'string' && /^https?:\/\//i.test(v);
+      const CHANGEFREQS = new Set(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']);
+
       const today = new Date().toISOString().split('T')[0];
       const items = Array.isArray(pages) && pages.length > 0 ? pages : [
         { loc: `${parsedOrigin}/`, changefreq: 'daily', priority: 1.0, lastmod: today },
@@ -321,18 +352,24 @@ Sitemap: ${proto}://${host}/sitemap.xml
       }
 
       for (const item of items) {
+        if (!item || !isHttpUrl(item.loc)) continue;
         xmlParts.push('  <url>');
-        xmlParts.push(`    <loc>${item.loc}</loc>`);
-        if (item.lastmod) xmlParts.push(`    <lastmod>${item.lastmod}</lastmod>`);
-        if (item.changefreq) xmlParts.push(`    <changefreq>${item.changefreq}</changefreq>`);
-        if (item.priority !== undefined) xmlParts.push(`    <priority>${Number(item.priority).toFixed(1)}</priority>`);
+        xmlParts.push(`    <loc>${xmlEscape(item.loc)}</loc>`);
+        if (typeof item.lastmod === 'string' && /^\d{4}-\d{2}-\d{2}/.test(item.lastmod)) {
+          xmlParts.push(`    <lastmod>${xmlEscape(item.lastmod)}</lastmod>`);
+        }
+        if (CHANGEFREQS.has(item.changefreq)) xmlParts.push(`    <changefreq>${item.changefreq}</changefreq>`);
+        const priority = Number(item.priority);
+        if (item.priority !== undefined && Number.isFinite(priority)) {
+          xmlParts.push(`    <priority>${Math.min(1, Math.max(0, priority)).toFixed(1)}</priority>`);
+        }
 
         if (includeImages && Array.isArray(item.images)) {
           for (const img of item.images) {
-            if (img && img.loc) {
+            if (img && isHttpUrl(img.loc)) {
               xmlParts.push('    <image:image>');
-              xmlParts.push(`      <image:loc>${img.loc}</image:loc>`);
-              if (img.title) xmlParts.push(`      <image:title>${img.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</image:title>`);
+              xmlParts.push(`      <image:loc>${xmlEscape(img.loc)}</image:loc>`);
+              if (img.title) xmlParts.push(`      <image:title>${xmlEscape(img.title)}</image:title>`);
               xmlParts.push('    </image:image>');
             }
           }
@@ -348,7 +385,7 @@ Sitemap: ${proto}://${host}/sitemap.xml
       return res.json({
         success: true,
         xml: generatedXml,
-        urlCount: items.length,
+        urlCount: xmlParts.filter((line) => line === '  <url>').length,
         sizeBytes: Buffer.byteLength(generatedXml, 'utf-8'),
         sitemapUrl: `${parsedOrigin}/sitemap.xml`,
         robotsTxtSnippet,
@@ -411,10 +448,13 @@ Sitemap: ${proto}://${host}/sitemap.xml
   });
 
   // SecScan DevSecOps & Active Pentest Suite Routes
-  app.post('/api/secscan/js-miner', handleJsMiner);
-  app.post('/api/secscan/nikto', handleNiktoScan);
-  app.post('/api/secscan/waf', handleWafScan);
-  app.post('/api/secscan/dast', handleDastFuzz);
+  // Passive checks (single GET of the page/scripts) are rate limited; active probing
+  // (Nikto paths, DAST payloads) is opt-in and token-protected — see apiGuards.ts.
+  const scanLimiter = rateLimit({ name: 'secscan', windowMs: 60_000, max: 6 });
+  app.post('/api/secscan/js-miner', scanLimiter, handleJsMiner);
+  app.post('/api/secscan/nikto', requireActiveScanAccess, scanLimiter, handleNiktoScan);
+  app.post('/api/secscan/waf', scanLimiter, handleWafScan);
+  app.post('/api/secscan/dast', requireActiveScanAccess, scanLimiter, handleDastFuzz);
   app.get('/api/secscan/threat-intel', handleThreatIntel);
 
   // Vite Middleware or Static Production Serving

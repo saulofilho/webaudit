@@ -1,3 +1,4 @@
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
@@ -58,7 +59,7 @@ async function fetchPageHtml(targetUrl: string, timeoutMs = 4500): Promise<strin
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     const normalized = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
-    const res = await fetch(normalized, {
+    const res = await safeFetch(normalized, {
       signal: controller.signal,
       headers: {
         'User-Agent':

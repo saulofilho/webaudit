@@ -1,3 +1,4 @@
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
 import {
   CannibalizationAuditData,
@@ -182,7 +183,7 @@ export async function auditKeywordCannibalization(
   let homeStatusCode = 200;
 
   try {
-    const res = await fetch(targetUrl, {
+    const res = await safeFetch(targetUrl, {
       signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; WebAuditPro-SEOBot/3.0; +https://webaudit.pro/crawler)',
@@ -236,7 +237,7 @@ export async function auditKeywordCannibalization(
     for (const smPath of sitemapCandidates) {
       if (discoveredUrls.size >= maxPages) break;
       try {
-        const smRes = await fetch(`${rootOrigin}${smPath}`, {
+        const smRes = await safeFetch(`${rootOrigin}${smPath}`, {
           signal: AbortSignal.timeout(3500),
           headers: { 'User-Agent': 'WebAuditPro-SEOBot/3.0' },
         });
@@ -310,7 +311,7 @@ export async function auditKeywordCannibalization(
       }
 
       try {
-        const res = await fetch(u, {
+        const res = await safeFetch(u, {
           signal: AbortSignal.timeout(5000),
           headers: {
             'User-Agent': 'Mozilla/5.0 (compatible; WebAuditPro-SEOBot/3.0)',

@@ -1,3 +1,4 @@
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
@@ -330,7 +331,7 @@ export async function auditImages(
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch(finalTargetUrl, {
+      const res = await safeFetch(finalTargetUrl, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WebAuditBot/ImageAudit/1.0',
@@ -379,7 +380,7 @@ export async function auditImages(
       try {
         const ctrl = new AbortController();
         const tId = setTimeout(() => ctrl.abort(), 6000);
-        const subRes = await fetch(subPage, {
+        const subRes = await safeFetch(subPage, {
           signal: ctrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WebAuditBot/ImageAudit/1.0',

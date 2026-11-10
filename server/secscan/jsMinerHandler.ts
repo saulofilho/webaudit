@@ -1,3 +1,4 @@
+import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
 // Secret detection signatures
@@ -139,7 +140,7 @@ export async function handleJsMiner(req: Request, res: Response) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 9000);
       try {
-        const response = await fetch(targetUrl, {
+        const response = await safeFetch(targetUrl, {
           signal: controller.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SecScan-JsMiner/3.0',
@@ -174,7 +175,7 @@ export async function handleJsMiner(req: Request, res: Response) {
                 const resolvedUrl = new URL(src, targetUrl).toString();
                 const scriptController = new AbortController();
                 const scriptTimeout = setTimeout(() => scriptController.abort(), 4000);
-                const scriptRes = await fetch(resolvedUrl, {
+                const scriptRes = await safeFetch(resolvedUrl, {
                   signal: scriptController.signal,
                   headers: { 'User-Agent': 'SecScan-JsMiner/3.0' }
                 });

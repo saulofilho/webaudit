@@ -1,3 +1,4 @@
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
@@ -177,7 +178,7 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 12000);
     try {
-      const res = await fetch(targetUrl, {
+      const res = await safeFetch(targetUrl, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'WebAuditPro-LinkBot/3.0 (+https://webaudit.pro/bot)',
@@ -281,7 +282,7 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
         // Try HEAD first, fall back to GET if 405 or fails
         let headRes: Response | null = null;
         try {
-          headRes = await fetch(item.href, {
+          headRes = await safeFetch(item.href, {
             method: 'HEAD',
             redirect: 'manual',
             signal: linkCtrl.signal,
@@ -295,7 +296,7 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
 
         let resp = headRes;
         if (!resp || resp.status === 405 || resp.status === 501) {
-          resp = await fetch(item.href, {
+          resp = await safeFetch(item.href, {
             method: 'GET',
             redirect: 'manual',
             signal: linkCtrl.signal,
@@ -572,7 +573,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
     try {
       const sCtrl = new AbortController();
       const sTimer = setTimeout(() => sCtrl.abort(), 5000);
-      const res = await fetch(sUrl, {
+      const res = await safeFetch(sUrl, {
         signal: sCtrl.signal,
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WebAuditProCrawler/3.0)' },
       });
@@ -606,7 +607,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
     try {
       const hCtrl = new AbortController();
       const hTimer = setTimeout(() => hCtrl.abort(), 6000);
-      const res = await fetch(targetUrl, {
+      const res = await safeFetch(targetUrl, {
         signal: hCtrl.signal,
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WebAuditProCrawler/3.0)' },
       });
@@ -658,7 +659,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
       try {
         const pCtrl = new AbortController();
         const pTimer = setTimeout(() => pCtrl.abort(), 7000);
-        const res = await fetch(pageUrl, {
+        const res = await safeFetch(pageUrl, {
           signal: pCtrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (compatible; WebAuditProCrawler/3.0)',

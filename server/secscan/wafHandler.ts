@@ -1,3 +1,4 @@
+import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
 interface WafSignature {
@@ -87,7 +88,7 @@ export async function handleWafScan(req: Request, res: Response) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
 
-    const r = await fetch(targetUrl, {
+    const r = await safeFetch(targetUrl, {
       method: 'GET',
       signal: controller.signal,
       headers: {

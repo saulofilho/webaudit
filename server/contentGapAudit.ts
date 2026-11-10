@@ -1,3 +1,4 @@
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
@@ -142,7 +143,7 @@ async function fetchPageWithTimeout(targetUrl: string, timeoutMs = 4000): Promis
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     const normalized = targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`;
-    const res = await fetch(normalized, {
+    const res = await safeFetch(normalized, {
       signal: controller.signal,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
