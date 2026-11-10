@@ -1,3 +1,5 @@
+import { sendError } from '../security/apiGuards';
+import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
 interface NiktoProbeDef {
@@ -128,7 +130,7 @@ export async function handleNiktoScan(req: Request, res: Response) {
     let supportedMethods: string[] = ['GET', 'POST'];
     let dangerousMethodsFound: string[] = [];
     try {
-      const optRes = await fetch(origin, {
+      const optRes = await safeFetch(origin, {
         method: 'OPTIONS',
         headers: { 'User-Agent': 'SecScan-Nikto/2.4' }
       });
@@ -145,7 +147,7 @@ export async function handleNiktoScan(req: Request, res: Response) {
     let serverBanner = 'Desconhecido';
     let poweredByBanner = '';
     try {
-      const headRes = await fetch(origin, {
+      const headRes = await safeFetch(origin, {
         method: 'HEAD',
         headers: { 'User-Agent': 'SecScan-Nikto/2.4' }
       });
@@ -162,7 +164,7 @@ export async function handleNiktoScan(req: Request, res: Response) {
         try {
           const controller = new AbortController();
           const timer = setTimeout(() => controller.abort(), 4000);
-          const r = await fetch(probeTarget, {
+          const r = await safeFetch(probeTarget, {
             method: 'GET',
             signal: controller.signal,
             headers: {
@@ -220,6 +222,6 @@ export async function handleNiktoScan(req: Request, res: Response) {
       results: probeResults
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Falha ao executar varredura Nikto.' });
+    return sendError(res, err, 'Falha ao executar varredura Nikto.');
   }
 }

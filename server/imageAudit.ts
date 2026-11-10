@@ -1,6 +1,6 @@
+import { hasAltAttribute, parseAttributes } from '../src/utils/htmlMeta';
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
-import fs from 'fs';
-import path from 'path';
 import { ImageAuditItem, ImageAuditSummary, ImageAltStatus } from '../src/types';
 
 function cleanFileName(src: string): string {
@@ -186,11 +186,10 @@ function parseImagesFromHtml(html: string, pageUrl: string, pageTitle: string): 
     }
 
     // Extract alt attribute
-    const hasAltAttr = /\balt\s*=/i.test(attrs);
+    const hasAltAttr = hasAltAttribute(attrs); // bare `alt` = empty alt (decorative)
     let altValue: string | null = null;
     if (hasAltAttr) {
-      const altMatch = attrs.match(/\balt\s*=\s*["']([^"']*)["']/i);
-      altValue = altMatch ? altMatch[1] : '';
+      altValue = parseAttributes(attrs).alt ?? '';
     }
 
     // Extract dimensions
@@ -309,28 +308,12 @@ export async function auditImages(
   const discoveredInternalPages: string[] = [];
 
   // Fetch target URL if sampleHtml not provided
-  const isSelfAudit =
-    finalTargetUrl.includes('webauditpro') ||
-    finalTargetUrl.includes('localhost') ||
-    finalTargetUrl.includes('127.0.0.1') ||
-    finalTargetUrl.includes('.run.app');
-
-  if (isSelfAudit && !primaryHtml) {
-    try {
-      const idx = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(idx)) {
-        primaryHtml = fs.readFileSync(idx, 'utf-8');
-      }
-    } catch {
-      // fallback
-    }
-  }
 
   if (!primaryHtml) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch(finalTargetUrl, {
+      const res = await safeFetch(finalTargetUrl, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WebAuditBot/ImageAudit/1.0',
@@ -379,7 +362,7 @@ export async function auditImages(
       try {
         const ctrl = new AbortController();
         const tId = setTimeout(() => ctrl.abort(), 6000);
-        const subRes = await fetch(subPage, {
+        const subRes = await safeFetch(subPage, {
           signal: ctrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) WebAuditBot/ImageAudit/1.0',

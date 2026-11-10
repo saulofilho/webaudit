@@ -1,3 +1,5 @@
+import { sendError } from '../security/apiGuards';
+import { safeFetch } from '../security/safeFetch';
 import { Request, Response } from 'express';
 
 interface WafSignature {
@@ -87,7 +89,7 @@ export async function handleWafScan(req: Request, res: Response) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 6000);
 
-    const r = await fetch(targetUrl, {
+    const r = await safeFetch(targetUrl, {
       method: 'GET',
       signal: controller.signal,
       headers: {
@@ -155,6 +157,6 @@ export async function handleWafScan(req: Request, res: Response) {
         : 'Nenhum WAF de borda identificado nos cabeçalhos públicos. Recomendado ativar Cloudflare, AWS WAF ou Akamai para defesa contra ataques DDoS e injeções OWASP.'
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message || 'Falha ao identificar presença de WAF.' });
+    return sendError(res, err, 'Falha ao identificar presença de WAF.');
   }
 }

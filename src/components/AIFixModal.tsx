@@ -544,7 +544,7 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
               <div className="py-12 flex flex-col items-center justify-center space-y-3 text-center border-2 border-dashed border-[#141414] bg-[#F2F1ED]/50 p-6">
                 <RefreshCw className="h-7 w-7 animate-spin text-[#141414]" />
                 <div>
-                  <p className="font-bold text-sm uppercase">Synthesizing Step-by-Step Fix with Gemini 3.7 Flash...</p>
+                  <p className="font-bold text-sm uppercase">Generating step-by-step fix guide...</p>
                   <p className="text-xs text-[#141414]/70 mt-1">
                     Analyzing {item.title} for the {selectedFramework} stack and formulating engineering directives.
                   </p>
@@ -582,6 +582,16 @@ export const AIFixModal: React.FC<AIFixModalProps> = ({
                     <span className="font-bold text-xs uppercase text-[#141414]">
                       {fixData.headline}
                     </span>
+                    {(fixData as any)?.generatedBy === 'ai' ? (
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-violet-100 text-violet-800 border border-violet-300">AI · Gemini</span>
+                ) : (
+                  <span
+                    title="Gemini is not configured or the AI call failed; this text is a rule-based template built from the audit results."
+                    className="text-[10px] font-black uppercase px-1.5 py-0.5 bg-neutral-100 text-neutral-700 border border-neutral-300"
+                  >
+                    Template · no AI
+                  </span>
+                )}
                   </div>
                   <p className="text-xs leading-relaxed text-[#141414]/90">
                     {fixData.problemAnalysis}

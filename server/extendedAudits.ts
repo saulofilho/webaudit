@@ -1,6 +1,6 @@
+import { isLikelyHtmlPage, loadSitemapPageUrls } from './sitemapUtils';
+import { safeFetch } from './security/safeFetch';
 import { URL } from 'url';
-import fs from 'fs';
-import path from 'path';
 
 export interface LinkAuditResult {
   url: string;
@@ -125,15 +125,6 @@ export interface SitemapCrawlSummary {
   pageRankSimulation?: PageRankSimulationData;
 }
 
-function isSelfHost(host: string): boolean {
-  const h = host.toLowerCase();
-  return (
-    h.includes('webauditpro') ||
-    h.includes('localhost') ||
-    h.includes('127.0.0.1') ||
-    h.includes('.run.app')
-  );
-}
 
 // Helper to sanitize and resolve relative URLs
 function resolveUrl(href: string, baseUrl: string): string | null {
@@ -162,22 +153,12 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
 
   // Fetch page HTML
   let html = '';
-  if (isSelfHost(baseHost)) {
-    try {
-      const idx = path.join(process.cwd(), 'index.html');
-      if (fs.existsSync(idx)) {
-        html = fs.readFileSync(idx, 'utf-8');
-      }
-    } catch {
-      // fallback
-    }
-  }
 
   if (!html) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 12000);
     try {
-      const res = await fetch(targetUrl, {
+      const res = await safeFetch(targetUrl, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'WebAuditPro-LinkBot/3.0 (+https://webaudit.pro/bot)',
@@ -186,40 +167,12 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
       });
       html = await res.text();
     } catch (err: any) {
-      if (!isSelfHost(baseHost)) {
-        throw new Error(`Failed to load target website to check links: ${err.message}`);
-      }
+      throw new Error(`Failed to load target website to check links: ${err.message}`);
     } finally {
       clearTimeout(timeoutId);
     }
   }
 
-  if (isSelfHost(baseHost)) {
-    return {
-      targetUrl: 'https://webauditpro.ai.studio/',
-      totalFound: 10,
-      totalChecked: 10,
-      internalCount: 6,
-      externalCount: 4,
-      brokenCount: 0,
-      redirectsCount: 0,
-      insecureCount: 0,
-      missingNoopenerCount: 0,
-      healthScore: 100,
-      links: [
-        { url: 'https://webauditpro.ai.studio/', text: 'Home / Visão Geral 360°', isInternal: true, status: 200, statusText: 'OK', responseTimeMs: 25, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://webauditpro.ai.studio/#vitals', text: 'Core Web Vitals & Performance', isInternal: true, status: 200, statusText: 'OK', responseTimeMs: 28, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://webauditpro.ai.studio/#security', text: 'SecScan Pentest & WAF', isInternal: true, status: 200, statusText: 'OK', responseTimeMs: 31, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://webauditpro.ai.studio/#accessibility', text: 'WCAG 2.2 AAA & Image Alt', isInternal: true, status: 200, statusText: 'OK', responseTimeMs: 26, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://webauditpro.ai.studio/#seo', text: 'Auditoria SEO On-Page', isInternal: true, status: 200, statusText: 'OK', responseTimeMs: 29, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://webauditpro.ai.studio/#compliance', text: 'Conformidade LGPD & ISO', isInternal: true, status: 200, statusText: 'OK', responseTimeMs: 30, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://github.com/webauditpro', text: 'GitHub Official Repository', isInternal: false, status: 200, statusText: 'OK', responseTimeMs: 110, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://x.com/webauditpro', text: 'Twitter / X Official', isInternal: false, status: 200, statusText: 'OK', responseTimeMs: 120, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://linkedin.com/company/webauditpro', text: 'LinkedIn Company Profile', isInternal: false, status: 200, statusText: 'OK', responseTimeMs: 135, isBroken: false, isInsecure: false, missingNoopener: false },
-        { url: 'https://youtube.com/@webauditpro', text: 'YouTube Tech Channel', isInternal: false, status: 200, statusText: 'OK', responseTimeMs: 140, isBroken: false, isInsecure: false, missingNoopener: false },
-      ],
-    };
-  }
 
   // Extract all <a ...> tags
   const linkRegex = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
@@ -281,7 +234,7 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
         // Try HEAD first, fall back to GET if 405 or fails
         let headRes: Response | null = null;
         try {
-          headRes = await fetch(item.href, {
+          headRes = await safeFetch(item.href, {
             method: 'HEAD',
             redirect: 'manual',
             signal: linkCtrl.signal,
@@ -295,7 +248,7 @@ export async function checkPageLinks(targetUrl: string, maxLinks = 40): Promise<
 
         let resp = headRes;
         if (!resp || resp.status === 405 || resp.status === 501) {
-          resp = await fetch(item.href, {
+          resp = await safeFetch(item.href, {
             method: 'GET',
             redirect: 'manual',
             signal: linkCtrl.signal,
@@ -382,179 +335,6 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
   const origin = baseObj.origin;
   const baseHost = baseObj.hostname.toLowerCase();
 
-  if (isSelfHost(baseHost)) {
-    return {
-      targetUrl: 'https://webauditpro.ai.studio/',
-      sitemapFound: true,
-      sitemapUrl: 'https://webauditpro.ai.studio/sitemap.xml',
-      totalPagesDiscovered: 6,
-      totalPagesCrawled: 6,
-      averageResponseTimeMs: 42,
-      healthScore: 100,
-      issuesSummary: {
-        duplicateTitles: 0,
-        missingTitles: 0,
-        missingMetaDescriptions: 0,
-        missingH1: 0,
-        multipleH1: 0,
-        httpErrors: 0,
-        slowPages: 0,
-      },
-      duplicateTitleGroups: [],
-      pages: [
-        {
-          url: 'https://webauditpro.ai.studio/',
-          statusCode: 200,
-          responseTimeMs: 38,
-          title: 'WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO 2026',
-          titleLength: 58,
-          metaDescription: 'Auditoria de sites completa e gratuita: Análise de SEO, Segurança, Core Web Vitals, WCAG e LGPD em segundos com IA. Relatório nota máxima profissional.',
-          metaDescLength: 148,
-          h1: 'WebAudit Pro — All-in-One Website Audit & Security Analyzer',
-          h1Count: 1,
-          canonical: 'https://webauditpro.ai.studio/',
-          isIndexable: true,
-          issues: [],
-          inboundInternalLinksCount: 5,
-          outboundInternalLinksCount: 5,
-          outboundExternalLinksCount: 4,
-        },
-        {
-          url: 'https://webauditpro.ai.studio/#vitals',
-          statusCode: 200,
-          responseTimeMs: 42,
-          title: 'Core Web Vitals & Performance Analyzer — WebAudit Pro',
-          titleLength: 53,
-          metaDescription: 'Auditoria e diagnóstico de performance web Core Web Vitals: métricas LCP, INP e CLS com diretrizes de código otimizadas.',
-          metaDescLength: 120,
-          h1: 'Core Web Vitals & Performance Diagnostic',
-          h1Count: 1,
-          canonical: 'https://webauditpro.ai.studio/#vitals',
-          isIndexable: true,
-          issues: [],
-          inboundInternalLinksCount: 5,
-          outboundInternalLinksCount: 5,
-          outboundExternalLinksCount: 0,
-        },
-        {
-          url: 'https://webauditpro.ai.studio/#security',
-          statusCode: 200,
-          responseTimeMs: 44,
-          title: 'SecScan DevSecOps & WAF Defense Hub — WebAudit Pro',
-          titleLength: 50,
-          metaDescription: 'Scanner profissional de cabeçalhos de segurança, detecção de WAF, proteção contra ataques comuns e auditoria de vulnerabilidades.',
-          metaDescLength: 130,
-          h1: 'SecScan Cyber Security & Pentest Hub',
-          h1Count: 1,
-          canonical: 'https://webauditpro.ai.studio/#security',
-          isIndexable: true,
-          issues: [],
-          inboundInternalLinksCount: 5,
-          outboundInternalLinksCount: 5,
-          outboundExternalLinksCount: 0,
-        },
-        {
-          url: 'https://webauditpro.ai.studio/#accessibility',
-          statusCode: 200,
-          responseTimeMs: 41,
-          title: 'Acessibilidade Digital WCAG 2.2 AAA — WebAudit Pro',
-          titleLength: 50,
-          metaDescription: 'Auditoria de acessibilidade web WCAG 2.2 e remediador automático em lote de imagens sem tag alt para conformidade total.',
-          metaDescLength: 122,
-          h1: 'Acessibilidade WCAG 2.2 & Image Alt Audit',
-          h1Count: 1,
-          canonical: 'https://webauditpro.ai.studio/#accessibility',
-          isIndexable: true,
-          issues: [],
-          inboundInternalLinksCount: 5,
-          outboundInternalLinksCount: 5,
-          outboundExternalLinksCount: 0,
-        },
-        {
-          url: 'https://webauditpro.ai.studio/#seo',
-          statusCode: 200,
-          responseTimeMs: 39,
-          title: 'Auditoria Técnica de SEO On-Page & SERP — WebAudit Pro',
-          titleLength: 53,
-          metaDescription: 'Diagnóstico avançado de SEO, hierarquia de cabeçalhos, tags OpenGraph e Schema JSON-LD com simulador de ranking SERP do Google.',
-          metaDescLength: 132,
-          h1: 'SEO Técnico On-Page & SERP Simulator',
-          h1Count: 1,
-          canonical: 'https://webauditpro.ai.studio/#seo',
-          isIndexable: true,
-          issues: [],
-          inboundInternalLinksCount: 5,
-          outboundInternalLinksCount: 5,
-          outboundExternalLinksCount: 0,
-        },
-        {
-          url: 'https://webauditpro.ai.studio/#compliance',
-          statusCode: 200,
-          responseTimeMs: 40,
-          title: 'Conformidade de Privacidade LGPD & ISO 27001 — WebAudit Pro',
-          titleLength: 59,
-          metaDescription: 'Diagnóstico de proteção de dados, auditoria de cookies, termos de uso e conformidade com leis internacionais de privacidade.',
-          metaDescLength: 124,
-          h1: 'Conformidade de Dados & Framework LGPD',
-          h1Count: 1,
-          canonical: 'https://webauditpro.ai.studio/#compliance',
-          isIndexable: true,
-          issues: [],
-          inboundInternalLinksCount: 5,
-          outboundInternalLinksCount: 5,
-          outboundExternalLinksCount: 0,
-        },
-      ],
-      backlinkAudit: {
-        totalLinksDiscovered: 24,
-        internalCrossLinks: 20,
-        externalOutboundLinks: 4,
-        doFollowRatio: 100,
-        brokenLinksFound: 0,
-        uniqueLinkingNodes: 6,
-        topAnchors: [
-          { anchor: 'Auditoria de Sites 360°', count: 6, percentage: 30 },
-          { anchor: 'Core Web Vitals', count: 5, percentage: 25 },
-          { anchor: 'SecScan Pentest', count: 5, percentage: 25 },
-          { anchor: 'Acessibilidade WCAG', count: 4, percentage: 20 },
-        ],
-        deepLinkRatio: 85,
-        backlinkItems: [],
-      },
-      pageRankSimulation: {
-        calculatedDomainAuthority: 100,
-        estimatedPageRank: 10.0,
-        dampingFactor: 0.85,
-        iterations: 25,
-        confidenceScore: 100,
-        linkEquityDistribution: [
-          { pageUrl: 'https://webauditpro.ai.studio/', pageTitle: 'WebAudit Pro — #1 Ferramenta de Auditoria de Sites & SEO 2026', internalPageRank: 10, rawEquityShare: 100, inboundLinkCount: 6, outboundLinkCount: 5, depthLevel: 0, status: 'high_authority' },
-          { pageUrl: 'https://webauditpro.ai.studio/#vitals', pageTitle: 'Core Web Vitals & Performance Analyzer — WebAudit Pro', internalPageRank: 9.8, rawEquityShare: 98, inboundLinkCount: 5, outboundLinkCount: 5, depthLevel: 1, status: 'high_authority' },
-          { pageUrl: 'https://webauditpro.ai.studio/#security', pageTitle: 'SecScan DevSecOps & WAF Defense Hub — WebAudit Pro', internalPageRank: 9.8, rawEquityShare: 98, inboundLinkCount: 5, outboundLinkCount: 5, depthLevel: 1, status: 'high_authority' },
-          { pageUrl: 'https://webauditpro.ai.studio/#accessibility', pageTitle: 'WCAG 2.2 AAA & Image Alt Accessibility Audit — WebAudit Pro', internalPageRank: 9.7, rawEquityShare: 97, inboundLinkCount: 5, outboundLinkCount: 5, depthLevel: 1, status: 'high_authority' },
-          { pageUrl: 'https://webauditpro.ai.studio/#seo', pageTitle: 'SEO Technical On-Page & SERP Simulator — WebAudit Pro', internalPageRank: 9.8, rawEquityShare: 98, inboundLinkCount: 5, outboundLinkCount: 5, depthLevel: 1, status: 'high_authority' },
-          { pageUrl: 'https://webauditpro.ai.studio/#compliance', pageTitle: 'Compliance & Data Privacy Hub (LGPD, ISO 27001) — WebAudit Pro', internalPageRank: 9.6, rawEquityShare: 96, inboundLinkCount: 5, outboundLinkCount: 5, depthLevel: 1, status: 'high_authority' },
-        ],
-        authorityBreakdown: {
-          linkQuantityScore: 100,
-          equityFlowScore: 100,
-          doFollowQualityScore: 100,
-          architectureDepthScore: 100,
-          technicalHealthPenalty: 0,
-        },
-        rankTier: 'Industry Leader (81-100)',
-        insights: [
-          'XML Sitemap indexado com 100% de conformidade com os padrões do Google Search Console.',
-          'Hierarquia de títulos perfeita: todas as páginas possuem títulos únicos e exatamente uma tag <h1>.',
-          'Distribuição de link equity impecável: 100% das páginas internas recebem autoridade fluida sem nós órfãos.',
-          'Velocidade de resposta em alta performance: TTFB inferior a 50ms.',
-        ],
-        recommendations: [
-          'Mantenha a excelência de infraestrutura e a integridade contínua dos metadados.',
-        ],
-      },
-    };
-  }
 
   let sitemapFound = false;
   let sitemapUrl: string | undefined = undefined;
@@ -569,36 +349,17 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
   ];
 
   for (const sUrl of potentialSitemaps) {
-    try {
-      const sCtrl = new AbortController();
-      const sTimer = setTimeout(() => sCtrl.abort(), 5000);
-      const res = await fetch(sUrl, {
-        signal: sCtrl.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WebAuditProCrawler/3.0)' },
-      });
-      clearTimeout(sTimer);
-
-      if (res.ok) {
-        const xml = await res.text();
-        const locMatches = [...xml.matchAll(/<loc>([^<]+)<\/loc>/gi)];
-        if (locMatches.length > 0) {
-          sitemapFound = true;
-          sitemapUrl = sUrl;
-          for (const m of locMatches) {
-            const loc = resolveUrl(m[1].trim(), origin);
-            if (loc) {
-              const uObj = new URL(loc);
-              if (uObj.hostname.toLowerCase() === baseHost) {
-                discoveredUrls.add(loc);
-              }
-            }
-          }
-          break;
-        }
+    const pageUrls = await loadSitemapPageUrls(sUrl, { maxUrls: maxPages * 4 });
+    if (pageUrls === null) continue;
+    sitemapFound = true;
+    sitemapUrl = sUrl;
+    for (const raw of pageUrls) {
+      const loc = resolveUrl(raw, origin);
+      if (loc && new URL(loc).hostname.toLowerCase() === baseHost) {
+        discoveredUrls.add(loc);
       }
-    } catch {
-      // Continue to next probe
     }
+    break;
   }
 
   // Step 2: If sitemap not found or has few URLs, crawl home page to extract internal links
@@ -606,7 +367,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
     try {
       const hCtrl = new AbortController();
       const hTimer = setTimeout(() => hCtrl.abort(), 6000);
-      const res = await fetch(targetUrl, {
+      const res = await safeFetch(targetUrl, {
         signal: hCtrl.signal,
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; WebAuditProCrawler/3.0)' },
       });
@@ -618,7 +379,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
           const loc = resolveUrl(m[1], targetUrl);
           if (loc) {
             const uObj = new URL(loc);
-            if (uObj.hostname.toLowerCase() === baseHost && !uObj.pathname.match(/\.(jpg|jpeg|png|gif|svg|pdf|css|js|webp)$/i)) {
+            if (uObj.hostname.toLowerCase() === baseHost && isLikelyHtmlPage(loc)) {
               discoveredUrls.add(loc);
             }
           }
@@ -658,7 +419,7 @@ export async function crawlSitemapAndPages(targetUrl: string, maxPages = 12): Pr
       try {
         const pCtrl = new AbortController();
         const pTimer = setTimeout(() => pCtrl.abort(), 7000);
-        const res = await fetch(pageUrl, {
+        const res = await safeFetch(pageUrl, {
           signal: pCtrl.signal,
           headers: {
             'User-Agent': 'Mozilla/5.0 (compatible; WebAuditProCrawler/3.0)',

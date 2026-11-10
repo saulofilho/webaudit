@@ -23,12 +23,12 @@ export function NiktoWebScannerView({ targetUrl, onRunAIFix }: NiktoScannerProps
   const [urlInput, setUrlInput] = useState(targetUrl || '');
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'vulnerable' | 'safe'>('all');
 
   useEffect(() => {
     if (targetUrl) {
       setUrlInput(targetUrl);
-      runScan(targetUrl);
     }
   }, [targetUrl]);
 
@@ -40,10 +40,17 @@ export function NiktoWebScannerView({ targetUrl, onRunAIFix }: NiktoScannerProps
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: urlToScan || urlInput })
       });
-      const res = await resp.json();
+      const res = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setData(null);
+        setScanError(res.error || `Scan failed (HTTP ${resp.status}).`);
+        return;
+      }
+      setScanError(null);
       setData(res);
     } catch (e) {
       console.error(e);
+      setScanError('Scan failed: server unreachable.');
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +65,12 @@ export function NiktoWebScannerView({ targetUrl, onRunAIFix }: NiktoScannerProps
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      {scanError && (
+        <div role="alert" className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          {scanError}
+        </div>
+      )}
+
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-rose-950/40 to-slate-900 border border-rose-500/30 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
