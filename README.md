@@ -4,7 +4,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6-646cff.svg)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8.svg)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](#license)
+[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](LICENSE)
 
 **WebAudit Pro** is an open-source website audit toolkit. Point it at a URL and it checks
 **security headers, SEO, best practices, performance signals, accessibility and privacy**,
@@ -300,4 +300,4 @@ checks, improving the HTML parsing, and adding automated tests.
 
 ## License
 
-Distributed under the **Apache License 2.0**.
+Distributed under the **Apache License 2.0**. See [`LICENSE`](LICENSE) for the full text.
